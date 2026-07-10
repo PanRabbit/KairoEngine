@@ -13,6 +13,9 @@ struct UIVariables {
     float clearColor[3] = { 0.04f, 0.03f, 0.06f };
     bool reloadShader = false;
     // You can easily add more variables here later (e.g., float cameraSpeed, int objectCount)
+
+    float cameraSpeed = 3.0f;
+    glm::vec3 cameraPos;
 };
 
 // Function declarations

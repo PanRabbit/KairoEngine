@@ -38,6 +38,9 @@ void RenderUI(UIVariables& state, const std::vector<Shader*>& engineShaders) {
         }
     }
 
+    ImGui::DragFloat("Cam Base Speed", &state.cameraSpeed, 0.1f);
+    ImGui::DragFloat3("Cam Position", &state.cameraPos.x, 0.1f);
+
     ImGui::End();
 
     // Draw the UI

@@ -14,6 +14,32 @@
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
+float windowWidth = 1024;
+float windowHeight = 1024;
+
+
+
+// ====================================
+// CAMERA VARIABLES SETUP
+// ====================================
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f); // where the camera is
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // where the camera is looking at
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); // world up vector
+
+
+// we name this reverse direction because it's actually pointing in the opposite direction of the camera
+glm::vec3 cameraReverseDirection= glm::normalize(cameraPos - cameraFront);
+glm::vec3 cameraRight= glm::normalize(glm::cross(up, cameraReverseDirection)); // local right vector for the camera
+glm::vec3 cameraUp= glm::cross(cameraReverseDirection, cameraRight); // local up vector for the camera
+
+
+float cameraBaseSpeed = 1.0f;
+float cameraTrueSpeed = 0.0f;
+
+// ====================================
+// WINDOW SETUP
+// ====================================
 
 // handle window resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -23,10 +49,117 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 // process input
 void processInput(GLFWwindow *window)
-{
+{   
+    cameraTrueSpeed = cameraBaseSpeed * deltaTime;
+
+    // close engine
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    // move forwards
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraTrueSpeed * cameraFront;
+
+    // move backwards
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+       cameraPos -= cameraTrueSpeed * cameraFront;
+
+    //move left
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+       cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraTrueSpeed;
+
+    //move right
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+      cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraTrueSpeed;
+
+    //move up
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        cameraPos += cameraTrueSpeed * cameraUp;
+
+    //move down
+    if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        cameraPos -= cameraTrueSpeed * cameraUp;
+
+    //change speed
+    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        cameraBaseSpeed = 2.5f;
+    else
+        cameraBaseSpeed = 1.0f;
+
+
+    // toggle mouse lock - AI GENERATED - IMPROVE!!!
+    static bool tabPressedLastFrame = false;
+
+    bool tabPressedNow = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
+
+    if (tabPressedNow && !tabPressedLastFrame) // Key was just clicked
+    {
+        int currentMode = glfwGetInputMode(window, GLFW_CURSOR);
+        glfwSetInputMode(window, GLFW_CURSOR, (currentMode == GLFW_CURSOR_NORMAL) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    }
+
+    tabPressedLastFrame = tabPressedNow; // Remember the state for next time
+    }
+
+// handle mouse movement
+float mouseLastX, mouseLastY;
+float pitch, yaw = -90.0f;
+bool firstMouse = true;
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
+    {
+        firstMouse = true;
+        return;
+    }
+    if (firstMouse) // prevent the mouse from jumping when we first enter the window
+    {
+        mouseLastX = xpos;
+        mouseLastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - mouseLastX;
+    float yoffset = mouseLastY - ypos; // reversed since y-coordinates go from bottom to top
+    mouseLastX = xpos;
+    mouseLastY = ypos;
+
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // lock camera's pitch to avoid flipping around
+    if (pitch > 89.0f)
+       pitch = 89.0f;
+    if (pitch < -89.0f)
+       pitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
 }
+
+// scroll to zoom
+float fov = 45.0f;
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    fov -= (float)yoffset;
+    if (fov < 1.0f)
+       fov = 1.0f;
+    if (fov > 180.0f)
+       fov = 180.0f;
+}
+
+
+// ===================================
+// MAIN FUNCTION
+// ===================================
 
 int main()
 {
@@ -37,7 +170,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // create window object
-    GLFWwindow* window = glfwCreateWindow(1024, 1024, "KairoEngine", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "KairoEngine", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -46,6 +179,13 @@ int main()
     }
 
     glfwMakeContextCurrent(window);
+
+    //set window states
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //lock mouse cursor to window
+
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     glfwSwapInterval(0); //vsync
 
@@ -57,7 +197,7 @@ int main()
     }
 
     // Set viewport uniform to match your 1024x1024 window so layout handles cleanly
-    glViewport(0, 0, 1024, 1024);
+    glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glEnable(GL_DEPTH_TEST); //enable depth testing
@@ -66,9 +206,10 @@ int main()
     // SHADER COMPILATION & LINKING
     // ==========================================
   
-    Shader ourShader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
+    Shader cubeShader("shaders/vertex_shader.glsl", "shaders/cube_shader.glsl");
+    Shader floorShader("shaders/vertex_shader.glsl", "shaders/floor_shader.glsl");
 
-    std::vector<Shader*> allShaders = { &ourShader};
+    std::vector<Shader*> allShaders = {&floorShader,  &cubeShader};
 
     // ==========================================
     // VERTEX DATA & BUFFERS (VAO & VBO)
@@ -121,8 +262,18 @@ int main()
          0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-right
          0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-right
         -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom-left
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f  // top-left
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f,  // top-left
+
+        //FLOOR
+        // positions            // colors (gray)    // texture coords
+        -10.0f, -1.0f, -10.0f,  0.5f, 0.5f, 0.5f,   0.0f,  0.0f, // bottom-left
+        10.0f, -1.0f, -10.0f,  0.5f, 0.5f, 0.5f,   1.0f, 0.0f, // bottom-right
+        10.0f, -1.0f,  10.0f,  0.5f, 0.5f, 0.5f,   1.0f, 1.0f,// top-right
+        10.0f, -1.0f,  10.0f,  0.5f, 0.5f, 0.5f,   1.0f, 1.0f,// top-right
+        -10.0f, -1.0f,  10.0f,  0.5f, 0.5f, 0.5f,   0.0f,  1.0f,// top-left
+        -10.0f, -1.0f, -10.0f,  0.5f, 0.5f, 0.5f,   0.0f,  0.0f  // bottom-left
     };
+    
 
     unsigned int VAO, VBO; //, EBO;
     glGenVertexArrays(1, &VAO); 
@@ -155,7 +306,7 @@ int main()
     // ==========================================
     // TEXTURES
     // ==========================================
-    int width, height, nrChannels; // 1. Declared once here
+    int width, height, nrChannels; // only declare once
     
     // ---- WOOD TEXTURE ----
     unsigned char *data_wood = stbi_load("textures/container.jpg", &width, &height, &nrChannels, 0);
@@ -172,12 +323,19 @@ int main()
     unsigned int texture_miku;
     glGenTextures(1, &texture_miku);
     glBindTexture(GL_TEXTURE_2D, texture_miku);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data_miku);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data_miku);
 
+
+
+
+
+
     // ==========================================
-    // MATRICES
+    // MATRICES & VECTORS
     // ==========================================
 
     // model matrix, transforms all objects vertices to world spcace. slightly rotated here to lay on the floor
@@ -185,13 +343,12 @@ int main()
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 
-    // view matrix (basically the camera I think?)
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    // view matrix (basically the camera I think?) left blank to be set per frame
+    glm::mat4 view;
 
-    // projection matrix (make it not ortho)
+    // projection matrix (make it not ortho), ,moved to render loop
     glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), 1024.0f / 1024.0f, 0.1f, 100.0f);
+    
 
 
     // ==========================================
@@ -221,92 +378,96 @@ int main()
     // ==========================================
     // RENDER LOOP
     // ==========================================
+
     while(!glfwWindowShouldClose(window))
     {
-        // process time
-        float currentFrame = static_cast<float>(glfwGetTime());
+        // Process time & Input
+        float currentFrame = (glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-
         processInput(window);
 
-        // Process ui toggles toggle
+        // Process UI toggles 
         if (state.isWireframe) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         } else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
         
-        // Clear screen dynamically using array values from our state object
+        // Clear Screen
         glClearColor(state.clearColor[0], state.clearColor[1], state.clearColor[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        //base matrices
-        int modelLoc = glGetUniformLocation(ourShader.ID, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-        int viewLoc = glGetUniformLocation(ourShader.ID, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // Calculate Variables for this frame
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        projection = glm::perspective(glm::radians(fov), windowWidth / windowHeight, 0.1f, 100.0f);
 
-        int projectionLoc = glGetUniformLocation(ourShader.ID, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-
-        int vertexColour = glGetUniformLocation(ourShader.ID, "col");
-
-        float cycleTime = currentFrame;
-
-        float r = sin(cycleTime) * 0.5f + 0.5f;
-        float g = sin(cycleTime + 2.09439f) * 0.5f + 0.5f;
-        float b = sin(cycleTime + 4.18879f) * 0.5f + 0.5f;
-
-        glUniform4f(vertexColour, r, g, b, 1.0f);
-        //std::cout << "r=" << r << std::endl;
+        float r = sin(currentFrame) * 0.5f + 0.5f;
+        float g = sin(currentFrame + 2.09439f) * 0.5f + 0.5f;
+        float b = sin(currentFrame + 4.18879f) * 0.5f + 0.5f;
 
 
-        ourShader.use();
+        // ==========================================
+        // DRAW CUBES
+        // ==========================================
+        cubeShader.use();
 
-        //transformations
-        model = glm::rotate(model, glm::radians(10.0f) * deltaTime, glm::vec3(0.5f, 1.0f, 1.0f));
+        cubeShader.setMat4("view", view);
+        cubeShader.setMat4("projection", projection);
+        
+        glUniform4f(glGetUniformLocation(cubeShader.ID, "col"), r, g, b, 1.0f);
 
-        ourShader.setInt("sample1", 0); // Tells texture1 to read from GL_TEXTURE0
-        ourShader.setInt("sample2", 1); // Tells texture2 to read from GL_TEXTURE1
-
+        // Setup Textures
+        cubeShader.setInt("sample1", 0);
+        cubeShader.setInt("sample2", 1);
         glActiveTexture(GL_TEXTURE0); 
         glBindTexture(GL_TEXTURE_2D, texture_wood);
         glActiveTexture(GL_TEXTURE1); 
         glBindTexture(GL_TEXTURE_2D, texture_miku);
         
+        glBindVertexArray(VAO); 
 
-        // Draw our object
-        glBindVertexArray(VAO);  // rebind the VAO layout we created earlier
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); //rebind cause of nvidia driver bug
-
+        // Draw cubes
         for(unsigned int i = 0; i < 10; i++)
         {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(10.0f) * deltaTime, glm::vec3(0.5f, 1.0f, 1.0f));
-
-            ourShader.setMat4("model", model);
-
+            model = glm::rotate(model, glm::radians(currentFrame * (angle + 1)), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+            
+            cubeShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
 
+        // ==========================================
+        // DRAW FLOOR
+        // ==========================================
+        floorShader.use();
+
+        floorShader.setMat4("view", view);
+        floorShader.setMat4("projection", projection);
+        glUniform4f(glGetUniformLocation(floorShader.ID, "col"), r, g, b, 1.0f);
+
+        // We are already bound to VAO, so just update the model matrix
+        glm::mat4 floorModel = glm::mat4(1.0f); 
+        floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
+        floorShader.setMat4("model", floorModel); 
+
+        glDrawArrays(GL_TRIANGLES, 36, 6);       
 
 
-        // Render UI
+        // ==========================================
+        // END FRAME UI & SWAP
+        // ==========================================
+        state.cameraSpeed = cameraBaseSpeed;
+        state.cameraPos = cameraPos;
         RenderUI(state, allShaders);
 
-        // Poll events and swap buffers
         glfwPollEvents();
         glfwSwapBuffers(window);
-
-
-        
     }
     // ========= END RENDER LOOP =========
 
