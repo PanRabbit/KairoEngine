@@ -1,9 +1,9 @@
 #version 330 core
 
 struct Material {
-    vec3 ambientStrength;
-    vec4 diffuseColor;
-    vec3 specularStrength;  
+    float ambientStrength;
+    sampler2D diffuseColor;
+    float specularStrength;  
     float shininess;
 };
 uniform Material material;

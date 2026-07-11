@@ -29,6 +29,7 @@ set(PROJECT_SOURCES
     main.cpp
     UI.cpp
     stb_implementation.cpp
+    texture.cpp
 )
 
 # ==============================================================================

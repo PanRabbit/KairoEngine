@@ -14,7 +14,7 @@
 #include "UI.h"
 #include "shader.h"
 #include "camera.h"
-
+#include "texture.h"
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -273,28 +273,12 @@ int main()
     // ==========================================
     // TEXTURES
     // ==========================================
-    int width, height, nrChannels; // only declare once
     
     // ---- WOOD TEXTURE ----
-    unsigned char *data_wood = stbi_load("textures/container.jpg", &width, &height, &nrChannels, 0);
-    unsigned int texture_wood;
-    glGenTextures(1, &texture_wood);
-    glBindTexture(GL_TEXTURE_2D, texture_wood);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_wood);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data_wood);
+    Texture wood_texture("textures/container.jpg");
 
     // ---- MIKU TEXTURE ----
-    stbi_set_flip_vertically_on_load(true); // fixes image being upsidedown
-    unsigned char *data_miku = stbi_load("textures/miku.png", &width, &height, &nrChannels, 0);
-    unsigned int texture_miku;
-    glGenTextures(1, &texture_miku);
-    glBindTexture(GL_TEXTURE_2D, texture_miku);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data_miku);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data_miku);
+    Texture miku_texture("textures/miku.png");
 
 
     // ==========================================
@@ -402,8 +386,8 @@ int main()
         // DRAW CUBES
         // ==========================================
         phongShader.setInt("textureType", 1);
-        phongShader.setVec3("material.ambientStrength", glm::vec3(0.1f, 0.1f, 0.1f));
-        phongShader.setVec3("material.specularStrength", glm::vec3(0.7f, 0.7f, 0.7f));
+        phongShader.setFloat("material.ambientStrength", 0.2f);
+        phongShader.setFloat("material.specularStrength", 0.7f);
         phongShader.setFloat("material.shininess", 128.0f);
 
 
@@ -412,9 +396,9 @@ int main()
         phongShader.setInt("sample1", 0);
         phongShader.setInt("sample2", 1);
         glActiveTexture(GL_TEXTURE0); 
-        glBindTexture(GL_TEXTURE_2D, texture_wood);
+        wood_texture.bind();
         glActiveTexture(GL_TEXTURE1); 
-        glBindTexture(GL_TEXTURE_2D, texture_miku);
+        miku_texture.bind();
 
         phongShader.setMat4("view", view);
         phongShader.setMat4("projection", projection);
@@ -440,8 +424,8 @@ int main()
         // DRAW FLOOR
         // ==========================================
         phongShader.setInt("textureType", 0);
-        phongShader.setVec3("material.ambientStrength", glm::vec3(0.05f, 0.05f, 0.05f));
-        phongShader.setVec3("material.specularStrength", glm::vec3(0.1f, 0.9f, 0.9f));
+        phongShader.setFloat("material.ambientStrength", 0.2f);
+        phongShader.setFloat("material.specularStrength", 0.7f);
         phongShader.setFloat("material.shininess", 256.0f);
 
 
