@@ -8,7 +8,7 @@
 void InitUI(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui::StyleColorsDark(); // Your favorite blue/black theme
+    ImGui::StyleColorsClassic();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -22,24 +22,78 @@ void RenderUI(UIVariables& state, const std::vector<Shader*>& engineShaders) {
 
     // Design the window layouts
     ImGui::Begin("Kairo Engine");
-    
-    ImGui::Text("Performance: %.1f FPS", ImGui::GetIO().Framerate);
-    ImGui::Separator();
 
-    // Modify state directly via references passed from main loop
-    ImGui::Checkbox("Enable Wireframe Mode", &state.isWireframe);
-    ImGui::ColorEdit3("Background Color", state.clearColor);
+    if (ImGui::BeginTabBar("MyTabBarID")) 
+    {
 
-    if (ImGui::Button("Hot Reload Shaders")) {
-        for (Shader* shader : engineShaders) {
-            if (shader != nullptr) {
-                shader->reload();
+        if (ImGui::BeginTabItem("General")) 
+        {
+            ImGui::Text("Performance: %.1f FPS", ImGui::GetIO().Framerate);
+            ImGui::Separator();
+
+            // Modify state directly via references passed from main loop
+            ImGui::Checkbox("Enable Wireframe Mode", &state.isWireframe);
+            ImGui::ColorEdit3("Background Color", state.clearColor);
+
+            if (ImGui::Button("Hot Reload Shaders")) {
+                for (Shader* shader : engineShaders) {
+                    if (shader != nullptr) {
+                        shader->reload();
+                    }
+                }
             }
-        }
-    }
 
-    ImGui::DragFloat("Cam Base Speed", &state.cameraSpeed, 0.1f);
-    ImGui::DragFloat3("Cam Position", &state.cameraPos.x, 0.1f);
+            ImGui::Separator();
+            ImGui::Text("Camera State");
+            ImGui::DragFloat("Cam Base Speed", &state.cameraSpeed, 0.1f);
+            ImGui::DragFloat3("Cam Position", &state.cameraPos.x, 0.1f);
+            ImGui::DragFloat3("Cam Rotation", &state.cameraRot.x, 0.1f);
+            ImGui::DragFloat("FOV", &state.fov, 0.1f);
+
+            
+            ImGui::EndTabItem(); 
+        }
+
+        if (ImGui::BeginTabItem("Objects"))
+        {
+            ImGui::Separator();
+            ImGui::Text("Light");
+            ImGui::Checkbox("Spin Light?", &state.lightSpin);
+
+            if (state.lightSpin == true)
+            {
+                ImGui::SliderFloat("Spin Speed", &state.spinSpeed, 0.1f, 10.0f);
+                ImGui::SliderFloat("Spin Radius", &state.spinRadius, 1.0f, 10.0f);
+            }
+            else 
+            {
+                ImGui::SliderFloat3("Light Position", &state.lightPos[0], -10.0f, 10.0f);
+            }
+
+            ImGui::Checkbox("Pulse Light?", &state.lightPulse);
+             if (state.lightPulse == true)
+             {
+                ImGui::SliderFloat3("Pulse Speed", &state.pulseSpeed[0], 0.5f, 5.0f);
+             }
+             else
+             {
+                ImGui::ColorEdit3("Light Color", state.lightColor);
+             }
+
+
+
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("GUI Style Editor")) 
+        {
+            ImGui::Text("Make non-persistant style changes.");
+            ImGui::ShowStyleEditor();
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar(); 
+    }
 
     ImGui::End();
 

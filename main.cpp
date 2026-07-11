@@ -1,21 +1,26 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include "UI.h"
-#include "shader.h"
-#include <fstream>
-#include <sstream>
-#include <cmath>
-#include "stb_image.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cmath>
+
+#include "stb_image.h"
+#include "UI.h"
+#include "shader.h"
+#include "camera.h"
+
+
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
-float windowWidth = 1024;
-float windowHeight = 1024;
+float SCR_WIDTH = 1024;
+float SCR_HEIGHT = 1024;
 
 
 
@@ -23,19 +28,7 @@ float windowHeight = 1024;
 // CAMERA VARIABLES SETUP
 // ====================================
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f); // where the camera is
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // where the camera is looking at
-glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); // world up vector
-
-
-// we name this reverse direction because it's actually pointing in the opposite direction of the camera
-glm::vec3 cameraReverseDirection= glm::normalize(cameraPos - cameraFront);
-glm::vec3 cameraRight= glm::normalize(glm::cross(up, cameraReverseDirection)); // local right vector for the camera
-glm::vec3 cameraUp= glm::cross(cameraReverseDirection, cameraRight); // local up vector for the camera
-
-
-float cameraBaseSpeed = 1.0f;
-float cameraTrueSpeed = 0.0f;
+Camera camera(glm::vec3(-10.0f, 5.0f, -7.0f), glm::vec3(0.75f, -0.4f, 0.55f));
 
 // ====================================
 // WINDOW SETUP
@@ -50,70 +43,57 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // process input
 void processInput(GLFWwindow *window)
 {   
-    cameraTrueSpeed = cameraBaseSpeed * deltaTime;
-
-    // close engine
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    // move forwards
-    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraTrueSpeed * cameraFront;
-
-    // move backwards
-    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-       cameraPos -= cameraTrueSpeed * cameraFront;
-
-    //move left
-    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-       cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraTrueSpeed;
-
-    //move right
-    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-      cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraTrueSpeed;
-
-    //move up
-    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        cameraPos += cameraTrueSpeed * cameraUp;
-
-    //move down
-    if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        cameraPos -= cameraTrueSpeed * cameraUp;
-
-    //change speed
+    // Camera Speed modifier (Sprint)
     if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        cameraBaseSpeed = 2.5f;
+        camera.MovementSpeed = 2.5f;
     else
-        cameraBaseSpeed = 1.0f;
+        camera.MovementSpeed = 1.0f;
 
+    // Movement
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.ProcessKeyboard(UP, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        camera.ProcessKeyboard(DOWN, deltaTime);
 
-    // toggle mouse lock - AI GENERATED - IMPROVE!!!
+    // toggle mouse lock
     static bool tabPressedLastFrame = false;
-
     bool tabPressedNow = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
-
-    if (tabPressedNow && !tabPressedLastFrame) // Key was just clicked
+    if (tabPressedNow && !tabPressedLastFrame) 
     {
         int currentMode = glfwGetInputMode(window, GLFW_CURSOR);
         glfwSetInputMode(window, GLFW_CURSOR, (currentMode == GLFW_CURSOR_NORMAL) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     }
+    tabPressedLastFrame = tabPressedNow; 
+}
 
-    tabPressedLastFrame = tabPressedNow; // Remember the state for next time
-    }
-
-// handle mouse movement
-float mouseLastX, mouseLastY;
-float pitch, yaw = -90.0f;
+// Mouse variables can stay global since they only track the physical mouse state
+float mouseLastX = SCR_WIDTH / 2.0f;
+float mouseLastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
     {
         firstMouse = true;
         return;
     }
-    if (firstMouse) // prevent the mouse from jumping when we first enter the window
+
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse)
     {
         mouseLastX = xpos;
         mouseLastY = ypos;
@@ -122,38 +102,17 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     float xoffset = xpos - mouseLastX;
     float yoffset = mouseLastY - ypos; // reversed since y-coordinates go from bottom to top
+
     mouseLastX = xpos;
     mouseLastY = ypos;
 
-    const float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    yaw += xoffset;
-    pitch += yoffset;
-
-    // lock camera's pitch to avoid flipping around
-    if (pitch > 89.0f)
-       pitch = 89.0f;
-    if (pitch < -89.0f)
-       pitch = -89.0f;
-
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
+    camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// scroll to zoom
-float fov = 45.0f;
+// scroll to change fov
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    fov -= (float)yoffset;
-    if (fov < 1.0f)
-       fov = 1.0f;
-    if (fov > 180.0f)
-       fov = 180.0f;
+    camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 
@@ -170,7 +129,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // create window object
-    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "KairoEngine", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "KairoEngine", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -196,8 +155,8 @@ int main()
         return -1;
     }
 
-    // Set viewport uniform to match your 1024x1024 window so layout handles cleanly
-    glViewport(0, 0, windowWidth, windowHeight);
+
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glEnable(GL_DEPTH_TEST); //enable depth testing
@@ -206,72 +165,67 @@ int main()
     // SHADER COMPILATION & LINKING
     // ==========================================
   
-    Shader cubeShader("shaders/vertex_shader.glsl", "shaders/cube_shader.glsl");
-    Shader floorShader("shaders/vertex_shader.glsl", "shaders/floor_shader.glsl");
+    Shader phongShader("shaders/vertex_shader.glsl", "shaders/phong_shader.glsl");
+    Shader lightShader("shaders/vertex_shader.glsl", "shaders/light_shader.glsl");
 
-    std::vector<Shader*> allShaders = {&floorShader,  &cubeShader};
+    std::vector<Shader*> allShaders = {&lightShader,  &phongShader};
 
     // ==========================================
     // VERTEX DATA & BUFFERS (VAO & VBO)
     // ==========================================
     float vertices[] = {
-        // positions          // colors           // texture coords
-        // BACK FACE
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom-left
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom-right
-         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-right
-         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-right
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f, // top-left
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom-left
-    
-        // FRONT FACE
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom-left
-         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom-right
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-right
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-right
-        -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f, // top-left
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom-left
-    
-        // LEFT FACE
-        -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   1.0f, 0.0f, // top-right
-        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-left
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // bottom-left
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // bottom-left
-        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom-right
-        -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   1.0f, 0.0f, // top-right
-    
-        // RIGHT FACE
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   1.0f, 0.0f, // top-left
-         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-right
-         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // bottom-right
-         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // bottom-right
-         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom-left
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   1.0f, 0.0f, // top-left
-    
-        // BOTTOM FACE
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // top-right
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   1.0f, 1.0f, // top-left
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-left
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-left
-        -0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom-right
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // top-right
-    
-        // TOP FACE
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // top-left
-         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   1.0f, 1.0f, // top-right
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-right
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-right
-        -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom-left
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f,  // top-left
+        // --- CUBE (36 vertices) ---
+        // Positions          // Normals          // Tex Coords
+        // Back face
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+        // Front face
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+        // Left face
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        // Right face
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        // Bottom face
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+        // Top face
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
 
-        //FLOOR
-        // positions            // colors (gray)    // texture coords
-        -10.0f, -1.0f, -10.0f,  0.5f, 0.5f, 0.5f,   0.0f,  0.0f, // bottom-left
-        10.0f, -1.0f, -10.0f,  0.5f, 0.5f, 0.5f,   1.0f, 0.0f, // bottom-right
-        10.0f, -1.0f,  10.0f,  0.5f, 0.5f, 0.5f,   1.0f, 1.0f,// top-right
-        10.0f, -1.0f,  10.0f,  0.5f, 0.5f, 0.5f,   1.0f, 1.0f,// top-right
-        -10.0f, -1.0f,  10.0f,  0.5f, 0.5f, 0.5f,   0.0f,  1.0f,// top-left
-        -10.0f, -1.0f, -10.0f,  0.5f, 0.5f, 0.5f,   0.0f,  0.0f  // bottom-left
+        // --- FLOOR (6 vertices) ---
+        -10.0f, -1.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
+        10.0f, -1.0f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 0.0f,
+        10.0f, -1.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
+        10.0f, -1.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
+        -10.0f, -1.0f,  10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  10.0f,
+        -10.0f, -1.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f
     };
     
 
@@ -297,9 +251,22 @@ int main()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),(void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);   
 
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0); 
+
+    // Light VAO
+    unsigned int lightVAO;
+    glGenVertexArrays(1, &lightVAO);
+
+    glBindVertexArray(lightVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
 
 
@@ -330,44 +297,37 @@ int main()
     stbi_image_free(data_miku);
 
 
-
-
-
-
     // ==========================================
     // MATRICES & VECTORS
     // ==========================================
 
     // model matrix, transforms all objects vertices to world spcace. slightly rotated here to lay on the floor
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-
+    
     // view matrix (basically the camera I think?) left blank to be set per frame
     glm::mat4 view;
 
     // projection matrix (make it not ortho), ,moved to render loop
     glm::mat4 projection;
     
-
-
     // ==========================================
     // OBJECTS
     // ==========================================
 
     glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f, 0.0f,
-         0.0f),
-        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3( 0.0f, -1.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -5.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(-3.8f, -2.0f, 2.3f),
         glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3(-1.7f, 3.0f, 3.5f),
         glm::vec3( 1.3f, -2.0f, -2.5f),
         glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
+        glm::vec3( 1.5f, 0.2f, 1.5f),
+        glm::vec3(-1.3f, 1.0f, 1.5f)
         };
+
+    glm::vec3 lightPos;
 
     // ==========================================
     // UI INITIALIZATION
@@ -401,31 +361,64 @@ int main()
         
 
         // Calculate Variables for this frame
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        projection = glm::perspective(glm::radians(fov), windowWidth / windowHeight, 0.1f, 100.0f);
+        view = camera.GetViewMatrix();
+        projection = glm::perspective(glm::radians(camera.Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
-        float r = sin(currentFrame) * 0.5f + 0.5f;
-        float g = sin(currentFrame + 2.09439f) * 0.5f + 0.5f;
-        float b = sin(currentFrame + 4.18879f) * 0.5f + 0.5f;
 
+        // Update Light Position and Color
+        if (state.lightSpin)
+        {
+            lightPos = glm::vec3(sin(glfwGetTime() * state.spinSpeed) * state.spinRadius, 0.0f, cos(glfwGetTime() * state.spinSpeed) * state.spinRadius);
+        }
+        else {
+            lightPos = glm::vec3(state.lightPos[0], state.lightPos[1], state.lightPos[2]);
+        }
+        
+
+        glm::vec3 lightColor;
+        if (state.lightPulse) {
+            lightColor = glm::vec3(
+                glm::max(0.1f, (float)sin(glfwGetTime() * state.pulseSpeed[0])), 
+                glm::max(0.1f, (float)sin(glfwGetTime() * state.pulseSpeed[1])), 
+                glm::max(0.1f, (float)sin(glfwGetTime() * state.pulseSpeed[2]))
+            );        
+        } 
+        else {
+            lightColor = glm::vec3(state.lightColor[0], state.lightColor[1], state.lightColor[2]);
+        }
+
+
+        // ==========================================
+        // SETUP LIGHT
+        //==========================================
+        phongShader.use();
+
+        phongShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+        phongShader.setVec3("light.diffuse", lightColor);
+        phongShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        phongShader.setVec3("light.position", lightPos);
 
         // ==========================================
         // DRAW CUBES
         // ==========================================
-        cubeShader.use();
+        phongShader.setInt("textureType", 1);
+        phongShader.setVec3("material.ambientStrength", glm::vec3(0.1f, 0.1f, 0.1f));
+        phongShader.setVec3("material.specularStrength", glm::vec3(0.7f, 0.7f, 0.7f));
+        phongShader.setFloat("material.shininess", 128.0f);
 
-        cubeShader.setMat4("view", view);
-        cubeShader.setMat4("projection", projection);
-        
-        glUniform4f(glGetUniformLocation(cubeShader.ID, "col"), r, g, b, 1.0f);
+
 
         // Setup Textures
-        cubeShader.setInt("sample1", 0);
-        cubeShader.setInt("sample2", 1);
+        phongShader.setInt("sample1", 0);
+        phongShader.setInt("sample2", 1);
         glActiveTexture(GL_TEXTURE0); 
         glBindTexture(GL_TEXTURE_2D, texture_wood);
         glActiveTexture(GL_TEXTURE1); 
         glBindTexture(GL_TEXTURE_2D, texture_miku);
+
+        phongShader.setMat4("view", view);
+        phongShader.setMat4("projection", projection);
+        phongShader.setVec3("viewPos", camera.Position);
         
         glBindVertexArray(VAO); 
 
@@ -435,9 +428,10 @@ int main()
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(currentFrame * (angle + 1)), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
-            
-            cubeShader.setMat4("model", model);
+            model = glm::rotate(model, glm::radians(currentFrame * (angle + 1) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+            //model = glm::rotate(model, glm::radians((angle * 357836) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+
+            phongShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
@@ -445,25 +439,48 @@ int main()
         // ==========================================
         // DRAW FLOOR
         // ==========================================
-        floorShader.use();
+        phongShader.setInt("textureType", 0);
+        phongShader.setVec3("material.ambientStrength", glm::vec3(0.05f, 0.05f, 0.05f));
+        phongShader.setVec3("material.specularStrength", glm::vec3(0.1f, 0.9f, 0.9f));
+        phongShader.setFloat("material.shininess", 256.0f);
 
-        floorShader.setMat4("view", view);
-        floorShader.setMat4("projection", projection);
-        glUniform4f(glGetUniformLocation(floorShader.ID, "col"), r, g, b, 1.0f);
+
+        phongShader.setVec3("viewPos", camera.Position);
+        phongShader.setMat4("view", view);
+        phongShader.setMat4("projection", projection);
 
         // We are already bound to VAO, so just update the model matrix
         glm::mat4 floorModel = glm::mat4(1.0f); 
         floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
-        floorShader.setMat4("model", floorModel); 
+        phongShader.setMat4("model", floorModel); 
 
         glDrawArrays(GL_TRIANGLES, 36, 6);       
 
-
         // ==========================================
+        // DRAW LIGHT CUBE
+        // ==========================================
+
+        lightShader.use();
+        lightShader.setVec3("Color", lightColor);
+        lightShader.setMat4("view", view);
+        lightShader.setMat4("projection", projection);
+        glm::mat4 lightModel = glm::mat4(1.0f); 
+        lightModel = glm::translate(lightModel, lightPos); 
+        lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
+        lightShader.setMat4("model", lightModel);
+
+        glBindVertexArray(lightVAO); 
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+       // ==========================================
         // END FRAME UI & SWAP
         // ==========================================
-        state.cameraSpeed = cameraBaseSpeed;
-        state.cameraPos = cameraPos;
+        state.cameraSpeed = camera.MovementSpeed;
+        state.cameraPos = camera.Position;
+        state.cameraRot = camera.Front;
+        state.fov = camera.Zoom;
+        
         RenderUI(state, allShaders);
 
         glfwPollEvents();

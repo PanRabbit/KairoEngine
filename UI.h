@@ -14,8 +14,16 @@ struct UIVariables {
     bool reloadShader = false;
     // You can easily add more variables here later (e.g., float cameraSpeed, int objectCount)
 
-    float cameraSpeed = 3.0f;
-    glm::vec3 cameraPos;
+    float cameraSpeed = 3.0f, fov = 45.0f;
+    glm::vec3 cameraPos, cameraRot;
+
+    bool lightSpin = true;
+    float spinSpeed = 1.0f;
+    float spinRadius = 5.0f;
+    float lightPos[3] = {0.0f, 0.0f, 0.0f};
+    float lightColor[3] = {1.0f, 1.0f, 1.0f};
+    bool lightPulse = false;
+    float pulseSpeed[3] = {1.0f, 1.0f, 1.0f};
 };
 
 // Function declarations
