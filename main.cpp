@@ -10,11 +10,12 @@
 #include <sstream>
 #include <cmath>
 
-#include "stb_image.h"
-#include "UI.h"
-#include "shader.h"
-#include "camera.h"
-#include "texture.h"
+#include <stb/stb_image.h>
+#include <kairo/UI.h>
+#include <kairo/shader.h>
+#include <kairo/camera.h>
+#include <kairo/texture.h>
+#include <kairo/material.h>
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -27,8 +28,8 @@ float SCR_HEIGHT = 1024;
 // ====================================
 // CAMERA VARIABLES SETUP
 // ====================================
-
-Camera camera(glm::vec3(-10.0f, 5.0f, -7.0f), glm::vec3(0.75f, -0.4f, 0.55f));
+                        // pos                          //rot
+Camera camera(glm::vec3(3.5f, 1.0f, -5.0f), glm::vec3(-0.55f, -0.05f, 0.83f));
 
 // ====================================
 // WINDOW SETUP
@@ -140,9 +141,6 @@ int main()
     glfwMakeContextCurrent(window);
 
     //set window states
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //lock mouse cursor to window
-
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
@@ -269,17 +267,37 @@ int main()
     glBindVertexArray(0);
 
 
-
     // ==========================================
-    // TEXTURES
+    // MATERIALS
     // ==========================================
-    
-    // ---- WOOD TEXTURE ----
-    Texture wood_texture("textures/container.jpg");
 
-    // ---- MIKU TEXTURE ----
-    Texture miku_texture("textures/miku.png");
+    Material woodMaterial(&phongShader);
+    woodMaterial.loadFromJson("materials/container.json");
 
+    Material floorMaterial(&phongShader);
+    floorMaterial.loadFromJson("materials/floor.json");
+
+    Material mikuMaterial(&phongShader);
+    mikuMaterial.loadFromJson("materials/mikuCube.json");
+
+    Material emeraldMaterial(&phongShader);
+    emeraldMaterial.loadFromJson("materials/emerald.json");
+
+    Material goldMaterial(&phongShader);
+    goldMaterial.loadFromJson("materials/gold.json");
+
+    Material greyCheckerMaterial(&phongShader);
+    greyCheckerMaterial.loadFromJson("materials/greyChecker.json");
+
+    Material grungeMaterial(&phongShader);
+    grungeMaterial.loadFromJson("materials/grunge.json");
+
+    Material testMaterial(&phongShader);
+    testMaterial.loadFromJson("materials/test.json");
+
+
+
+    std::vector<Material*> allMaterials  = {&woodMaterial,  &floorMaterial, &mikuMaterial, &testMaterial, &emeraldMaterial, &goldMaterial, &greyCheckerMaterial, &grungeMaterial };
 
     // ==========================================
     // MATRICES & VECTORS
@@ -297,19 +315,32 @@ int main()
     // ==========================================
     // OBJECTS
     // ==========================================
+    // random coords
+    // glm::vec3 cubePositions[] = {
+    //     glm::vec3( 0.0f, -1.0f, 0.0f),
+    //     glm::vec3( 2.0f, 5.0f, -5.0f),
+    //     glm::vec3(-1.5f, -2.2f, -2.5f),
+    //     glm::vec3(-3.8f, -2.0f, 2.3f),
+    //     glm::vec3( 2.4f, -0.4f, -3.5f),
+    //     glm::vec3(-1.7f, 3.0f, 3.5f),
+    //     glm::vec3( 1.3f, -2.0f, -2.5f),
+    //     glm::vec3( 1.5f, 2.0f, -2.5f),
+    //     glm::vec3( 1.5f, 0.2f, 1.5f),
+    //     glm::vec3(-1.3f, 1.0f, 1.5f)
+    //     };
 
+    // grid
     glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f, -1.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -5.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, 2.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, 3.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, 1.5f),
-        glm::vec3(-1.3f, 1.0f, 1.5f)
-        };
+        glm::vec3(-2.0f, 0.0f, 0.0f),
+        glm::vec3(-1.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f),
+        glm::vec3(-2.0f, 1.0f, 0.0f),
+        glm::vec3(-1.0f, 1.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        glm::vec3(1.0f, 1.0f, 0.0f),
+
+    };
 
     glm::vec3 lightPos;
 
@@ -385,60 +416,49 @@ int main()
         // ==========================================
         // DRAW CUBES
         // ==========================================
-        phongShader.setInt("textureType", 1);
-        phongShader.setFloat("material.ambientStrength", 0.2f);
-        phongShader.setFloat("material.specularStrength", 0.7f);
-        phongShader.setFloat("material.shininess", 128.0f);
+        // 1. Let the Material do ALL the heavy lifting (Activates shader, binds textures, sets uniforms)
+        //woodMaterial.apply();
+        testMaterial.apply();
 
-
-
-        // Setup Textures
-        phongShader.setInt("sample1", 0);
-        phongShader.setInt("sample2", 1);
-        glActiveTexture(GL_TEXTURE0); 
-        wood_texture.bind();
-        glActiveTexture(GL_TEXTURE1); 
-        miku_texture.bind();
+        // 2. Set the global/frame variables (Lights and Camera)
+        phongShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+        phongShader.setVec3("light.diffuse", lightColor);
+        phongShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        phongShader.setVec3("light.position", lightPos);
 
         phongShader.setMat4("view", view);
         phongShader.setMat4("projection", projection);
         phongShader.setVec3("viewPos", camera.Position);
-        
+
         glBindVertexArray(VAO); 
 
-        // Draw cubes
-        for(unsigned int i = 0; i < 10; i++)
-        {
+        // 3. Draw the objects!
+        for(unsigned int i = 0; i < allMaterials.size(); i++)
+        {   
+            allMaterials[i]->apply();
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
+            model = glm::scale(model, glm::vec3(0.9f)); 
             float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(currentFrame * (angle + 1) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
-            //model = glm::rotate(model, glm::radians((angle * 357836) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+            //model = glm::rotate(model, glm::radians(currentFrame * (angle + 1) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
 
             phongShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-
         // ==========================================
         // DRAW FLOOR
         // ==========================================
-        phongShader.setInt("textureType", 0);
-        phongShader.setFloat("material.ambientStrength", 0.2f);
-        phongShader.setFloat("material.specularStrength", 0.7f);
-        phongShader.setFloat("material.shininess", 256.0f);
+        // 1. Swap to the floor material!
+        floorMaterial.apply();
 
-
-        phongShader.setVec3("viewPos", camera.Position);
-        phongShader.setMat4("view", view);
-        phongShader.setMat4("projection", projection);
-
-        // We are already bound to VAO, so just update the model matrix
+        // 2. We don't need to re-send the camera/light data because both materials 
+        // use the same phongShader, and OpenGL remembers the state! 
         glm::mat4 floorModel = glm::mat4(1.0f); 
         floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
         phongShader.setMat4("model", floorModel); 
 
-        glDrawArrays(GL_TRIANGLES, 36, 6);       
+        glDrawArrays(GL_TRIANGLES, 36, 6);   
 
         // ==========================================
         // DRAW LIGHT CUBE
@@ -465,7 +485,7 @@ int main()
         state.cameraRot = camera.Front;
         state.fov = camera.Zoom;
         
-        RenderUI(state, allShaders);
+        RenderUI(state, allShaders, allMaterials);
 
         glfwPollEvents();
         glfwSwapBuffers(window);

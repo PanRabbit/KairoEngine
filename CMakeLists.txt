@@ -27,9 +27,10 @@ add_library(imgui_lib STATIC
 # ==============================================================================
 set(PROJECT_SOURCES
     main.cpp
-    UI.cpp
-    stb_implementation.cpp
-    texture.cpp
+    include/stb/stb_implementation.cpp
+    include/kairo/UI.cpp
+    include/kairo/texture.cpp
+    include/kairo/material.cpp
 )
 
 # ==============================================================================

@@ -1,23 +1,31 @@
 #version 330 core
 
 struct Material {
+    bool useDiffuseMap;
+    sampler2D diffuseMap;
+    vec3 diffuseColor;
+
+    bool useChecker;
+    float checkerSize;
+    vec3 secondaryColor;
+
+    bool useSpecularMap;
+    sampler2D specularMap;
+    float specularStrength;
+
     float ambientStrength;
-    sampler2D diffuseColor;
-    float specularStrength;  
     float shininess;
+
 };
 uniform Material material;
 
-
 struct Light {
     vec3 position;
-
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
 };
 uniform Light light;
-
 
 out vec4 FragColor;
 
@@ -25,62 +33,59 @@ in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
 
-
 uniform vec3 viewPos;
-
-
-uniform int textureType; // 0 = Checker, 1 = Textured
-
-// Textures
-uniform sampler2D sample1;
-uniform sampler2D sample2;
-
-// 1. Helper function to get the base color
-vec4 getBaseColor() 
-{
-    if (textureType == 0) 
-    {
-        // Checker pattern logic
-        float scale = 0.1f;
-        float step = floor(TexCoord.x / scale) + floor(TexCoord.y / scale);
-        float checkerVal = mod(step, 2.0); // Renamed from 'mod' to avoid keyword conflicts
-        
-        vec4 color = checkerVal + vec4(0.5f, 0.5f, 0.5f, 1.0f);
-        if (color.r > 0.6) return vec4(0.7f, 0.7f, 0.7f, 1.0f);
-        else return vec4(0.1f, 0.1f, 0.1f, 1.0f);
-    } 
-    else if (textureType == 1) 
-    {
-        // Texture logic
-        vec4 tex1 = texture(sample1, TexCoord);
-        vec4 tex2 = texture(sample2, TexCoord);
-        if (tex2.a == 0) return tex1;
-        else return tex2;
-    }
-    
-    return vec4(1.0); // Default fallback
-}
 
 void main()
 {
-    vec3 baseColor = getBaseColor().rgb;
+    vec3 diffuseTex, specularTex;
 
-    // --- PHONG LIGHTING  ---
+    if (material.useChecker) {
+        //checker pattern
+        float step = floor(TexCoord.x / material.checkerSize) + floor(TexCoord.y / material.checkerSize);
+        float mod = mod(step, 2);
+        diffuseTex = (mod + vec3(0.5f));
+        if (diffuseTex.r > 0.6) diffuseTex = material.diffuseColor;
+        else diffuseTex = material.secondaryColor;
+    }
+
+    else diffuseTex = material.diffuseColor;
+
+
+    // sample the textures/diffuse colours (converted to vec3 as lighting is calculated in vec3)
+    if (material.useDiffuseMap) 
+    {
+        vec4 diffuseMapSample = texture(material.diffuseMap, TexCoord); 
+        //lerp between the diffuse colour and the texture based on alpha value
+        diffuseTex = ((1 - diffuseMapSample.a) * diffuseTex) + (diffuseMapSample.a * diffuseMapSample.rgb);
+    }
+
+            
+    
+
+    // sample spec texture
+    if (material.useSpecularMap) {specularTex = vec3(texture(material.specularMap, TexCoord))* material.specularStrength;}
+    else {specularTex = vec3(material.specularStrength);}
+    
+    // --- PHONG LIGHTING ---
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
     
-    // Diffuse & Ambient
-    vec3 ambient = material.ambientStrength * light.ambient;
+    // Ambient (Light * Texture)
+    vec3 ambient = light.ambient * material.ambientStrength * diffuseTex;
+    
+    // Diffuse (Light * Angle * Texture)
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * light.diffuse;
+    vec3 diffuse = light.diffuse * diff * diffuseTex;
 
-    // Specular
+    // Specular (Light * Reflection * Specular Map)
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = material.specularStrength * spec * light.specular;
+    vec3 specular = light.specular * spec * specularTex;
 
-
-    vec3 result = (ambient + diffuse + specular);
-    FragColor = getBaseColor() * vec4(result, 1.0f);
+    // 2. Combine all three light phases
+    vec3 result = ambient + diffuse + specular;
+    
+    // 3. Output final color
+    FragColor = vec4(result, 1.0);
 }
