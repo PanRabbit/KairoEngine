@@ -20,8 +20,8 @@
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
-float SCR_WIDTH = 1024;
-float SCR_HEIGHT = 1024;
+float SCR_WIDTH = 1600;
+float SCR_HEIGHT = 1200;
 
 
 
@@ -316,31 +316,19 @@ int main()
     // OBJECTS
     // ==========================================
     // random coords
-    // glm::vec3 cubePositions[] = {
-    //     glm::vec3( 0.0f, -1.0f, 0.0f),
-    //     glm::vec3( 2.0f, 5.0f, -5.0f),
-    //     glm::vec3(-1.5f, -2.2f, -2.5f),
-    //     glm::vec3(-3.8f, -2.0f, 2.3f),
-    //     glm::vec3( 2.4f, -0.4f, -3.5f),
-    //     glm::vec3(-1.7f, 3.0f, 3.5f),
-    //     glm::vec3( 1.3f, -2.0f, -2.5f),
-    //     glm::vec3( 1.5f, 2.0f, -2.5f),
-    //     glm::vec3( 1.5f, 0.2f, 1.5f),
-    //     glm::vec3(-1.3f, 1.0f, 1.5f)
-    //     };
-
-    // grid
     glm::vec3 cubePositions[] = {
-        glm::vec3(-2.0f, 0.0f, 0.0f),
-        glm::vec3(-1.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(1.0f, 0.0f, 0.0f),
-        glm::vec3(-2.0f, 1.0f, 0.0f),
-        glm::vec3(-1.0f, 1.0f, 0.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f),
-        glm::vec3(1.0f, 1.0f, 0.0f),
+        glm::vec3( 0.0f, -1.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -5.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, 2.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, 3.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f, 2.0f, -2.5f),
+        glm::vec3( 1.5f, 0.2f, 1.5f),
+        glm::vec3(-1.3f, 1.0f, 1.5f)
+        };
 
-    };
 
     glm::vec3 lightPos;
 
@@ -404,43 +392,42 @@ int main()
 
 
         // ==========================================
-        // SETUP LIGHT
+        // SETUP LIGHT AND CAMERA
         //==========================================
         phongShader.use();
 
-        phongShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+        // set global/frame variables (Lights and Camera)
+        phongShader.setVec3("light.ambient", glm::vec3(0.15f, 0.15f, 0.15f));
         phongShader.setVec3("light.diffuse", lightColor);
         phongShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         phongShader.setVec3("light.position", lightPos);
+        phongShader.setFloat("light.radius", 32.0f);
+        phongShader.setFloat("light.intensity", 8.0f);
 
-        // ==========================================
-        // DRAW CUBES
-        // ==========================================
-        // 1. Let the Material do ALL the heavy lifting (Activates shader, binds textures, sets uniforms)
-        //woodMaterial.apply();
-        testMaterial.apply();
-
-        // 2. Set the global/frame variables (Lights and Camera)
-        phongShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-        phongShader.setVec3("light.diffuse", lightColor);
-        phongShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-        phongShader.setVec3("light.position", lightPos);
-
+        
         phongShader.setMat4("view", view);
         phongShader.setMat4("projection", projection);
         phongShader.setVec3("viewPos", camera.Position);
 
+
+        // ==========================================
+        // DRAW CUBES
+        // ==========================================
+        // apply material parameters to current shader
+        woodMaterial.apply();
+
+
         glBindVertexArray(VAO); 
 
         // 3. Draw the objects!
-        for(unsigned int i = 0; i < allMaterials.size(); i++)
+        for(unsigned int i = 0; i < 10; i++)
         {   
-            allMaterials[i]->apply();
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             model = glm::scale(model, glm::vec3(0.9f)); 
             float angle = 20.0f * i;
             //model = glm::rotate(model, glm::radians(currentFrame * (angle + 1) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+            model = glm::rotate(model, glm::radians((angle * 12717328) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
 
             phongShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -449,13 +436,12 @@ int main()
         // ==========================================
         // DRAW FLOOR
         // ==========================================
-        // 1. Swap to the floor material!
+        // swap to floor material!
         floorMaterial.apply();
-
-        // 2. We don't need to re-send the camera/light data because both materials 
-        // use the same phongShader, and OpenGL remembers the state! 
+        
         glm::mat4 floorModel = glm::mat4(1.0f); 
         floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
+        // use the same master phongShader
         phongShader.setMat4("model", floorModel); 
 
         glDrawArrays(GL_TRIANGLES, 36, 6);   
@@ -477,7 +463,7 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-       // ==========================================
+        // ==========================================
         // END FRAME UI & SWAP
         // ==========================================
         state.cameraSpeed = camera.MovementSpeed;

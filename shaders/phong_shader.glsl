@@ -21,6 +21,8 @@ uniform Material material;
 
 struct Light {
     vec3 position;
+    float radius;
+    float intensity;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -69,6 +71,16 @@ void main()
     // --- PHONG LIGHTING ---
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
+    float distance = length(light.position - FragPos);
+    
+    // light attenuation equation from UE4 : https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf (page 12)
+    float ratio = distance / light.radius;
+    float ratio4 = ratio * ratio * ratio * ratio; // manual multiplication is cheaper that doing pow(ratio, 4)
+    float clamped = clamp(1.0 - ratio4, 0.0, 1.0);
+    float numerator = clamped * clamped;
+    float denominator = (distance * distance) + 1.0;
+    float attenuation = numerator / denominator;
+
     
     // Ambient (Light * Texture)
     vec3 ambient = light.ambient * material.ambientStrength * diffuseTex;
@@ -83,9 +95,11 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * specularTex;
 
-    // 2. Combine all three light phases
-    vec3 result = ambient + diffuse + specular;
-    
-    // 3. Output final color
+    // Combine light passes
+    vec3 result =  (diffuse + specular) * attenuation * light.intensity;
+
+    result += ambient;
+
+    // Output final color
     FragColor = vec4(result, 1.0);
 }

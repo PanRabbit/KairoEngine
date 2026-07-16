@@ -4,7 +4,7 @@
 #include <kairo/material.h>
 
 
-// VIBE CODED MATERIAL LOADER, NEED TO KEEP AN EYE ON IT
+// MOSTLY VIBE CODED MATERIAL LOADER, NEED TO KEEP AN EYE ON IT
 
 // Constructor
 Material::Material(Shader* materialDefinition) 

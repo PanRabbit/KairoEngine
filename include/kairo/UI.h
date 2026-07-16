@@ -17,9 +17,9 @@ struct UIVariables {
     float cameraSpeed = 3.0f, fov = 45.0f;
     glm::vec3 cameraPos, cameraRot;
 
-    bool lightSpin = false;
+    bool lightSpin = true;
     float spinSpeed = 1.0f;
-    float spinRadius = 5.0f;
+    float spinRadius = 3.0f;
     float lightPos[3] = {-1.5f, -0.3f, -4.5f};
     float lightColor[3] = {1.0f, 1.0f, 1.0f};
     bool lightPulse = false;
