@@ -10,20 +10,12 @@
 // A struct to hold variables that the UI will modify
 struct UIVariables {
     bool isWireframe = false;
-    float clearColor[3] = { 0.04f, 0.03f, 0.06f };
+    float clearColor[3] = { 0.2f, 0.0f, 0.0f };
     bool reloadShader = false;
     // You can easily add more variables here later (e.g., float cameraSpeed, int objectCount)
 
     float cameraSpeed = 3.0f, fov = 45.0f;
     glm::vec3 cameraPos, cameraRot;
-
-    bool lightSpin = true;
-    float spinSpeed = 1.0f;
-    float spinRadius = 3.0f;
-    float lightPos[3] = {-1.5f, -0.3f, -4.5f};
-    float lightColor[3] = {1.0f, 1.0f, 1.0f};
-    bool lightPulse = false;
-    float pulseSpeed[3] = {1.0f, 1.0f, 1.0f};
 };
 
 // Function declarations

@@ -23,7 +23,7 @@ float lastFrame = 0.0f; // Time of last frame
 float SCR_WIDTH = 1600;
 float SCR_HEIGHT = 1200;
 
-
+bool flashlightOn = false;
 
 // ====================================
 // CAMERA VARIABLES SETUP
@@ -53,6 +53,22 @@ void processInput(GLFWwindow *window)
     else
         camera.MovementSpeed = 1.0f;
 
+    // torch
+    static bool fJustPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+    {
+        if (!fJustPressed)
+        {
+            flashlightOn = !flashlightOn;
+            fJustPressed = true;
+        }
+    }
+    else
+    {
+        fJustPressed = false;
+    }
+
+
     // Movement
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);
@@ -68,14 +84,21 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(DOWN, deltaTime);
 
     // toggle mouse lock
-    static bool tabPressedLastFrame = false;
-    bool tabPressedNow = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
-    if (tabPressedNow && !tabPressedLastFrame) 
+    static bool tabJustPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) 
     {
+        if (!tabJustPressed) 
+        {
         int currentMode = glfwGetInputMode(window, GLFW_CURSOR);
         glfwSetInputMode(window, GLFW_CURSOR, (currentMode == GLFW_CURSOR_NORMAL) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        tabJustPressed = true;
+        }
+
     }
-    tabPressedLastFrame = tabPressedNow; 
+    else
+    {
+        tabJustPressed = false;
+    }
 }
 
 // Mouse variables can stay global since they only track the physical mouse state
@@ -315,7 +338,7 @@ int main()
     // ==========================================
     // OBJECTS
     // ==========================================
-    // random coords
+    // random cubes
     glm::vec3 cubePositions[] = {
         glm::vec3( 0.0f, -1.0f, 0.0f),
         glm::vec3( 2.0f, 5.0f, -5.0f),
@@ -329,8 +352,13 @@ int main()
         glm::vec3(-1.3f, 1.0f, 1.5f)
         };
 
-
-    glm::vec3 lightPos;
+    // point lights
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3( 0.7f, 0.2f,2.0f),
+        glm::vec3( 2.3f, -1.3f, -4.0f),
+        glm::vec3( -4.0f, 2.0f, 2.0f),
+        glm::vec3( 0.0f, 0.0f, -3.0f)
+    };
 
     // ==========================================
     // UI INITIALIZATION
@@ -357,77 +385,88 @@ int main()
         } else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
-        
-        // Clear Screen
-        glClearColor(state.clearColor[0], state.clearColor[1], state.clearColor[2], 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
 
         // Calculate Variables for this frame
         view = camera.GetViewMatrix();
         projection = glm::perspective(glm::radians(camera.Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
 
-        // Update Light Position and Color
-        if (state.lightSpin)
-        {
-            lightPos = glm::vec3(sin(glfwGetTime() * state.spinSpeed) * state.spinRadius, 0.0f, cos(glfwGetTime() * state.spinSpeed) * state.spinRadius);
-        }
-        else {
-            lightPos = glm::vec3(state.lightPos[0], state.lightPos[1], state.lightPos[2]);
-        }
-        
-
-        glm::vec3 lightColor;
-        if (state.lightPulse) {
-            lightColor = glm::vec3(
-                glm::max(0.1f, (float)sin(glfwGetTime() * state.pulseSpeed[0])), 
-                glm::max(0.1f, (float)sin(glfwGetTime() * state.pulseSpeed[1])), 
-                glm::max(0.1f, (float)sin(glfwGetTime() * state.pulseSpeed[2]))
-            );        
-        } 
-        else {
-            lightColor = glm::vec3(state.lightColor[0], state.lightColor[1], state.lightColor[2]);
-        }
-
-
         // ==========================================
-        // SETUP LIGHT AND CAMERA
+        // LIGHTS AND CAMERA
         //==========================================
         phongShader.use();
 
-        // set global/frame variables (Lights and Camera)
-        phongShader.setVec3("light.ambient", glm::vec3(0.15f, 0.15f, 0.15f));
-        phongShader.setVec3("light.diffuse", lightColor);
-        phongShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-        phongShader.setVec3("light.position", lightPos);
-        phongShader.setFloat("light.radius", 32.0f);
-        phongShader.setFloat("light.intensity", 8.0f);
+        // directional light (sun)
+        glm::vec3 sunColor = glm::vec3(state.clearColor[0], state.clearColor[1], state.clearColor[2]);
+        glm::vec3 sunDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
+        phongShader.setVec3("dirLight.direction", sunDirection);
+        phongShader.setFloat("dirLight.intensity", 5.0f);
+        phongShader.setVec3("dirLight.ambient", sunColor * 0.15f);
+        phongShader.setVec3("dirLight.diffuse", sunColor * 1.0f);
+        phongShader.setVec3("dirLight.specular", sunColor * 1.0f);
 
-        
+        // point lights
+        glm::vec3 lightColor = glm::vec3(0.0f, 0.8f, 0.9f);
+        for(unsigned int i = 0; i < 4; i++)
+        {
+            std::string uniformID = "pointLights[" + std::to_string(i) + "].";
+            phongShader.setVec3(uniformID + "ambient", lightColor * 0.15f);
+            phongShader.setVec3(uniformID + "diffuse", lightColor * 1.0f);
+            phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
+            phongShader.setVec3(uniformID + "position", pointLightPositions[i]);
+            phongShader.setFloat(uniformID + "radius", 4.0f);
+            phongShader.setFloat(uniformID + "intensity", 2.0f);
+        }
+
+        // flashlight
+        if (flashlightOn)
+        {
+        glm::vec3 torchColor = glm::vec3(1.0f, 0.95f, 0.8f);
+        phongShader.setVec3("spotLight.position", camera.Position);
+        phongShader.setVec3("spotLight.direction", camera.Front);
+        phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(20.0f)));
+        phongShader.setVec3("spotLight.ambient", torchColor * 0.15f);
+        phongShader.setVec3("spotLight.diffuse", torchColor * 1.0f);
+        phongShader.setVec3("spotLight.specular", torchColor * 1.0f);
+        phongShader.setFloat("spotLight.radius", 64.0f);
+        phongShader.setFloat("spotLight.intensity", 32.0f);
+        }
+        else
+        {
+        phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(0.0f)));
+        phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(0.0f)));
+        phongShader.setFloat("spotLight.intensity", 0.0f);
+        }
+
+        // camera matrices
         phongShader.setMat4("view", view);
         phongShader.setMat4("projection", projection);
         phongShader.setVec3("viewPos", camera.Position);
 
-
+        // ==========================================
+        // BEGIN DRAW
+        // ==========================================
+                
+        // Clear Screen
+        glClearColor(sunColor.r, sunColor.g, sunColor.b, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         // ==========================================
         // DRAW CUBES
         // ==========================================
         // apply material parameters to current shader
         woodMaterial.apply();
 
-
         glBindVertexArray(VAO); 
-
-        // 3. Draw the objects!
         for(unsigned int i = 0; i < 10; i++)
         {   
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             model = glm::scale(model, glm::vec3(0.9f)); 
             float angle = 20.0f * i;
-            //model = glm::rotate(model, glm::radians(currentFrame * (angle + 1) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
-            model = glm::rotate(model, glm::radians((angle * 12717328) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+            model = glm::rotate(model, glm::radians(currentFrame * (angle + 1) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+            //model = glm::rotate(model, glm::radians((angle * 12717328) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
 
             phongShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -454,13 +493,18 @@ int main()
         lightShader.setVec3("Color", lightColor);
         lightShader.setMat4("view", view);
         lightShader.setMat4("projection", projection);
-        glm::mat4 lightModel = glm::mat4(1.0f); 
-        lightModel = glm::translate(lightModel, lightPos); 
-        lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
-        lightShader.setMat4("model", lightModel);
 
         glBindVertexArray(lightVAO); 
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for(unsigned int i = 0; i < 4; i++)
+        {   
+            glm::mat4 lightModel = glm::mat4(1.0f); 
+            lightModel = glm::translate(lightModel, pointLightPositions[i]); 
+            lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
+            lightShader.setMat4("model", lightModel);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
 
 
         // ==========================================

@@ -1,7 +1,7 @@
 {
     "useDiffuseMap" : false,
     "diffuseMapPath" : "textures/miku.png",
-    "diffuseColor" : [0.75,0,0.3],
+    "diffuseColor" : [0.4, 0.4, 0.4],
 
     "useChecker" : true,
     "checkerSize" : 0.5,

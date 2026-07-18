@@ -64,31 +64,7 @@ void RenderUI(UIVariables& state, const std::vector<Shader*>& engineShaders, con
         if (ImGui::BeginTabItem("Objects"))
         {
             ImGui::Separator();
-            ImGui::Text("Light");
-            ImGui::Checkbox("Spin Light?", &state.lightSpin);
-
-            if (state.lightSpin == true)
-            {
-                ImGui::SliderFloat("Spin Speed", &state.spinSpeed, 0.1f, 10.0f);
-                ImGui::SliderFloat("Spin Radius", &state.spinRadius, 1.0f, 10.0f);
-            }
-            else 
-            {
-                ImGui::SliderFloat3("Light Position", &state.lightPos[0], -10.0f, 10.0f);
-            }
-
-            ImGui::Checkbox("Pulse Light?", &state.lightPulse);
-             if (state.lightPulse == true)
-             {
-                ImGui::SliderFloat3("Pulse Speed", &state.pulseSpeed[0], 0.5f, 5.0f);
-             }
-             else
-             {
-                ImGui::ColorEdit3("Light Color", state.lightColor);
-             }
-
-
-
+            ImGui::Text("Nothing to see here~");
             ImGui::EndTabItem();
         }
 
