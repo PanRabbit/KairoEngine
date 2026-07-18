@@ -14,7 +14,6 @@ struct Material {
     sampler2D specularMap;
     float specularStrength;
 
-    float ambientStrength;
     float shininess;
 
 };
@@ -167,6 +166,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     return (result);
 
 }
+
 
 void main()
 {

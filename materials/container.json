@@ -10,7 +10,5 @@
     "useSpecularMap" : true,
     "specularMapPath" : "textures/container2_specular.png",
     "specularStrength" : 1.0,
-
-    "ambientStrength" : 0.3,
     "shininess" : 256.0
 }

@@ -8,10 +8,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # ==============================================================================
-# 1. COMPILE IMGUI AS AN ISOLATED STATIC LIBRARY
+# 1. FETCH ASSIMP (CROSS-PLATFORM)
 # ==============================================================================
-# This creates a separate target called "imgui_lib". 
-# The compiler builds this target once, creates a binary archive, and caches it.
+include(FetchContent)
+
+# Turn off Assimp bloat so it compiles faster and doesn't cause OS conflicts
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable tests" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Disable tools" FORCE)
+set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "Build zlib internally" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "Don't fail on warnings" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "Disable installation rules" FORCE)
+
+FetchContent_Declare(
+    assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp.git
+    GIT_TAG        v5.3.1
+)
+FetchContent_MakeAvailable(assimp)
+
+# ==============================================================================
+# 2. COMPILE IMGUI AS AN ISOLATED STATIC LIBRARY
+# ==============================================================================
 add_library(imgui_lib STATIC
     imgui/imgui.cpp
     imgui/imgui_draw.cpp
@@ -23,7 +40,7 @@ add_library(imgui_lib STATIC
 )
 
 # ==============================================================================
-# 2. YOUR ACTIVE ENGINE SOURCE FILES (The only things you edit)
+# 3. YOUR ACTIVE ENGINE SOURCE FILES
 # ==============================================================================
 set(PROJECT_SOURCES
     main.cpp
@@ -34,7 +51,7 @@ set(PROJECT_SOURCES
 )
 
 # ==============================================================================
-# 3. PLATFORM DEPENDENCIES & LINKING
+# 4. PLATFORM DEPENDENCIES & LINKING
 # ==============================================================================
 if(WIN32)
     # Windows/Vcpkg setup
@@ -45,8 +62,8 @@ if(WIN32)
     add_executable(KairoEngine ${PROJECT_SOURCES})
     target_include_directories(KairoEngine PRIVATE imgui imgui/backend)
     
-    # Link your engine to your custom cached library alongside system dependencies
-    target_link_libraries(KairoEngine PRIVATE imgui_lib glad::glad glfw glm::glm)
+    # Linked assimp here at the end
+    target_link_libraries(KairoEngine PRIVATE imgui_lib glad::glad glfw glm::glm assimp)
 else()
     # Linux setup
     find_package(PkgConfig REQUIRED)
@@ -61,6 +78,6 @@ else()
     target_include_directories(KairoEngine PRIVATE include . imgui imgui/backend)
     target_include_directories(imgui_lib PRIVATE include . imgui imgui/backend)
 
-    # Link everything together, attaching your compiled imgui_lib
-    target_link_libraries(KairoEngine PRIVATE imgui_lib glfw glm::glm OpenGL::GL ${CMAKE_DL_LIBS})
+    # Linked assimp here at the end
+    target_link_libraries(KairoEngine PRIVATE imgui_lib glfw glm::glm OpenGL::GL ${CMAKE_DL_LIBS} assimp)
 endif()

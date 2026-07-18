@@ -182,6 +182,7 @@ int main()
 
     glEnable(GL_DEPTH_TEST); //enable depth testing
 
+
     // ==========================================
     // SHADER COMPILATION & LINKING
     // ==========================================
@@ -241,12 +242,12 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
 
         // --- FLOOR (6 vertices) ---
-        -10.0f, -1.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
-        10.0f, -1.0f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 0.0f,
-        10.0f, -1.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
-        10.0f, -1.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
-        -10.0f, -1.0f,  10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  10.0f,
-        -10.0f, -1.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f
+        -10.0f, 0.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
+        10.0f, 0.0f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 0.0f,
+        10.0f, 0.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
+        10.0f, 0.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
+        -10.0f, 0.0f,  10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  10.0f,
+        -10.0f, 0.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f
     };
     
 
@@ -303,24 +304,11 @@ int main()
     Material mikuMaterial(&phongShader);
     mikuMaterial.loadFromJson("materials/mikuCube.json");
 
-    Material emeraldMaterial(&phongShader);
-    emeraldMaterial.loadFromJson("materials/emerald.json");
-
-    Material goldMaterial(&phongShader);
-    goldMaterial.loadFromJson("materials/gold.json");
-
-    Material greyCheckerMaterial(&phongShader);
-    greyCheckerMaterial.loadFromJson("materials/greyChecker.json");
-
     Material grungeMaterial(&phongShader);
     grungeMaterial.loadFromJson("materials/grunge.json");
 
-    Material testMaterial(&phongShader);
-    testMaterial.loadFromJson("materials/test.json");
 
-
-
-    std::vector<Material*> allMaterials  = {&woodMaterial,  &floorMaterial, &mikuMaterial, &testMaterial, &emeraldMaterial, &goldMaterial, &greyCheckerMaterial, &grungeMaterial };
+    std::vector<Material*> allMaterials  = {&woodMaterial,  &floorMaterial, &mikuMaterial, &grungeMaterial };
 
     // ==========================================
     // MATRICES & VECTORS
@@ -340,25 +328,58 @@ int main()
     // ==========================================
     // random cubes
     glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f, -1.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -5.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, 2.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, 3.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, 1.5f),
-        glm::vec3(-1.3f, 1.0f, 1.5f)
+        glm::vec3( 2.6f, 0.5f, 0.24f),
+        glm::vec3( 1.7f, 1.0f, 1.96f),
+        glm::vec3( 1.7f, 2.5f, 1.96f),
+        glm::vec3( -0.67f, 0.5f, 2.0f),
+        glm::vec3( -2.2f, 0.5f, 0.6f),
+        glm::vec3( -2.8f, 0.5f, -0.23f),
+        glm::vec3( -2.5f, 1.375f, 0.2f)
         };
+
+    float cubeRotations[] = {
+        glm::radians(-28.0f),
+        glm::radians(37.0f),
+        glm::radians(60.0f),
+        glm::radians(-16.0f),
+        glm::radians(-54.0f),
+        glm::radians(-54.0f),
+        glm::radians(-30.0f)
+        };
+
+    float cubeScales[] = {
+        1.0f,
+        2.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        0.75f
+    };
 
     // point lights
     glm::vec3 pointLightPositions[] = {
-        glm::vec3( 0.7f, 0.2f,2.0f),
-        glm::vec3( 2.3f, -1.3f, -4.0f),
-        glm::vec3( -4.0f, 2.0f, 2.0f),
-        glm::vec3( 0.0f, 0.0f, -3.0f)
+        glm::vec3( 2.0f, 1.5f, -0.85f),
+        glm::vec3( -1.5f, 2.2f, 1.7f),
+        glm::vec3( -1.8f, 0.5f, -1.5f),
     };
+    glm::vec3 pointLightColors[] = {
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(0.19f, 0.75f, 1.0f),
+        glm::vec3(1.0f, 0.33f, 0.43f),
+    };
+    float pointLightIntensityMults[] = {
+        4.0f,
+        16.0f,
+        2.0f,
+    };
+
+
+    glm::vec3 sunColor;
+    glm::vec3 sunDirection = glm::vec3(-0.2f, -1.0f, 0.5f);
+    glm::vec3 lightColor;
+    glm::vec3 torchColor = glm::vec3(1.0f, 0.95f, 0.8f);
+
 
     // ==========================================
     // UI INITIALIZATION
@@ -398,7 +419,6 @@ int main()
 
         // directional light (sun)
         glm::vec3 sunColor = glm::vec3(state.clearColor[0], state.clearColor[1], state.clearColor[2]);
-        glm::vec3 sunDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
         phongShader.setVec3("dirLight.direction", sunDirection);
         phongShader.setFloat("dirLight.intensity", 5.0f);
         phongShader.setVec3("dirLight.ambient", sunColor * 0.15f);
@@ -406,22 +426,22 @@ int main()
         phongShader.setVec3("dirLight.specular", sunColor * 1.0f);
 
         // point lights
-        glm::vec3 lightColor = glm::vec3(0.0f, 0.8f, 0.9f);
+
         for(unsigned int i = 0; i < 4; i++)
         {
-            std::string uniformID = "pointLights[" + std::to_string(i) + "].";
-            phongShader.setVec3(uniformID + "ambient", lightColor * 0.15f);
-            phongShader.setVec3(uniformID + "diffuse", lightColor * 1.0f);
-            phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
-            phongShader.setVec3(uniformID + "position", pointLightPositions[i]);
-            phongShader.setFloat(uniformID + "radius", 4.0f);
-            phongShader.setFloat(uniformID + "intensity", 2.0f);
+        lightColor = pointLightColors[i];
+        std::string uniformID = "pointLights[" + std::to_string(i) + "].";
+        phongShader.setVec3(uniformID + "ambient", lightColor * 0.15f);
+        phongShader.setVec3(uniformID + "diffuse", lightColor * 1.0f);
+        phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
+        phongShader.setVec3(uniformID + "position", pointLightPositions[i]);
+        phongShader.setFloat(uniformID + "radius", 8.0f);
+        phongShader.setFloat(uniformID + "intensity", 2.0f * pointLightIntensityMults[i]);
         }
 
         // flashlight
         if (flashlightOn)
         {
-        glm::vec3 torchColor = glm::vec3(1.0f, 0.95f, 0.8f);
         phongShader.setVec3("spotLight.position", camera.Position);
         phongShader.setVec3("spotLight.direction", camera.Front);
         phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
@@ -459,14 +479,12 @@ int main()
         woodMaterial.apply();
 
         glBindVertexArray(VAO); 
-        for(unsigned int i = 0; i < 10; i++)
+        for(unsigned int i = 0; i < 7; i++)
         {   
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
-            model = glm::scale(model, glm::vec3(0.9f)); 
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(currentFrame * (angle + 1) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
-            //model = glm::rotate(model, glm::radians((angle * 12717328) * 0.1f), glm::vec3(0.5f + angle, 1.0f + angle, 1.0f + angle));
+            model = glm::scale(model, glm::vec3(cubeScales[i])); 
+            model = glm::rotate(model, cubeRotations[i], glm::vec3(0.0f, 1.0f, 0.0f));
 
             phongShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -479,7 +497,7 @@ int main()
         floorMaterial.apply();
         
         glm::mat4 floorModel = glm::mat4(1.0f); 
-        floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
+        //floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
         // use the same master phongShader
         phongShader.setMat4("model", floorModel); 
 
@@ -490,14 +508,15 @@ int main()
         // ==========================================
 
         lightShader.use();
-        lightShader.setVec3("Color", lightColor);
         lightShader.setMat4("view", view);
         lightShader.setMat4("projection", projection);
 
         glBindVertexArray(lightVAO); 
 
-        for(unsigned int i = 0; i < 4; i++)
+        for(unsigned int i = 0; i < 3; i++)
         {   
+            lightColor = pointLightColors[i];
+            lightShader.setVec3("Color", lightColor);
             glm::mat4 lightModel = glm::mat4(1.0f); 
             lightModel = glm::translate(lightModel, pointLightPositions[i]); 
             lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
@@ -515,7 +534,9 @@ int main()
         state.cameraRot = camera.Front;
         state.fov = camera.Zoom;
         
+
         RenderUI(state, allShaders, allMaterials);
+
 
         glfwPollEvents();
         glfwSwapBuffers(window);

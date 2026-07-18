@@ -10,7 +10,8 @@
 // A struct to hold variables that the UI will modify
 struct UIVariables {
     bool isWireframe = false;
-    float clearColor[3] = { 0.2f, 0.0f, 0.0f };
+    float clearColor[3] = { 0.1f, 0.15f, 0.2f };
+    //float clearColor[3] = { 0.85f, 0.9f, 1.0f };
     bool reloadShader = false;
     // You can easily add more variables here later (e.g., float cameraSpeed, int objectCount)
 
