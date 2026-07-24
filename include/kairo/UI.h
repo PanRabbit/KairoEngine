@@ -4,8 +4,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <vector>
-#include <kairo/shader.h>
-#include <kairo/material.h>
+#include "kairo/shader.h"
+#include "kairo/material.h"
 
 // A struct to hold variables that the UI will modify
 struct UIVariables {

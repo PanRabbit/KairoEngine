@@ -48,6 +48,8 @@ set(PROJECT_SOURCES
     include/kairo/UI.cpp
     include/kairo/texture.cpp
     include/kairo/material.cpp
+    include/kairo/model.cpp
+    include/kairo/mesh.cpp
 )
 
 # ==============================================================================

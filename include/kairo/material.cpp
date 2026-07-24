@@ -1,7 +1,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
-#include <kairo/material.h>
+#include "kairo/material.h"
 
 
 // MOSTLY VIBE CODED MATERIAL LOADER, NEED TO KEEP AN EYE ON IT

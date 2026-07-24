@@ -1,11 +1,11 @@
-#include <kairo/texture.h>
+#include "kairo/texture.h"
 #include <iostream>
 #include <glad/glad.h>
 #include <stb/stb_image.h>
 
 Texture::Texture(const std::string& path)
 {
-    stbi_set_flip_vertically_on_load(true); // fixes image being upsidedown
+    //stbi_set_flip_vertically_on_load(true); // fixes image being upsidedown -- FIXED IN MODEL LOADER BY FLIPPING UVS
     unsigned char *image_data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);

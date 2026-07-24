@@ -1,6 +1,6 @@
 #pragma once
-#include <kairo/shader.h>
-#include <kairo/texture.h>
+#include "kairo/shader.h"
+#include "kairo/texture.h"
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>

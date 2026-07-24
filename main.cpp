@@ -16,6 +16,8 @@
 #include <kairo/camera.h>
 #include <kairo/texture.h>
 #include <kairo/material.h>
+#include <kairo/mesh.h>
+#include <kairo/model.h>
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -307,6 +309,9 @@ int main()
     Material grungeMaterial(&phongShader);
     grungeMaterial.loadFromJson("materials/grunge.json");
 
+    Material ainzMaterial(&phongShader);
+    ainzMaterial.loadFromJson("materials/ainz.json");
+
 
     std::vector<Material*> allMaterials  = {&woodMaterial,  &floorMaterial, &mikuMaterial, &grungeMaterial };
 
@@ -380,6 +385,8 @@ int main()
     glm::vec3 lightColor;
     glm::vec3 torchColor = glm::vec3(1.0f, 0.95f, 0.8f);
 
+    Model suzanne("meshes/Ainz/ainz.obj");
+
 
     // ==========================================
     // UI INITIALIZATION
@@ -413,7 +420,7 @@ int main()
 
 
         // ==========================================
-        // LIGHTS AND CAMERA
+        // LIGHTS AND CAMERA VARIABLES
         //==========================================
         phongShader.use();
 
@@ -427,7 +434,7 @@ int main()
 
         // point lights
 
-        for(unsigned int i = 0; i < 4; i++)
+        for(unsigned int i = 0; i < 3; i++)
         {
         lightColor = pointLightColors[i];
         std::string uniformID = "pointLights[" + std::to_string(i) + "].";
@@ -436,7 +443,7 @@ int main()
         phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
         phongShader.setVec3(uniformID + "position", pointLightPositions[i]);
         phongShader.setFloat(uniformID + "radius", 8.0f);
-        phongShader.setFloat(uniformID + "intensity", 2.0f * pointLightIntensityMults[i]);
+        phongShader.setFloat(uniformID + "intensity", 0.5f * pointLightIntensityMults[i]);
         }
 
         // flashlight
@@ -502,6 +509,19 @@ int main()
         phongShader.setMat4("model", floorModel); 
 
         glDrawArrays(GL_TRIANGLES, 36, 6);   
+
+        // ==========================================
+        // DRAW AINZ
+        // ==========================================
+        
+        glm::mat4 ainzModel = glm::mat4(1.0f);
+        ainzModel = glm::scale(ainzModel, glm::vec3(0.5f));
+        ainzModel = glm::translate(ainzModel, glm::vec3(0.0f, 0.0f, 0.0f));
+        ainzModel = glm::rotate(ainzModel, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        phongShader.setMat4("model", ainzModel);
+
+        suzanne.draw(ainzMaterial);
+        
 
         // ==========================================
         // DRAW LIGHT CUBE

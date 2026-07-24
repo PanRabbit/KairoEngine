@@ -1,0 +1,14 @@
+{
+    "useDiffuseMap" : true,
+    "diffuseMapPath" : "textures/Ainz/ainz.png",
+    "diffuseColor" : [1,0,0],
+
+    "useChecker" : false,
+    "checkerSize" : 1.0,
+    "secondaryColor" : [0,0,0],
+
+    "useSpecularMap" : true,
+    "specularMapPath" : "textures/Ainz/ainz_spec.png",
+    "specularStrength" : 0.3,
+    "shininess" : 256.0
+}

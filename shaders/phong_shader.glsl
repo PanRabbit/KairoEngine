@@ -99,7 +99,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     
     // light attenuation equation from UE4 : https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf (page 12)
     float ratio = distance / light.radius;
-    float ratio4 = ratio * ratio * ratio * ratio; // manual multiplication is cheaper that doing pow(ratio, 4)
+    float ratio4 = ratio * ratio * ratio * ratio; // manual multiplication is cheaper (?) that doing pow(ratio, 4)
     float clamped = clamp(1.0 - ratio4, 0.0, 1.0);
     float numerator = clamped * clamped;
     float denominator = (distance * distance) + 1.0;
@@ -208,7 +208,6 @@ void main()
     {
         result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
     }
-
     // spot light
     result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
     

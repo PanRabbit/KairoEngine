@@ -3,8 +3,8 @@
 #include "UI.h"        
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include <kairo/shader.h>
-#include <kairo/material.h>
+#include "kairo/shader.h"
+#include "kairo/material.h"
 
 void InitUI(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
