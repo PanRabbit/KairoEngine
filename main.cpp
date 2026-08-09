@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <vector>
 
 #include <stb/stb_image.h>
 #include <kairo/UI.h>
@@ -18,6 +19,7 @@
 #include <kairo/material.h>
 #include <kairo/mesh.h>
 #include <kairo/model.h>
+#include <kairo/game_object.h>
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -26,6 +28,8 @@ float SCR_WIDTH = 1600;
 float SCR_HEIGHT = 1200;
 
 bool flashlightOn = false;
+int selectedObjectID = 0;
+
 
 // ====================================
 // CAMERA VARIABLES SETUP
@@ -34,17 +38,88 @@ bool flashlightOn = false;
 Camera camera(glm::vec3(3.5f, 1.0f, -5.0f), glm::vec3(-0.55f, -0.05f, 0.83f));
 
 // ====================================
+// PICKING BUFFER STRUCT & FUNCTION
+// ====================================
+struct PickingBuffer {
+    unsigned int fbo = 0;
+    unsigned int colorTexture = 0;
+    unsigned int depthBuffer = 0;
+
+    void init(int width, int height) {
+        glGenFramebuffers(1, &fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+        // Color Texture (Stores IDs)
+        glGenTextures(1, &colorTexture);
+        glBindTexture(GL_TEXTURE_2D, colorTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
+
+        // Depth Buffer (Needed so overlapping geometry occludes properly!)
+        glGenRenderbuffers(1, &depthBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void cleanup() {
+        if (fbo) glDeleteFramebuffers(1, &fbo);
+        if (colorTexture) glDeleteTextures(1, &colorTexture);
+        if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
+    }
+};
+
+int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHeight, 
+    Shader& pickingShader, PickingBuffer& pickingFB, 
+    const std::vector<GameObject*>& sceneObjects, 
+    const glm::mat4& view, const glm::mat4& projection) 
+{
+    // Bind our offscreen framebuffer so we render to a texture instead of the screen
+    glBindFramebuffer(GL_FRAMEBUFFER, pickingFB.fbo);
+    glViewport(0, 0, screenWidth, screenHeight);
+    glEnable(GL_DEPTH_TEST);
+
+    // Clear to black (ID = 0 means "nothing was clicked")
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Set up the picking shader with camera matrices
+    pickingShader.use();
+    pickingShader.setMat4("view", view);
+    pickingShader.setMat4("projection", projection);
+
+    // Render every object — each one writes its own ID into the fragment color
+    for (const auto* obj : sceneObjects) {
+        obj->drawPicking(pickingShader);
+    }
+
+    // Read the single pixel under the mouse. OpenGL Y is flipped relative to GLFW, so we flip it back.
+    int flippedY = screenHeight - static_cast<int>(mouseY);
+    unsigned char pixel[3];
+    glReadPixels(static_cast<int>(mouseX), flippedY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+
+    // Unbind the FBO so rendering goes back to the screen normally
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Decode the RGB color back into a single integer ID (R + G*256 + B*65536)
+    return pixel[0] + (pixel[1] * 256) + (pixel[2] * 256 * 256);
+}
+
+// ====================================
 // WINDOW SETUP
 // ====================================
 
-// handle window resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
 // process input
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, Shader& pickingShader, PickingBuffer& pickingFB, 
+                  const std::vector<GameObject*>& sceneObjects,
+                  const glm::mat4& view, const glm::mat4& projection)
 {   
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -70,7 +145,6 @@ void processInput(GLFWwindow *window)
         fJustPressed = false;
     }
 
-
     // Movement
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);
@@ -91,19 +165,40 @@ void processInput(GLFWwindow *window)
     {
         if (!tabJustPressed) 
         {
-        int currentMode = glfwGetInputMode(window, GLFW_CURSOR);
-        glfwSetInputMode(window, GLFW_CURSOR, (currentMode == GLFW_CURSOR_NORMAL) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-        tabJustPressed = true;
+            int currentMode = glfwGetInputMode(window, GLFW_CURSOR);
+            glfwSetInputMode(window, GLFW_CURSOR, (currentMode == GLFW_CURSOR_NORMAL) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+            tabJustPressed = true;
         }
-
     }
     else
     {
         tabJustPressed = false;
     }
+
+    // Mouse click selection (Only trigger when cursor is not captured by camera look)
+    static bool mouseJustPressed = false;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        if (!mouseJustPressed && glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
+        {
+            double mouseX, mouseY;
+            glfwGetCursorPos(window, &mouseX, &mouseY);
+
+            int selectedID = PerformSelection(mouseX, mouseY, static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT),
+                                              pickingShader, pickingFB, sceneObjects, view, projection);
+            
+            std::cout << "Clicked Object ID: " << selectedID << std::endl;
+            selectedObjectID = selectedID;
+            mouseJustPressed = true;
+        }
+    }
+    else
+    {
+        mouseJustPressed = false;
+    }
 }
 
-// Mouse variables can stay global since they only track the physical mouse state
+// Mouse variables
 float mouseLastX = SCR_WIDTH / 2.0f;
 float mouseLastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -141,7 +236,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-
 // ===================================
 // MAIN FUNCTION
 // ===================================
@@ -155,7 +249,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // create window object
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "KairoEngine", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT), "KairoEngine", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -165,11 +259,11 @@ int main()
 
     glfwMakeContextCurrent(window);
 
-    //set window states
+    // set window states
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
-    glfwSwapInterval(0); //vsync
+    glfwSwapInterval(0); // vsync
 
     // init glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -178,125 +272,29 @@ int main()
         return -1;
     }
 
-
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glViewport(0, 0, static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT));
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    glEnable(GL_DEPTH_TEST); //enable depth testing
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
+    // Initialize Picking Framebuffer
+    PickingBuffer pickingFB;
+    pickingFB.init(static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT));
 
     // ==========================================
     // SHADER COMPILATION & LINKING
     // ==========================================
-  
     Shader phongShader("shaders/vertex_shader.glsl", "shaders/phong_shader.glsl");
     Shader lightShader("shaders/vertex_shader.glsl", "shaders/light_shader.glsl");
+    Shader depthShader("shaders/vertex_shader.glsl", "shaders/depth_visualiser.fs");
+    Shader pickingShader("shaders/picking.vs", "shaders/picking.fs");
 
-    std::vector<Shader*> allShaders = {&lightShader,  &phongShader};
-
-    // ==========================================
-    // VERTEX DATA & BUFFERS (VAO & VBO)
-    // ==========================================
-    float vertices[] = {
-        // --- CUBE (36 vertices) ---
-        // Positions          // Normals          // Tex Coords
-        // Back face
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-        // Front face
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
-        // Left face
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        // Right face
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        // Bottom face
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-        // Top face
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-
-        // --- FLOOR (6 vertices) ---
-        -10.0f, 0.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
-        10.0f, 0.0f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 0.0f,
-        10.0f, 0.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
-        10.0f, 0.0f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f,
-        -10.0f, 0.0f,  10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  10.0f,
-        -10.0f, 0.0f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f
-    };
-    
-
-    unsigned int VAO, VBO; //, EBO;
-    glGenVertexArrays(1, &VAO); 
-    glGenBuffers(1, &VBO); 
-    //glGenBuffers(1, &EBO); 
-
-    glBindVertexArray(VAO); 
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),(void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);   
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0); 
-
-    // Light VAO
-    unsigned int lightVAO;
-    glGenVertexArrays(1, &lightVAO);
-
-    glBindVertexArray(lightVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
+    std::vector<Shader*> allShaders = {&lightShader, &phongShader};
 
     // ==========================================
     // MATERIALS
     // ==========================================
-
     Material woodMaterial(&phongShader);
     woodMaterial.loadFromJson("materials/container.json");
 
@@ -309,29 +307,23 @@ int main()
     Material grungeMaterial(&phongShader);
     grungeMaterial.loadFromJson("materials/grunge.json");
 
-    Material ainzMaterial(&phongShader);
-    ainzMaterial.loadFromJson("materials/ainz.json");
+    Material lightMaterial(&lightShader);
+    lightMaterial.loadFromJson("materials/light.json");
 
-
-    std::vector<Material*> allMaterials  = {&woodMaterial,  &floorMaterial, &mikuMaterial, &grungeMaterial };
+    std::vector<Material*> allMaterials = {&woodMaterial, &floorMaterial, &mikuMaterial, &grungeMaterial, &lightMaterial};
 
     // ==========================================
     // MATRICES & VECTORS
     // ==========================================
-
-    // model matrix, transforms all objects vertices to world spcace. slightly rotated here to lay on the floor
-    glm::mat4 model = glm::mat4(1.0f);
-    
-    // view matrix (basically the camera I think?) left blank to be set per frame
     glm::mat4 view;
-
-    // projection matrix (make it not ortho), ,moved to render loop
     glm::mat4 projection;
     
     // ==========================================
-    // OBJECTS
+    // OBJECT POSITIONS
     // ==========================================
-    // random cubes
+
+    std::vector<GameObject*> sceneObjects;
+
     glm::vec3 cubePositions[] = {
         glm::vec3( 2.6f, 0.5f, 0.24f),
         glm::vec3( 1.7f, 1.0f, 1.96f),
@@ -340,29 +332,13 @@ int main()
         glm::vec3( -2.2f, 0.5f, 0.6f),
         glm::vec3( -2.8f, 0.5f, -0.23f),
         glm::vec3( -2.5f, 1.375f, 0.2f)
-        };
-
-    float cubeRotations[] = {
-        glm::radians(-28.0f),
-        glm::radians(37.0f),
-        glm::radians(60.0f),
-        glm::radians(-16.0f),
-        glm::radians(-54.0f),
-        glm::radians(-54.0f),
-        glm::radians(-30.0f)
-        };
-
-    float cubeScales[] = {
-        1.0f,
-        2.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        0.75f
     };
 
-    // point lights
+    float cubeRotations[] = { -28.0f, 37.0f, 60.0f, -16.0f, -54.0f, -54.0f, -30.0f };
+
+    float cubeScales[] = { 1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.75f };
+
+    // Point Lights
     glm::vec3 pointLightPositions[] = {
         glm::vec3( 2.0f, 1.5f, -0.85f),
         glm::vec3( -1.5f, 2.2f, 1.7f),
@@ -373,20 +349,34 @@ int main()
         glm::vec3(0.19f, 0.75f, 1.0f),
         glm::vec3(1.0f, 0.33f, 0.43f),
     };
-    float pointLightIntensityMults[] = {
-        4.0f,
-        16.0f,
-        2.0f,
-    };
+    float pointLightIntensityMults[] = { 8.0f, 16.0f, 4.0f };
 
-
-    glm::vec3 sunColor;
     glm::vec3 sunDirection = glm::vec3(-0.2f, -1.0f, 0.5f);
     glm::vec3 lightColor;
     glm::vec3 torchColor = glm::vec3(1.0f, 0.95f, 0.8f);
 
-    Model suzanne("meshes/Ainz/ainz.obj");
+    Model meshSuzanne("meshes/suzanne.obj");
+    Model meshCube("meshes/prims/cube.obj");
+    Model meshPlane("meshes/prims/plane.obj");
+    Model meshSphere("meshes/prims/sphere.obj");
 
+    for (int i = 0; i < 7; i++) {
+        auto* cube = new GameObject("Cube_" + std::to_string(i), &meshCube, &woodMaterial);
+        cube->position = cubePositions[i];
+        cube->rotation.y = glm::degrees(cubeRotations[i]);
+        cube->scale = glm::vec3(cubeScales[i]);
+        sceneObjects.push_back(cube);
+    }   
+
+    auto* floorObj = new GameObject("Floor", &meshPlane, &floorMaterial);
+    floorObj->scale = glm::vec3(10.0f);
+    sceneObjects.push_back(floorObj);
+
+    auto* suzanneObj = new GameObject("Suzanne", &meshSuzanne, &grungeMaterial);
+    suzanneObj->position = glm::vec3(0.0f, 2.0f, 0.0f);
+    suzanneObj->rotation.y = glm::degrees(180.0f);
+    suzanneObj->scale = glm::vec3(0.5f);
+    sceneObjects.push_back(suzanneObj);
 
     // ==========================================
     // UI INITIALIZATION
@@ -397,15 +387,16 @@ int main()
     // ==========================================
     // RENDER LOOP
     // ==========================================
-
     while(!glfwWindowShouldClose(window))
     {
         // Process time & Input
-        float currentFrame = (glfwGetTime());
+        float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window);
+        // Calculate Matrices for this frame
+        view = camera.GetViewMatrix();
+        projection = glm::perspective(glm::radians(camera.Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Process UI toggles 
         if (state.isWireframe) {
@@ -414,17 +405,13 @@ int main()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        // Calculate Variables for this frame
-        view = camera.GetViewMatrix();
-        projection = glm::perspective(glm::radians(camera.Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
-
-
         // ==========================================
         // LIGHTS AND CAMERA VARIABLES
-        //==========================================
+        // ==========================================
+        
         phongShader.use();
 
-        // directional light (sun)
+        // Directional light (sun)
         glm::vec3 sunColor = glm::vec3(state.clearColor[0], state.clearColor[1], state.clearColor[2]);
         phongShader.setVec3("dirLight.direction", sunDirection);
         phongShader.setFloat("dirLight.intensity", 5.0f);
@@ -432,41 +419,40 @@ int main()
         phongShader.setVec3("dirLight.diffuse", sunColor * 1.0f);
         phongShader.setVec3("dirLight.specular", sunColor * 1.0f);
 
-        // point lights
-
+        // Point lights
         for(unsigned int i = 0; i < 3; i++)
         {
-        lightColor = pointLightColors[i];
-        std::string uniformID = "pointLights[" + std::to_string(i) + "].";
-        phongShader.setVec3(uniformID + "ambient", lightColor * 0.15f);
-        phongShader.setVec3(uniformID + "diffuse", lightColor * 1.0f);
-        phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
-        phongShader.setVec3(uniformID + "position", pointLightPositions[i]);
-        phongShader.setFloat(uniformID + "radius", 8.0f);
-        phongShader.setFloat(uniformID + "intensity", 0.5f * pointLightIntensityMults[i]);
+            lightColor = pointLightColors[i];
+            std::string uniformID = "pointLights[" + std::to_string(i) + "].";
+            phongShader.setVec3(uniformID + "ambient", lightColor * 0.15f);
+            phongShader.setVec3(uniformID + "diffuse", lightColor * 1.0f);
+            phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
+            phongShader.setVec3(uniformID + "position", pointLightPositions[i]);
+            phongShader.setFloat(uniformID + "radius", 8.0f);
+            phongShader.setFloat(uniformID + "intensity", 0.5f * pointLightIntensityMults[i]);
         }
 
-        // flashlight
+        // Flashlight
         if (flashlightOn)
         {
-        phongShader.setVec3("spotLight.position", camera.Position);
-        phongShader.setVec3("spotLight.direction", camera.Front);
-        phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(20.0f)));
-        phongShader.setVec3("spotLight.ambient", torchColor * 0.15f);
-        phongShader.setVec3("spotLight.diffuse", torchColor * 1.0f);
-        phongShader.setVec3("spotLight.specular", torchColor * 1.0f);
-        phongShader.setFloat("spotLight.radius", 64.0f);
-        phongShader.setFloat("spotLight.intensity", 32.0f);
+            phongShader.setVec3("spotLight.position", camera.Position);
+            phongShader.setVec3("spotLight.direction", camera.Front);
+            phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+            phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(20.0f)));
+            phongShader.setVec3("spotLight.ambient", torchColor * 0.15f);
+            phongShader.setVec3("spotLight.diffuse", torchColor * 1.0f);
+            phongShader.setVec3("spotLight.specular", torchColor * 1.0f);
+            phongShader.setFloat("spotLight.radius", 64.0f);
+            phongShader.setFloat("spotLight.intensity", 32.0f);
         }
         else
         {
-        phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(0.0f)));
-        phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(0.0f)));
-        phongShader.setFloat("spotLight.intensity", 0.0f);
+            phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(0.0f)));
+            phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(0.0f)));
+            phongShader.setFloat("spotLight.intensity", 0.0f);
         }
 
-        // camera matrices
+        // Camera matrices
         phongShader.setMat4("view", view);
         phongShader.setMat4("projection", projection);
         phongShader.setVec3("viewPos", camera.Position);
@@ -474,64 +460,18 @@ int main()
         // ==========================================
         // BEGIN DRAW
         // ==========================================
-                
-        // Clear Screen
         glClearColor(sunColor.r, sunColor.g, sunColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        // ==========================================
-        // DRAW CUBES
-        // ==========================================
-        // apply material parameters to current shader
-        woodMaterial.apply();
 
-        glBindVertexArray(VAO); 
-        for(unsigned int i = 0; i < 7; i++)
-        {   
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            model = glm::scale(model, glm::vec3(cubeScales[i])); 
-            model = glm::rotate(model, cubeRotations[i], glm::vec3(0.0f, 1.0f, 0.0f));
-
-            phongShader.setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+        // Render pass — just iterate objects directly:
+        for (auto* obj : sceneObjects) {
+            obj->draw(phongShader, selectedObjectID);
         }
 
-        // ==========================================
-        // DRAW FLOOR
-        // ==========================================
-        // swap to floor material!
-        floorMaterial.apply();
-        
-        glm::mat4 floorModel = glm::mat4(1.0f); 
-        //floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
-        // use the same master phongShader
-        phongShader.setMat4("model", floorModel); 
-
-        glDrawArrays(GL_TRIANGLES, 36, 6);   
-
-        // ==========================================
-        // DRAW AINZ
-        // ==========================================
-        
-        glm::mat4 ainzModel = glm::mat4(1.0f);
-        ainzModel = glm::scale(ainzModel, glm::vec3(0.5f));
-        ainzModel = glm::translate(ainzModel, glm::vec3(0.0f, 0.0f, 0.0f));
-        ainzModel = glm::rotate(ainzModel, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        phongShader.setMat4("model", ainzModel);
-
-        suzanne.draw(ainzMaterial);
-        
-
-        // ==========================================
-        // DRAW LIGHT CUBE
-        // ==========================================
-
+        // DRAW LIGHT SPHERES
         lightShader.use();
         lightShader.setMat4("view", view);
         lightShader.setMat4("projection", projection);
-
-        glBindVertexArray(lightVAO); 
 
         for(unsigned int i = 0; i < 3; i++)
         {   
@@ -541,10 +481,8 @@ int main()
             lightModel = glm::translate(lightModel, pointLightPositions[i]); 
             lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
             lightShader.setMat4("model", lightModel);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            meshSphere.draw(lightMaterial);
         }
-
-
 
         // ==========================================
         // END FRAME UI & SWAP
@@ -553,23 +491,21 @@ int main()
         state.cameraPos = camera.Position;
         state.cameraRot = camera.Front;
         state.fov = camera.Zoom;
-        
-
+        processInput(window, pickingShader, pickingFB, sceneObjects, view, projection);
         RenderUI(state, allShaders, allMaterials);
-
 
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
-    // ========= END RENDER LOOP =========
 
-    // Clean up allocated resources safely 
+    // Clean up allocated resources
     ShutdownUI();
+    pickingFB.cleanup();
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    //glDeleteBuffers(1, &EBO);
-
+    meshSuzanne.cleanup();
+    meshCube.cleanup();
+    meshPlane.cleanup();
+    meshSphere.cleanup();
 
     glfwTerminate();
     return 0;

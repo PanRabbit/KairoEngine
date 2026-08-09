@@ -18,6 +18,9 @@ class Model
           loadModel(path);
        }
        void draw(Material &material);
+       void drawShader(Shader& shader);
+       void cleanup();
+
    private:
        // model data
        std::vector<Mesh> meshes;

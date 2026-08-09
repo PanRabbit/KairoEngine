@@ -62,7 +62,7 @@ struct SpotLight {
 };
 uniform SpotLight spotLight;
 
-
+uniform bool isSelected;
 
 out vec4 FragColor;
 
@@ -208,9 +208,12 @@ void main()
     {
         result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
     }
-    // spot light
+    // spot lights
     result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
     
+    if (isSelected) {result *= vec3(1.0, 0.3, 0.3);}
     // Output final color
     FragColor = vec4(result, 1.0);
+
+
 }

@@ -12,6 +12,11 @@ void Model::draw(Material &material)
         meshes[i].draw(material);
 };
 
+void Model::drawShader(Shader &shader) {
+    for(unsigned int i = 0; i < meshes.size(); i++)
+            meshes[i].drawShader(shader);
+}
+
 void Model::loadModel(std::string path)
 {
     Assimp::Importer importer;
@@ -92,4 +97,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 
     return Mesh(vertices, indices);
     
+}
+
+void Model::cleanup() {
+    for (auto& mesh : meshes) {
+        mesh.cleanup();
+    }
 }

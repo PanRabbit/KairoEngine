@@ -1,11 +1,11 @@
 {
     "useDiffuseMap" : false,
     "diffuseMapPath" : "textures/container2.png",
-    "diffuseColor" : [0.2,0.1,0.05],
+    "diffuseColor" : [0.4,0.2,0.1],
 
     "useChecker" : true,
     "checkerSize" : 0.125,
-    "secondaryColor" : [0.1,0.05,0.025],
+    "secondaryColor" : [0.2,0.1,0.05],
 
     "useSpecularMap" : true,
     "specularMapPath" : "textures/grunge_spec.png",

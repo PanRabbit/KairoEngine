@@ -20,6 +20,8 @@ class Mesh {
 
         Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
         void draw(Material &material);
+        void drawShader(Shader& shader);
+        void cleanup();
     private:
         // render data
         unsigned int VAO, VBO, EBO;
