@@ -2,8 +2,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "include/kairo/model.h"
-#include "include/kairo/mesh.h"
+#include <kairo/model.h>
+#include <kairo/mesh.h>
 
 
 void Model::draw(Material &material)

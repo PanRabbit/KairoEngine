@@ -44,12 +44,12 @@ add_library(imgui_lib STATIC
 # ==============================================================================
 set(PROJECT_SOURCES
     main.cpp
-    include/stb/stb_implementation.cpp
-    include/kairo/UI.cpp
-    include/kairo/texture.cpp
-    include/kairo/material.cpp
-    include/kairo/model.cpp
-    include/kairo/mesh.cpp
+    src/stb/stb_implementation.cpp
+    src/kairo/UI.cpp
+    src/kairo/texture.cpp
+    src/kairo/material.cpp
+    src/kairo/model.cpp
+    src/kairo/mesh.cpp
 )
 
 # ==============================================================================

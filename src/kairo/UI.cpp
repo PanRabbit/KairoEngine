@@ -1,6 +1,6 @@
 #include <glad/glad.h> // Always load GLAD first to capture OpenGL pointers
 #include <vector>
-#include "UI.h"        
+#include "kairo/UI.h"        
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "kairo/shader.h"

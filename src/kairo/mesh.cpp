@@ -1,5 +1,5 @@
-#include "include/kairo/mesh.h"
-#include "include/kairo/material.h"
+#include <kairo/mesh.h>
+#include <kairo/material.h>
 
 #include <vector>
 

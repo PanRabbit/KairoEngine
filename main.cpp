@@ -285,9 +285,9 @@ int main()
     // ==========================================
     // SHADER COMPILATION & LINKING
     // ==========================================
-    Shader phongShader("shaders/vertex_shader.glsl", "shaders/phong_shader.glsl");
-    Shader lightShader("shaders/vertex_shader.glsl", "shaders/light_shader.glsl");
-    Shader depthShader("shaders/vertex_shader.glsl", "shaders/depth_visualiser.fs");
+    Shader phongShader("shaders/vertex_shader.vs", "shaders/phong_shader.fs");
+    Shader lightShader("shaders/vertex_shader.vs", "shaders/light_shader.fs");
+    Shader depthShader("shaders/vertex_shader.vs", "shaders/depth_visualiser.fs");
     Shader pickingShader("shaders/picking.vs", "shaders/picking.fs");
 
     std::vector<Shader*> allShaders = {&lightShader, &phongShader};
