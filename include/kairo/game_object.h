@@ -34,11 +34,11 @@ public:
         return transform;
     }
 
-    // picking pass
-    void drawPicking(Shader& pickingShader) const {
-        pickingShader.setInt("objectID", id);
-        pickingShader.setMat4("model", getTransformMatrix());
-        model->drawShader(pickingShader);
+    // selection pass
+    void drawSelection(Shader& selectionShader) const {
+        selectionShader.setInt("objectID", id);
+        selectionShader.setMat4("model", getTransformMatrix());
+        model->drawShader(selectionShader);
     }
 
     // rendering pass

@@ -50,6 +50,8 @@ set(PROJECT_SOURCES
     src/kairo/material.cpp
     src/kairo/model.cpp
     src/kairo/mesh.cpp
+    src/kairo/selection.cpp
+    src/kairo/input.cpp
 )
 
 # ==============================================================================

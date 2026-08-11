@@ -1,5 +1,5 @@
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
+
 
 #include <glad/glad.h> // Include glad to get all the required OpenGL headers
 #include <string>
@@ -173,5 +173,3 @@ public:
         glDeleteProgram(ID);
     }
 };
-
-#endif

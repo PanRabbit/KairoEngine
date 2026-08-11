@@ -15,7 +15,7 @@ void InitUI(GLFWwindow* window) {
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-void RenderUI(UIVariables& state, const std::vector<Shader*>& engineShaders, const std::vector<Material*>& engineMaterials) {
+void RenderUI(EngineContext& engineContext, const std::vector<Shader*>& engineShaders, const std::vector<Material*>& engineMaterials) {
     // Start ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -32,9 +32,9 @@ void RenderUI(UIVariables& state, const std::vector<Shader*>& engineShaders, con
             ImGui::Text("Performance: %.1f FPS", ImGui::GetIO().Framerate);
             ImGui::Separator();
 
-            // Modify state directly via references passed from main loop
-            ImGui::Checkbox("Enable Wireframe Mode", &state.isWireframe);
-            ImGui::ColorEdit3("Background Color", state.clearColor);
+            // Modify engineContext directly via references passed from main loop
+            ImGui::Checkbox("Enable Wireframe Mode", &engineContext.isWireframe);
+            ImGui::ColorEdit3("Background Color", engineContext.clearColor);
 
             if (ImGui::Button("Hot Reload Shaders")) {
                 for (Shader* shader : engineShaders) {
@@ -47,15 +47,15 @@ void RenderUI(UIVariables& state, const std::vector<Shader*>& engineShaders, con
                         material->loadFromJson("reload");
                     }
                 }
-                state.reloadShader = true;
+                engineContext.reloadShader = true;
             }
 
             ImGui::Separator();
-            ImGui::Text("Camera State");
-            ImGui::DragFloat("Cam Base Speed", &state.cameraSpeed, 0.1f);
-            ImGui::DragFloat3("Cam Position", &state.cameraPos.x, 0.1f);
-            ImGui::DragFloat3("Cam Rotation", &state.cameraRot.x, 0.1f);
-            ImGui::DragFloat("FOV", &state.fov, 0.1f);
+            ImGui::Text("Camera engineContext");
+            ImGui::DragFloat("Cam Base Speed", &engineContext.cameraSpeed, 0.1f);
+            ImGui::DragFloat3("Cam Position", &engineContext.cameraPos.x, 0.1f);
+            ImGui::DragFloat3("Cam Rotation", &engineContext.cameraRot.x, 0.1f);
+            ImGui::DragFloat("FOV", &engineContext.fov, 0.1f);
 
             
             ImGui::EndTabItem(); 

@@ -211,7 +211,7 @@ void main()
     // spot lights
     result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
     
-    if (isSelected) {result *= vec3(1.0, 0.3, 0.3);}
+    if (isSelected) {result = diffuseTex * vec3(1.0, 0.3, 0.3);}
     // Output final color
     FragColor = vec4(result, 1.0);
 
