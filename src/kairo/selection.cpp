@@ -1,6 +1,7 @@
 #include "kairo/selection.h"
 #include "kairo/game_object.h"
 #include "kairo/shader.h"
+#include <memory>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
@@ -33,7 +34,7 @@ void SelectionBuffer::cleanup() {
 
 int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHeight, 
     Shader& selectionShader, SelectionBuffer& selectionFB, 
-    const std::vector<GameObject*>& sceneObjects, 
+    const std::vector<std::unique_ptr<GameObject>>& sceneObjects, 
     const glm::mat4& view, const glm::mat4& projection) 
 {
     // Bind our offscreen framebuffer so we render to a texture instead of the screen
@@ -51,7 +52,7 @@ int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHe
     selectionShader.setMat4("projection", projection);
 
     // Render every object — each one writes its own ID into the fragment color
-    for (const auto* obj : sceneObjects) {
+    for (const auto& obj : sceneObjects) {
         obj->drawSelection(selectionShader);
     }
 

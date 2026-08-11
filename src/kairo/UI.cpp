@@ -15,7 +15,7 @@ void InitUI(GLFWwindow* window) {
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-void RenderUI(EngineContext& engineContext, const std::vector<Shader*>& engineShaders, const std::vector<Material*>& engineMaterials) {
+void RenderUI(EngineContext& engineContext) {
     // Start ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -37,15 +37,11 @@ void RenderUI(EngineContext& engineContext, const std::vector<Shader*>& engineSh
             ImGui::ColorEdit3("Background Color", engineContext.clearColor);
 
             if (ImGui::Button("Hot Reload Shaders")) {
-                for (Shader* shader : engineShaders) {
-                    if (shader != nullptr) {
-                        shader->reload();
-                    }
+                for (auto& shader : engineContext.shaders) {
+                    shader->reload();
                 }
-                for (Material* material : engineMaterials) {
-                    if (material != nullptr) {
-                        material->loadFromJson("reload");
-                    }
+                for (auto& material : engineContext.materials) {
+                    material->loadFromJson("reload");
                 }
                 engineContext.reloadShader = true;
             }

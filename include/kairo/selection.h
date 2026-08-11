@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -17,5 +18,5 @@ struct SelectionBuffer {
 };
 
 int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHeight, 
-    Shader& selectionShader, SelectionBuffer& selectionFB, const std::vector<GameObject*>& sceneObjects,
+    Shader& selectionShader, SelectionBuffer& selectionFB, const std::vector<std::unique_ptr<GameObject>>& sceneObjects,
     const glm::mat4& view, const glm::mat4& projection); 

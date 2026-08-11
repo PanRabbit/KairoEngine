@@ -85,7 +85,7 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
             glfwGetCursorPos(window, &mouseX, &mouseY);
 
             int selectedID = PerformSelection(mouseX, mouseY, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight),
-                                              engineContext.selectionShader, engineContext.selectionFB, engineContext.sceneObjects, engineContext.view, engineContext.projection);
+                                              *engineContext.shaders[3], engineContext.selectionFB, engineContext.sceneObjects, engineContext.view, engineContext.projection);
             
             std::cout << "Clicked Object ID: " << selectedID << std::endl;
             engineContext.selectedObjectID = selectedID;
