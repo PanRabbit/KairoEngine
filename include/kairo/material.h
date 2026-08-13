@@ -22,10 +22,10 @@ class Material {
         std::unordered_map<std::string, int> ints;
         std::unordered_map<std::string, bool> bools;
         std::unordered_map<std::string, glm::vec3> vec3s;
+        std::unordered_map<std::string, glm::vec2> vec2s;
 
         //std::unordered_map<std::string, glm::mat4> mat4s; //transformations
         //std::unordered_map<std::string, glm::vec4> vec4s;
-        //std::unordered_map<std::string, glm::vec2> vec2s;
 
         Material(Shader* materialDefinition);
 

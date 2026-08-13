@@ -12,8 +12,6 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             engineContext.deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
     
-    
-    
             // Calculate Matrices for this frame
             engineContext.view = engineContext.camera.GetViewMatrix();
             engineContext.projection = glm::perspective(glm::radians(engineContext.camera.Zoom), engineContext.scrWidth / engineContext.scrHeight, 0.1f, 100.0f);
@@ -30,7 +28,9 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             // ==========================================
             Shader& phongShader = *engineContext.shaders[0];
             Shader& lightShader = *engineContext.shaders[1];
+            Shader& singleColorShader = *engineContext.shaders[4];
             Material& lightMaterial = *engineContext.materials[4];
+
 
             phongShader.use();
     
@@ -75,7 +75,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 phongShader.setFloat("spotLight.intensity", 0.0f);
             }
     
-            // Camera matrices
+            // update camera matrices
             phongShader.setMat4("view", engineContext.view);
             phongShader.setMat4("projection", engineContext.projection);
             phongShader.setVec3("viewPos", engineContext.camera.Position);
@@ -86,12 +86,12 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             glClearColor(sunColor.r, sunColor.g, sunColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-            // Render pass — just iterate objects directly:
+            // Render all objects
             for (auto& obj : engineContext.sceneObjects) {
-                obj->draw(phongShader, engineContext.selectedObjectID);
+                    obj->draw(phongShader, engineContext.selectedObjectID);
             }
     
-            // DRAW LIGHT SPHERES
+            // Render light spheres
             lightShader.use();
             lightShader.setMat4("view", engineContext.view);
             lightShader.setMat4("projection", engineContext.projection);

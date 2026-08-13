@@ -2,14 +2,14 @@
 
 void AssetLoad(EngineContext& engineContext) {
 
+    // ==========================================
+    // LOAD SHADERS (But don't push to context yet)
+    // ==========================================
     auto phongShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/phong_shader.fs");
-
     auto lightShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/light_shader.fs");
-
     auto depthShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/depth_visualiser.fs");
-
     auto selectionShader = std::make_unique<Shader>("shaders/selection.vs", "shaders/selection.fs");
-
+    auto singleColorShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/single_color.fs");
 
     // ==========================================
     // MATERIALS
@@ -34,16 +34,22 @@ void AssetLoad(EngineContext& engineContext) {
     lightMaterial->loadFromJson("materials/light.json");
     engineContext.materials.push_back(std::move(lightMaterial));
 
+    auto grassMaterial = std::make_unique<Material>(phongShader.get());
+    grassMaterial->loadFromJson("materials/grass.json");
+    engineContext.materials.push_back(std::move(grassMaterial));
 
-
+    // ==========================================
+    // PUSH SHADERS TO CONTEXT (After materials loaded)
+    // ==========================================
     engineContext.shaders.push_back(std::move(phongShader));
     engineContext.shaders.push_back(std::move(lightShader));
     engineContext.shaders.push_back(std::move(depthShader));
     engineContext.shaders.push_back(std::move(selectionShader));
+    engineContext.shaders.push_back(std::move(singleColorShader));
 
-
-
-    // Load models (indices: 0=suzanne, 1=cube, 2=plane, 3=sphere)
+    // ==========================================
+    // MODELS
+    // ==========================================
     auto meshSuzanne = std::make_unique<Model>("meshes/suzanne.obj");
     engineContext.models.push_back(std::move(meshSuzanne));
 

@@ -49,4 +49,9 @@ public:
 
         model->draw(*material);
     }
+
+    void drawShader(Shader& shader) const {
+        shader.setMat4("model", getTransformMatrix());
+        model->drawShader(shader);
+    }
 };

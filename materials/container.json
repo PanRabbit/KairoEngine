@@ -3,6 +3,9 @@
     "diffuseMapPath" : "textures/container2.png",
     "diffuseColor" : [1,0,0],
 
+    "useAlphaMap" : false,
+    "alphaMapPath" : "",
+
     "useChecker" : false,
     "checkerSize" : 1.0,
     "secondaryColor" : [0,0,0],
@@ -10,5 +13,8 @@
     "useSpecularMap" : true,
     "specularMapPath" : "textures/container2_specular.png",
     "specularStrength" : 1.0,
-    "shininess" : 256.0
+    "shininess" : 256.0,
+
+    "coordOffset" : [0,0],
+    "coordScale" : [1,1]
 }

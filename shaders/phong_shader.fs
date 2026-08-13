@@ -6,6 +6,9 @@ struct Material {
     sampler2D diffuseMap;
     vec3 diffuseColor;
 
+    bool useAlphaMap;
+    sampler2D alphaMap;
+
     bool useChecker;
     float checkerSize;
     vec3 secondaryColor;
@@ -16,9 +19,12 @@ struct Material {
 
     float shininess;
 
+    vec2 coordOffset;
+    vec2 coordScale;
 };
 uniform Material material;
 vec3 diffuseTex, specularTex;
+float alphaTex;
 
 
 //lighting defs
@@ -62,7 +68,7 @@ struct SpotLight {
 };
 uniform SpotLight spotLight;
 
-uniform bool isSelected;
+uniform bool isSelected = false;
 
 out vec4 FragColor;
 
@@ -183,17 +189,24 @@ void main()
 
     else diffuseTex = material.diffuseColor;
 
+    // sample alpha texture
+    if (material.useAlphaMap) {alphaTex = texture(material.alphaMap, TexCoord * material.coordScale + material.coordOffset).r;}
+    else {alphaTex = 1.0;};
+
+    //if (alphaTex < 0.01) discard;
+    
 
     // sample the textures/diffuse colours (converted to vec3 as lighting is calculated in vec3)
     if (material.useDiffuseMap) 
     {
-        vec4 diffuseMapSample = texture(material.diffuseMap, TexCoord); 
+        vec4 diffuseMapSample = texture(material.diffuseMap, TexCoord * material.coordScale + material.coordOffset); 
         //lerp between the diffuse colour and the texture based on alpha value
         diffuseTex = ((1 - diffuseMapSample.a) * diffuseTex) + (diffuseMapSample.a * diffuseMapSample.rgb);
+        alphaTex = min(alphaTex, diffuseMapSample.a);
     }
 
     // sample spec texture
-    if (material.useSpecularMap) {specularTex = vec3(texture(material.specularMap, TexCoord))* material.specularStrength;}
+    if (material.useSpecularMap) {specularTex = vec3(texture(material.specularMap, TexCoord * material.coordScale + material.coordOffset))* material.specularStrength;}
     else {specularTex = vec3(material.specularStrength);}
     
 
@@ -211,9 +224,8 @@ void main()
     // spot lights
     result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
     
-    if (isSelected) {result = diffuseTex * vec3(1.0, 0.3, 0.3);}
+    if (isSelected) {result = result / (1 - vec3(0.2, 0.55, 0.85));} // color dodge
     // Output final color
-    FragColor = vec4(result, 1.0);
-
+    FragColor = vec4(result, alphaTex);
 
 }

@@ -48,6 +48,10 @@ void Material::loadFromJson(const std::string& path)
         {
             vec3s[key] = glm::vec3(value[0], value[1], value[2]);
         }
+        else if (value.is_array() && value.size() == 2)
+        {
+            vec2s[key] = glm::vec2(value[0], value[1]);
+        }
         // Handle Booleans (like "useDiffuseMap" : true)
         else if (value.is_boolean())
         {
@@ -84,6 +88,7 @@ void Material::apply()
     for (auto& [name, val] : ints)   { shader->setInt("material." + name, val); }
     for (auto& [name, val] : bools)  { shader->setBool("material." + name, val); } 
     for (auto& [name, val] : vec3s)  { shader->setVec3("material." + name, val); } 
+    for (auto& [name, val] : vec2s)  { shader->setVec2("material." + name, val); }
 }
 
 Material::~Material() {

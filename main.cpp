@@ -91,6 +91,7 @@ int main()
     // ==========================================
     // init BEFORE setting intput callbacks
     EngineContext engineContext;
+    engineContext.camera = camera;
 
     // Set global context pointer for GLFW callbacks
     setInputContext(&engineContext);
@@ -106,7 +107,9 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-
+    glEnable(GL_STENCIL_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // ==========================================
     // ASSET LOADING
@@ -117,7 +120,6 @@ int main()
     // LEVEL DEFINITION (after assets loaded)
     // ==========================================
     DefineLevel(engineContext);
-
 
     // ==========================================
     // UI INITIALIZATION

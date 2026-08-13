@@ -15,6 +15,17 @@ void DefineLevel(EngineContext& engineContext) {
 
     engineContext.cubeScales.assign({ 1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.75f });
 
+    engineContext.grassPositions.assign({
+        glm::vec3(1.3f, 0.2f, -1.7f),
+        glm::vec3(-2.5f, 0.2f, -2.1f),
+        glm::vec3(0.4f, 0.2f, 0.4f),
+        glm::vec3(-1.1f, 0.2f, -1.9f),
+        glm::vec3(0.0f, 0.2f, -2.5f),
+        glm::vec3(3.7f, 0.2f, -1.2f),
+   
+   
+    });
+
     // Point Lights
     engineContext.pointLightPositions.assign({
         glm::vec3( 2.0f, 1.5f, -0.85f),
@@ -31,28 +42,36 @@ void DefineLevel(EngineContext& engineContext) {
     engineContext.sunDirection = glm::vec3(-0.2f, -1.0f, 0.5f);
     engineContext.torchColor = glm::vec3(1.0f, 0.95f, 0.8f);
 
-
-    for (int i = 0; i < 7; i++) {
-        auto* cube = new GameObject("Cube_" + std::to_string(i),
-                                    engineContext.models[1].get(),
-                                    engineContext.materials[1].get());
+    // Cubes
+    for (int i = 0; i < engineContext.cubePositions.size(); i++) {
+        auto* cube = new GameObject("Cube_" + std::to_string(i), engineContext.models[1].get(), engineContext.materials[0].get());
         cube->position = engineContext.cubePositions[i];
-        cube->rotation.y = glm::degrees(engineContext.cubeRotations[i]);
+        cube->rotation.y = glm::radians(engineContext.cubeRotations[i]);
         cube->scale = glm::vec3(engineContext.cubeScales[i]);
         engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(cube));
     }
 
-    auto* floorObj = new GameObject("Floor",
-                                    engineContext.models[2].get(),
-                                    engineContext.materials[2].get());
+    // Floor
+    auto* floorObj = new GameObject("Floor", engineContext.models[2].get(), engineContext.materials[1].get());
     floorObj->scale = glm::vec3(10.0f);
     engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(floorObj));
 
-    auto* suzanneObj = new GameObject("Suzanne",
-                                      engineContext.models[0].get(),
-                                      engineContext.materials[0].get());
+    // Grass
+    for (int i = 0; i < engineContext.grassPositions.size(); i++) {
+        for (int j = 0; j < 10; j++) {
+            auto* grassObj = new GameObject("Grass_" + std::to_string(i), engineContext.models[2].get(), engineContext.materials[5].get());
+            grassObj->scale = glm::vec3(float(rand() % 100) / 100.0f + 0.5f);
+            grassObj->position = engineContext.grassPositions[i];
+            grassObj->rotation.x = glm::radians(90.0f);
+            grassObj->rotation.z = glm::radians(float(rand() % 360));
+            engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(grassObj));
+        }
+    }
+
+    // Suzanne
+    auto* suzanneObj = new GameObject("Suzanne", engineContext.models[0].get(), engineContext.materials[3].get());
     suzanneObj->position = glm::vec3(0.0f, 2.0f, 0.0f);
-    suzanneObj->rotation.y = glm::degrees(180.0f);
+    suzanneObj->rotation.y = glm::radians(180.0f);
     suzanneObj->scale = glm::vec3(0.5f);
     engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(suzanneObj));
 }

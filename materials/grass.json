@@ -1,0 +1,20 @@
+{
+    "useDiffuseMap" : true,
+    "diffuseMapPath" :"textures/grass/plants_0002_color_2k.jpg",
+    "diffuseColor" : [1,0,0],
+
+    "useAlphaMap" : true,
+    "alphaMapPath" : "textures/grass/plants_0002_opacity_2k.jpg",
+
+    "useChecker" : false,
+    "checkerSize" : 1.0,
+    "secondaryColor" : [0,0,0],
+
+    "useSpecularMap" : false,
+    "specularMapPath" : "textures/container2_specular.png",
+    "specularStrength" : 0.5,
+    "shininess" : 64.0,
+
+    "coordOffset" : [0.0,0.0],
+    "coordScale" : [1,1]
+}

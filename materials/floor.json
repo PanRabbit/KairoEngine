@@ -3,6 +3,9 @@
     "diffuseMapPath" : "textures/miku.png",
     "diffuseColor" : [0.2,0.2,0.2],
 
+    "useAlphaMap" : false,
+    "alphaMapPath" : "",
+
     "useChecker" : true,
     "checkerSize" : 0.1,
     "secondaryColor" : [0.3,0.3,0.3],
@@ -10,5 +13,8 @@
     "useSpecularMap" : true,
     "specularMapPath" : "textures/grunge_spec.png",
     "specularStrength" : 0.2,
-    "shininess" : 64.0
+    "shininess" : 64.0,
+
+    "coordOffset" : [0,0],
+    "coordScale" : [1,1]
 }

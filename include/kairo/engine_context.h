@@ -37,6 +37,8 @@ struct EngineContext {
     std::vector<glm::vec3> cubePositions;
     std::vector<float> cubeRotations;
     std::vector<float> cubeScales;
+
+    std::vector<glm::vec3> grassPositions;
     
     // --- Per-frame / mutable state ---
     float deltaTime = 0.0f;
