@@ -83,6 +83,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             // ==========================================
             // BEGIN DRAW
             // ==========================================
+            processInput(window, engineContext);
+
             glClearColor(sunColor.r, sunColor.g, sunColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -111,7 +113,6 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             // END FRAME UI & SWAP
             // ==========================================
             
-            processInput(window, engineContext);
             RenderUI(engineContext);
     
             glfwPollEvents();

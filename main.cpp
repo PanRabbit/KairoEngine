@@ -81,17 +81,22 @@ int main()
     }
 
     // ==========================================
-    // SELECTION FRAMEBUFFER CREATION
-    // ==========================================
-    SelectionBuffer selectionFB;
-    selectionFB.init(static_cast<int>(screenWidth), static_cast<int>(screenHeight));
-
-    // ==========================================
     // ENGINE CONTEXT INITIALIZATION 
     // ==========================================
     // init BEFORE setting intput callbacks
     EngineContext engineContext;
     engineContext.camera = camera;
+
+
+    // ==========================================
+    // SELECTION FRAMEBUFFER CREATION
+    // ==========================================
+    engineContext.selectionFB.init(static_cast<int>(screenWidth), static_cast<int>(screenHeight));
+
+
+    // ==========================================
+    // WINDOW STATES
+    // ==========================================
 
     // Set global context pointer for GLFW callbacks
     setInputContext(&engineContext);
@@ -110,6 +115,8 @@ int main()
     glEnable(GL_STENCIL_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     // ==========================================
     // ASSET LOADING
@@ -136,7 +143,7 @@ int main()
 
     // Clean up allocated resources
     ShutdownUI();
-    selectionFB.cleanup();
+    engineContext.selectionFB.cleanup();
 
     glfwTerminate();
     return 0;
