@@ -10,7 +10,7 @@ void AssetLoad(EngineContext& engineContext) {
     auto depthShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/depth_visualiser.fs");
     auto selectionShader = std::make_unique<Shader>("shaders/selection.vs", "shaders/selection.fs");
     auto singleColorShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/single_color.fs");
-
+    auto postProcessingShader = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/post_processing.fs");
     // ==========================================
     // MATERIALS
     // ==========================================
@@ -46,7 +46,7 @@ void AssetLoad(EngineContext& engineContext) {
     engineContext.shaders.push_back(std::move(depthShader));
     engineContext.shaders.push_back(std::move(selectionShader));
     engineContext.shaders.push_back(std::move(singleColorShader));
-
+    engineContext.shaders.push_back(std::move(postProcessingShader));
     // ==========================================
     // MODELS
     // ==========================================

@@ -11,11 +11,11 @@
 #include "kairo/selection.h"
 
 struct EngineContext {
-    // --- Owned state (moved here from main.cpp) ---
+    // --- Owned states (moved here from main.cpp) ---
     
-    Camera camera;                          // was: reference to local in main
+    Camera camera;                         
     
-    SelectionBuffer selectionFB;             // was: local in main, now owned
+    SelectionBuffer selectionFB;             
     
     std::vector<std::unique_ptr<Shader>> shaders;   // owns all shaders
     std::vector<std::unique_ptr<Material>> materials; // owns all materials
@@ -23,8 +23,8 @@ struct EngineContext {
     
     std::vector<std::unique_ptr<GameObject>> sceneObjects;  // owns game objects
     
-    glm::mat4 view = glm::mat4(1.0f);       // computed each frame, owned
-    glm::mat4 projection = glm::mat4(1.0f);  // computed each frame, owned
+    glm::mat4 view = glm::mat4(1.0f);       // computed each frame
+    glm::mat4 projection = glm::mat4(1.0f);  // computed each frame
     
     // --- Light data (render_loop needs this every frame) ---
     std::vector<glm::vec3> pointLightPositions;
@@ -40,12 +40,19 @@ struct EngineContext {
 
     std::vector<glm::vec3> grassPositions;
     
-    // --- Per-frame / mutable state ---
+    // --- Per-frame / mutable states ---
     float deltaTime = 0.0f;
-    static inline float lastFrame = 0.0f;     // was: file-scope static in render_loop.cpp
+    static inline float lastFrame = 0.0f;     
     
-    
-    // --- UI / display state ---
+    // --- Post-processing states ---
+    bool isPostProcessing;
+    unsigned int postProcessingFB;
+    unsigned int texColorBuffer;
+    unsigned int rboDepthStencil;
+    unsigned int PPVBO;
+    unsigned int PPVAO;
+
+    // --- UI / display states ---
     float scrWidth = 1600.0f;
     float scrHeight = 1200.0f;
     bool flashlightOn = false;
