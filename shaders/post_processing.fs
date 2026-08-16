@@ -6,9 +6,25 @@ in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
 uniform float time;
+uniform float scrWidth;
+uniform float scrHeight;
+
+
+
+vec2 pixelate()
+{
+    float resolution = 256.0;
+    float pixelSize = scrHeight / resolution;
+    float offset = 0.025;
+
+    float pixelsX = scrWidth / pixelSize;
+    float pixelsY = scrHeight / pixelSize;
+    vec2 NewTexCoords = vec2((floor(TexCoords.x * (pixelsX))+ offset) / (pixelsX), (floor(TexCoords.y * (pixelsY)) + offset) / (pixelsY));
+    return NewTexCoords;
+}
 
 void main()
 {
-    vec2 NewTexCoords = vec2(TexCoords.x, 1.0 - TexCoords.y);
-    FragColor = vec4(vec3(1.0 - texture(screenTexture, NewTexCoords)), 1.0);
+
+    FragColor = vec4(vec3(texture(screenTexture, pixelate())), 1.0);
 }

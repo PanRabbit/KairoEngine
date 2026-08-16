@@ -133,6 +133,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             glBindTexture(GL_TEXTURE_2D, engineContext.texColorBuffer);
             engineContext.shaders[5]->setInt("screenTexture", 0);
             engineContext.shaders[5]->setFloat("time", currentFrame);
+            engineContext.shaders[5]->setFloat("scrWidth", engineContext.scrWidth);
+            engineContext.shaders[5]->setFloat("scrHeight", engineContext.scrHeight);
             glDrawArrays(GL_TRIANGLES, 0, 6);
             glBindVertexArray(0);    
             }
