@@ -193,7 +193,7 @@ void main()
     if (material.useAlphaMap) {alphaTex = texture(material.alphaMap, TexCoord * material.coordScale + material.coordOffset).r;}
     else {alphaTex = 1.0;};
 
-    //if (alphaTex < 0.01) discard;
+    if (alphaTex < 0.01) discard;
     
 
     // sample the textures/diffuse colours (converted to vec3 as lighting is calculated in vec3)

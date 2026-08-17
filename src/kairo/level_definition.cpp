@@ -16,14 +16,7 @@ void DefineLevel(EngineContext& engineContext) {
     engineContext.cubeScales.assign({ 1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.75f });
 
     engineContext.grassPositions.assign({
-        glm::vec3(1.3f, 0.2f, -1.7f),
-        glm::vec3(-2.5f, 0.2f, -2.1f),
-        glm::vec3(0.4f, 0.2f, 0.4f),
-        glm::vec3(-1.1f, 0.2f, -1.9f),
-        glm::vec3(0.0f, 0.2f, -2.5f),
         glm::vec3(3.7f, 0.2f, -1.2f),
-   
-   
     });
 
     // Point Lights
