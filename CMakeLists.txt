@@ -63,11 +63,23 @@ if(WIN32)
     find_package(glfw3 CONFIG REQUIRED)
     find_package(glm CONFIG REQUIRED)
 
-    add_executable(KairoEngine ${PROJECT_SOURCES})
-    target_include_directories(KairoEngine PRIVATE imgui imgui/backend)
+    add_executable(KairoEngine ${PROJECT_SOURCES} src/glad.c)
     
-    # Linked assimp here at the end
-    target_link_libraries(KairoEngine PRIVATE imgui_lib glad::glad glfw glm::glm assimp)
+    # Windows include paths matching Linux configuration
+    target_include_directories(KairoEngine PRIVATE include . imgui imgui/backend)
+    
+    # ImGui static library includes and dependencies for Windows
+    target_include_directories(imgui_lib PRIVATE . imgui imgui/backend)
+    target_link_libraries(imgui_lib PUBLIC glfw glad::glad)
+
+    # Link everything together for Windows (using standard vcpkg target aliases)
+    target_link_libraries(KairoEngine PRIVATE 
+        imgui_lib 
+        glad::glad 
+        glfw 
+        glm::glm 
+        assimp
+    )
 else()
     # Linux setup
     find_package(PkgConfig REQUIRED)
@@ -80,8 +92,18 @@ else()
 
     # Let BOTH your main executable and the static library see the headers
     target_include_directories(KairoEngine PRIVATE include . imgui imgui/backend)
-    target_include_directories(imgui_lib PRIVATE include . imgui imgui/backend)
+    target_include_directories(imgui_lib PRIVATE . imgui imgui/backend)
 
     # Linked assimp here at the end
     target_link_libraries(KairoEngine PRIVATE imgui_lib glfw glm::glm OpenGL::GL ${CMAKE_DL_LIBS} assimp)
+endif()
+
+
+# Automatically copy Assimp DLL to the output directory on Windows
+if(WIN32)
+    add_custom_command(TARGET KairoEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:assimp>
+        $<TARGET_FILE_DIR:KairoEngine>
+    )
 endif()

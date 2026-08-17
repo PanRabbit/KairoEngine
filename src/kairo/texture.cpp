@@ -12,7 +12,7 @@ Texture::Texture(const std::string& path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);   
     
-    GLenum format;
+    GLenum format = GL_RGB;
     if (nrChannels == 1) 
     {
         format = GL_RED;
