@@ -130,6 +130,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             engineContext.shaders[5]->use();
             glBindVertexArray(engineContext.PPVAO); // bind post-processing VAO
             glDisable(GL_DEPTH_TEST);
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, engineContext.texColorBuffer);
             engineContext.shaders[5]->setInt("screenTexture", 0);
             engineContext.shaders[5]->setFloat("time", currentFrame);
