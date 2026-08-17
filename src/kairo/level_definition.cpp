@@ -1,3 +1,14 @@
+#include <kairo/engine_context.h>
+#include <kairo/game_object.h>
+#include <kairo/material.h>
+#include <kairo/model.h>
+#include <kairo/mesh.h>
+#include <kairo/shader.h>
+#include <kairo/texture.h>
+#include <kairo/selection.h>
+#include <kairo/input.h>
+#include <kairo/UI.h>
+
 // will eventually be a json file
 void DefineLevel(EngineContext& engineContext) {
 

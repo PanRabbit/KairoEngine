@@ -11,7 +11,6 @@
 #include "kairo/selection.h"
 
 struct EngineContext {
-    // --- Owned states (moved here from main.cpp) ---
     
     Camera camera;                         
     
@@ -26,25 +25,25 @@ struct EngineContext {
     glm::mat4 view = glm::mat4(1.0f);       // computed each frame
     glm::mat4 projection = glm::mat4(1.0f);  // computed each frame
     
-    // --- Light data (render_loop needs this every frame) ---
+    // Light data (render_loop needs this every frame) 
     std::vector<glm::vec3> pointLightPositions;
     std::vector<glm::vec3> pointLightColors;
     std::vector<float> pointLightIntensityMults;
     glm::vec3 sunDirection;
     glm::vec3 torchColor;
 
-    // --- Level data ---
+    // Level data 
     std::vector<glm::vec3> cubePositions;
     std::vector<float> cubeRotations;
     std::vector<float> cubeScales;
 
     std::vector<glm::vec3> grassPositions;
     
-    // --- Per-frame / mutable states ---
+    // Timing states
     float deltaTime = 0.0f;
     static inline float lastFrame = 0.0f;     
     
-    // --- Post-processing states ---
+    //  Post processing states 
     bool isPostProcessing;
     unsigned int postProcessingFB;
     unsigned int texColorBuffer;
@@ -52,7 +51,7 @@ struct EngineContext {
     unsigned int PPVBO;
     unsigned int PPVAO;
 
-    // --- UI / display states ---
+    // UI states 
     float scrWidth = 1600.0f;
     float scrHeight = 1200.0f;
     bool flashlightOn = false;

@@ -6,10 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cmath>
-#include <vector>
+
 
 #include <stb/stb_image.h>
 

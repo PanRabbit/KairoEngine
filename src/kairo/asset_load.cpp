@@ -1,3 +1,13 @@
+#include <kairo/engine_context.h>
+#include <kairo/material.h>
+#include <kairo/model.h>
+#include <kairo/mesh.h>
+#include <kairo/shader.h>
+#include <kairo/texture.h>
+#include <kairo/selection.h>
+#include <kairo/input.h>
+#include <kairo/UI.h>
+
 // should eventually automate on every asset in dir
 
 void AssetLoad(EngineContext& engineContext) {

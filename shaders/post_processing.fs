@@ -13,7 +13,7 @@ uniform float scrHeight;
 
 vec2 pixelate()
 {
-    float resolution = 256.0;
+    float resolution = 64.0;
     float pixelSize = scrHeight / resolution; // calc size of pixel based on resolution
     float offset = 0.025; // small offset to fix wrapping issue (lazy method cause I cba to change texture filtering mode)
 
@@ -25,7 +25,8 @@ vec2 pixelate()
 
 void main()
 {
-
-    FragColor = vec4(vec3(texture(screenTexture, pixelate())), 1.0);
-    //FragColor = vec4(vec3(texture(screenTexture, TexCoords)), 1.0);
+    vec3 color = vec3(texture(screenTexture, 1.0 - TexCoords));
+    vec3 newColor = pow(vec3(1.0,0.0,0.0) - color, vec3(4.2));
+    //FragColor = vec4(vec3(texture(screenTexture, pixelate())), 1.0);
+    FragColor = vec4(newColor, 1.0);
 }

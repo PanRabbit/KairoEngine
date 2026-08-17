@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 # 1. Only configure the project if the build folder doesn't exist yet
 if [ ! -d "build" ]; then

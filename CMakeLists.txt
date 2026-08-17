@@ -4,6 +4,9 @@ project(KairoEngine)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Generate compile_commands.json so clangd knows the include paths
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Force ImGui to use your GLAD loader explicitly
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
