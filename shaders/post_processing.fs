@@ -14,8 +14,8 @@ uniform float scrHeight;
 vec2 pixelate()
 {
     float resolution = 256.0;
-    float pixelSize = scrHeight / resolution;
-    float offset = 0.025;
+    float pixelSize = scrHeight / resolution; // calc size of pixel based on resolution
+    float offset = 0.025; // small offset to fix wrapping issue (lazy method cause I cba to change texture filtering mode)
 
     float pixelsX = scrWidth / pixelSize;
     float pixelsY = scrHeight / pixelSize;
