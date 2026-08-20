@@ -14,7 +14,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
     
             // Calculate Matrices for this frame
             engineContext.view = engineContext.camera.GetViewMatrix();
-            engineContext.projection = glm::perspective(glm::radians(engineContext.camera.Zoom), engineContext.scrWidth / engineContext.scrHeight, 0.1f, 100.0f);
+            engineContext.centerView = engineContext.camera.GetCenterViewMatrix();
+            engineContext.projection = glm::perspective(glm::radians(engineContext.camera.Zoom), engineContext.scrWidth / engineContext.scrHeight, 0.1f, 500.0f);
     
             // Process UI toggles 
             if (engineContext.isWireframe) {
@@ -47,6 +48,12 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             phongShader.setVec3("dirLight.ambient", sunColor * 0.15f);
             phongShader.setVec3("dirLight.diffuse", sunColor * 1.0f);
             phongShader.setVec3("dirLight.specular", sunColor * 1.0f);
+
+            // Skybox
+            glActiveTexture(GL_TEXTURE0 + engineContext.skyboxTexture->ID   );
+            glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.skyboxTexture->ID);
+            phongShader.setInt("skybox", engineContext.skyboxTexture->ID);
+       
     
             // Point lights
             for(unsigned int i = 0; i < 3; i++)
@@ -98,7 +105,17 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             glClearColor(sunColor.r, sunColor.g, sunColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);
+
+            // draw skybox
+            engineContext.shaders[6]->use();
+            engineContext.shaders[6]->setMat4("projection", engineContext.projection);
+            engineContext.shaders[6]->setMat4("view", engineContext.centerView);
+            glBindVertexArray(engineContext.skyboxVAO);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.skyboxTexture->ID);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDepthMask(GL_TRUE);
     
+
             // Render all regular objects
             for (auto& obj : engineContext.sceneObjects) {
                     obj->draw(phongShader, engineContext.selectedObjectID);

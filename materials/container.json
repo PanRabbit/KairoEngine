@@ -13,7 +13,7 @@
     "useSpecularMap" : true,
     "specularMapPath" : "textures/container2_specular.png",
     "specularStrength" : 1.0,
-    "shininess" : 256.0,
+    "shininess" : 128.0,
 
     "coordOffset" : [0,0],
     "coordScale" : [1,1]

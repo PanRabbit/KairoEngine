@@ -172,6 +172,11 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 
+    void setSamplerCube(const std::string &name, int textureUnit) const
+    {
+        glUniform1i(glGetUniformLocation(ID, name.c_str()), textureUnit);
+    }
+
     // Clean up shader
     ~Shader()
     {

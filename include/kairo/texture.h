@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 class Texture
 {
@@ -17,4 +18,15 @@ public:
 private:
     // code that is only accessible within this class
     int width, height, nrChannels;
+};
+
+
+class CubeMapTexture
+{
+public:
+    unsigned int ID;
+
+    CubeMapTexture(std::vector<std::string> faces);
+
+    ~CubeMapTexture();
 };

@@ -8,9 +8,12 @@
 #include <kairo/selection.h>
 #include <kairo/input.h>
 #include <kairo/UI.h>
+#include "src/kairo/skybox.cpp"
 
 // will eventually be a json file
 void DefineLevel(EngineContext& engineContext) {
+
+    DefineSkyBox(engineContext, "night");
 
     engineContext.cubePositions.assign({
         glm::vec3( 2.6f, 0.5f, 0.24f),
@@ -78,4 +81,11 @@ void DefineLevel(EngineContext& engineContext) {
     suzanneObj->rotation.y = glm::radians(180.0f);
     suzanneObj->scale = glm::vec3(0.5f);
     engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(suzanneObj));
+
+    // Suzanne flat
+    auto* suzanneFlatObj = new GameObject("SuzanneFlat", engineContext.models[4].get(), engineContext.materials[3].get());
+    suzanneFlatObj->position = glm::vec3(0.0f, 0.5f, 0.0f);
+    suzanneFlatObj->rotation.y = glm::radians(180.0f);
+    suzanneFlatObj->scale = glm::vec3(0.5f);
+    engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(suzanneFlatObj));
 }

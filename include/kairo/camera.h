@@ -48,14 +48,14 @@ public:
         Position = position;
         WorldUp = up;
         
-        // 1. Normalize the GUI vector you passed in
+        // Normalize the GUI vector you passed in
         glm::vec3 dir = glm::normalize(startingFront);
         
-        // 2. Automatically calculate the exact Pitch and Yaw required to match your Front vector
+        // Automatically calculate the exact Pitch and Yaw required to match your Front vector
         Pitch = glm::degrees(asin(dir.y));
         Yaw = glm::degrees(atan2(dir.z, dir.x));
+
         
-        // 3. Sync everything up
         updateCameraVectors();
     }
 
@@ -63,6 +63,11 @@ public:
     glm::mat4 GetViewMatrix()
     {
         return glm::lookAt(Position, Position + Front, Up);
+    }
+
+    glm::mat4 GetCenterViewMatrix()
+    {
+        return glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), Front, Up);
     }
 
     // processes input received

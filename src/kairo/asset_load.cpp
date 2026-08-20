@@ -21,6 +21,7 @@ void AssetLoad(EngineContext& engineContext) {
     auto selectionShader = std::make_unique<Shader>("shaders/selection.vs", "shaders/selection.fs");
     auto singleColorShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/single_color.fs");
     auto postProcessingShader = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/post_processing.fs");
+    auto skyboxShader = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
     // ==========================================
     // MATERIALS
     // ==========================================
@@ -57,6 +58,7 @@ void AssetLoad(EngineContext& engineContext) {
     engineContext.shaders.push_back(std::move(selectionShader));
     engineContext.shaders.push_back(std::move(singleColorShader));
     engineContext.shaders.push_back(std::move(postProcessingShader));
+    engineContext.shaders.push_back(std::move(skyboxShader));
     // ==========================================
     // MODELS
     // ==========================================
@@ -71,4 +73,7 @@ void AssetLoad(EngineContext& engineContext) {
 
     auto meshSphere = std::make_unique<Model>("meshes/prims/sphere.obj");
     engineContext.models.push_back(std::move(meshSphere));
+
+    auto meshSuzanneFlat = std::make_unique<Model>("meshes/suzanneFlat.obj");
+    engineContext.models.push_back(std::move(meshSuzanneFlat));
 }

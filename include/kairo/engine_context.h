@@ -9,6 +9,7 @@
 #include "kairo/model.h"
 #include "kairo/game_object.h"
 #include "kairo/selection.h"
+#include "kairo/texture.h"
 
 struct EngineContext {
     
@@ -22,8 +23,13 @@ struct EngineContext {
     
     std::vector<std::unique_ptr<GameObject>> sceneObjects;  // owns game objects
     
-    glm::mat4 view = glm::mat4(1.0f);       // computed each frame
-    glm::mat4 projection = glm::mat4(1.0f);  // computed each frame
+    std::unique_ptr<CubeMapTexture> skyboxTexture;
+    unsigned int skyboxVAO;
+    unsigned int skyboxVBO;
+
+    glm::mat4 view = glm::mat4(1.0f);       // view matrix for the camera
+    glm::mat4 centerView = glm::mat4(1.0f); // view matrix for the center of the world
+    glm::mat4 projection = glm::mat4(1.0f);  // projection matrix
     
     // Light data (render_loop needs this every frame) 
     std::vector<glm::vec3> pointLightPositions;
