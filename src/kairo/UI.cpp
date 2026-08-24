@@ -34,6 +34,7 @@ void RenderUI(EngineContext& engineContext) {
 
             // Modify engineContext directly via references passed from main loop
             ImGui::Checkbox("Enable Wireframe Mode", &engineContext.isWireframe);
+            ImGui::Checkbox("Enable Post Processing", &engineContext.isPostProcessing);
             ImGui::ColorEdit3("Background Color", engineContext.clearColor);
 
             if (ImGui::Button("Hot Reload Shaders")) {

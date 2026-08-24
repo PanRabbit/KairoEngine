@@ -66,7 +66,6 @@ void DefineSkyBox(EngineContext& engineContext, std::string skyboxName)
     glGenBuffers(1, &engineContext.skyboxVBO);
     glBindBuffer(GL_ARRAY_BUFFER, engineContext.skyboxVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     engineContext.skyboxVAO = 0;
     glGenVertexArrays(1, &engineContext.skyboxVAO);

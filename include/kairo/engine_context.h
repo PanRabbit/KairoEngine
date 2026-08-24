@@ -50,12 +50,14 @@ struct EngineContext {
     static inline float lastFrame = 0.0f;     
     
     //  Post processing states 
-    bool isPostProcessing;
+    bool isPostProcessing = true;
     unsigned int postProcessingFB;
     unsigned int texColorBuffer;
     unsigned int rboDepthStencil;
     unsigned int PPVBO;
     unsigned int PPVAO;
+    unsigned int intermediateFBO;
+    unsigned int intermediateTex;
 
     // UI states 
     float scrWidth = 1600.0f;

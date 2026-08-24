@@ -17,23 +17,23 @@ void PostProcess(EngineContext& engineContext) {
     //create color texture
     engineContext.texColorBuffer = 0;
     glGenTextures(1, &engineContext.texColorBuffer);
-    glBindTexture(GL_TEXTURE_2D, engineContext.texColorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, engineContext.texColorBuffer);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), GL_TRUE);
+    glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // prevent edge bleeding
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
     //attach texture to currently bound framebuffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, engineContext.texColorBuffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, engineContext.texColorBuffer, 0);
 
     //create renderbuffer object for depth and stencil attachment
     engineContext.rboDepthStencil = 0;
     glGenRenderbuffers(1, &engineContext.rboDepthStencil);
     glBindRenderbuffer(GL_RENDERBUFFER, engineContext.rboDepthStencil);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight));
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight));
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     //attach renderbuffer to framebuffer
@@ -46,6 +46,22 @@ void PostProcess(EngineContext& engineContext) {
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    //create intermediate framebuffer to handle multisampling
+    engineContext.intermediateFBO = 0;
+    glGenFramebuffers(1, &engineContext.intermediateFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, engineContext.intermediateFBO);
+
+    //create intermediate texture
+    engineContext.intermediateTex = 0;
+    glGenTextures(1, &engineContext.intermediateTex);
+    glBindTexture(GL_TEXTURE_2D, engineContext.intermediateTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, engineContext.intermediateTex, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
     float PPQuadVertices[] = {
         -1.0f,  1.0f,  0.0f, 1.0f,
         -1.0f, -1.0f,  0.0f, 0.0f,
@@ -60,7 +76,6 @@ void PostProcess(EngineContext& engineContext) {
     glGenBuffers(1, &engineContext.PPVBO);
     glBindBuffer(GL_ARRAY_BUFFER, engineContext.PPVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(PPQuadVertices), PPQuadVertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     engineContext.PPVAO = 0;
     glGenVertexArrays(1, &engineContext.PPVAO);

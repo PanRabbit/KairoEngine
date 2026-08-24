@@ -9,7 +9,7 @@ uniform float time;
 uniform float scrWidth;
 uniform float scrHeight;
 
-float sharpness = 0.01;
+float sharpness = 0.005;
 float blurStrength = 0.25;
 float edgeDetectionStrength = 0.1;
 

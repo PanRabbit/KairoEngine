@@ -23,20 +23,16 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             } else {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
-    
-            // Post processing conditions (add more conditions here)
-            if (engineContext.isWireframe) {
-                engineContext.isPostProcessing = false;
-            } else {
-                engineContext.isPostProcessing = true;
-            }
+
             // ==========================================
             // LIGHTS AND CAMERA VARIABLES
             // ==========================================
             Shader& phongShader = *engineContext.shaders[0];
             Shader& lightShader = *engineContext.shaders[1];
             Shader& singleColorShader = *engineContext.shaders[4];
+            Shader& postProcessingShader = *engineContext.shaders[5];
             Material& lightMaterial = *engineContext.materials[4];
+
 
 
             phongShader.use();
@@ -92,6 +88,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             phongShader.setMat4("view", engineContext.view);
             phongShader.setMat4("projection", engineContext.projection);
             phongShader.setVec3("viewPos", engineContext.camera.Position);
+            phongShader.setFloat("scrWidth", engineContext.scrWidth);
+            phongShader.setFloat("scrHeight", engineContext.scrHeight);
     
             // ==========================================
             // BEGIN DRAW
@@ -102,6 +100,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             if (engineContext.isPostProcessing) {
                 glBindFramebuffer(GL_FRAMEBUFFER, engineContext.postProcessingFB);
             }
+            
             glClearColor(sunColor.r, sunColor.g, sunColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);
@@ -138,23 +137,29 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             }
 
             if (engineContext.isPostProcessing) {
-            // unbind post-processing framebuffer and bind default framebuffer
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                // resolve MSAA FBO to intermediate regular texture via blit
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, engineContext.postProcessingFB);
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, engineContext.intermediateFBO);
+                glBlitFramebuffer(0, 0, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight),
+                                  0, 0, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight),
+                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-            // draw post-processing quad
-            engineContext.shaders[5]->use();
-            glBindVertexArray(engineContext.PPVAO); // bind post-processing VAO
-            glDisable(GL_DEPTH_TEST);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, engineContext.texColorBuffer);
-            engineContext.shaders[5]->setInt("screenTexture", 0);
-            engineContext.shaders[5]->setFloat("time", currentFrame);
-            engineContext.shaders[5]->setFloat("scrWidth", engineContext.scrWidth);
-            engineContext.shaders[5]->setFloat("scrHeight", engineContext.scrHeight);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindVertexArray(0);    
+                // bind default framebuffer and draw post-processing quad
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                postProcessingShader.use();
+                glBindVertexArray(engineContext.PPVAO); // bind post-processing VAO
+                glDisable(GL_DEPTH_TEST);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, engineContext.intermediateTex);
+                postProcessingShader.setInt("screenTexture", 0);
+                postProcessingShader.setFloat("time", currentFrame);
+                postProcessingShader.setFloat("scrWidth", engineContext.scrWidth);
+                postProcessingShader.setFloat("scrHeight", engineContext.scrHeight);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+                glBindVertexArray(0);    
             }
 
 

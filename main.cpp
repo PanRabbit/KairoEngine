@@ -54,6 +54,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4); // multisampling for anti-aliasing
+
 
     // ==========================================
     // WINDOW CREATION
@@ -104,6 +106,8 @@ int main()
     glfwSetScrollCallback(window, scroll_callback);
 
     glfwSwapInterval(0); // vsync
+    glEnable(GL_MULTISAMPLE); // enable multisampling for anti-aliasing
+
 
     glViewport(0, 0, static_cast<int>(screenWidth), static_cast<int>(screenHeight));
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -116,6 +120,8 @@ int main()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+
 
 
     // ==========================================

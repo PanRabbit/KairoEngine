@@ -71,6 +71,10 @@ uniform SpotLight spotLight;
 uniform samplerCube skybox;
 uniform vec3 viewPos;
 
+uniform float scrWidth;
+uniform float scrHeight;
+
+vec2 screenCoord = gl_FragCoord.xy / vec2(scrWidth, scrHeight);
 
 uniform bool isSelected = false;
 
@@ -79,6 +83,9 @@ out vec4 FragColor;
 in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
+
+
+
 
 
 
@@ -232,14 +239,13 @@ void main()
     float roughness = 1.0 - ((material.shininess * specularTex.r) / 256.0);
     float maxLod   = 9.0; 
     float lod = smoothstep(0.0, 1.0, roughness) * maxLod;
-    vec3 reflection = textureLod(skybox, R, lod).rgb;
+    vec3 reflection = textureLod(skybox, R, lod).rgb; // load lower resolution reflection for higher roughness
     result += reflection * specularTex;
 
 
     if (isSelected) {result = result / (1 - vec3(0.2, 0.55, 0.85));} // color dodge
     // Output final color
     FragColor = vec4(result, alphaTex);
-    //FragColor = vec4(roughness, roughness, roughness, 1.0);
 
 
 }
