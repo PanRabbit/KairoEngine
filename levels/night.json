@@ -1,0 +1,97 @@
+{
+    "SkyBox": {
+        "name": "night"
+    },
+    "SunDirection": [-0.2, -1.0, 0.5],
+    "SunColor": [0.1, 0.15, 0.2],
+    "TorchColor": [1.0, 0.95, 0.8],
+    "GameObjects": {
+        "Cube_0": {
+            "model": "cube",
+            "material": "wood",
+            "location": [2.6, 0.5, 0.24],
+            "rotation": [0.0, -28.0, 0.0],
+            "scale": [1.0, 1.0, 1.0]
+        },
+        "Cube_1": {
+            "model": "cube",
+            "material": "wood",
+            "location": [1.7, 1.0, 1.96],
+            "rotation": [0.0, 37.0, 0.0],
+            "scale": [2.0, 2.0, 2.0]
+        },
+        "Cube_2": {
+            "model": "cube",
+            "material": "wood",
+            "location": [1.7, 2.5, 1.96],
+            "rotation": [0.0, 60.0, 0.0],
+            "scale": [1.0, 1.0, 1.0]
+        },
+        "Cube_3": {
+            "model": "cube",
+            "material": "wood",
+            "location": [-0.67, 0.5, 2.0],
+            "rotation": [0.0, -16.0, 0.0],
+            "scale": [1.0, 1.0, 1.0]
+        },
+        "Cube_4": {
+            "model": "cube",
+            "material": "wood",
+            "location": [-2.2, 0.5, 0.6],
+            "rotation": [0.0, -54.0, 0.0],
+            "scale": [1.0, 1.0, 1.0]
+        },
+        "Cube_5": {
+            "model": "cube",
+            "material": "wood",
+            "location": [-2.8, 0.5, -0.23],
+            "rotation": [0.0, -54.0, 0.0],
+            "scale": [1.0, 1.0, 1.0]
+        },
+        "Cube_6": {
+            "model": "cube",
+            "material": "wood",
+            "location": [-2.5, 1.375, 0.2],
+            "rotation": [0.0, -30.0, 0.0],
+            "scale": [0.75, 0.75, 0.75]
+        },
+        "Floor": {
+            "model": "plane",
+            "material": "floor",
+            "location": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0],
+            "scale": [100.0, 100.0, 100.0]
+        },
+        "Suzanne": {
+            "model": "suzanne",
+            "material": "grunge",
+            "location": [0.0, 2.0, 0.0],
+            "rotation": [0.0, 180.0, 0.0],
+            "scale": [0.5, 0.5, 0.5]
+        },
+        "SuzanneFlat": {
+            "model": "suzanneFlat",
+            "material": "grunge",
+            "location": [0.0, 0.5, 0.0],
+            "rotation": [0.0, 180.0, 0.0],
+            "scale": [0.5, 0.5, 0.5]
+        }
+    },
+    "PointLights": {
+        "light0": {
+            "position": [2.0, 1.5, -0.85],
+            "color": [1.0, 1.0, 1.0],
+            "intensity": 8.0
+        },
+        "light1": {
+            "position": [-1.5, 2.2, 1.7],
+            "color": [0.19, 0.75, 1.0],
+            "intensity": 16.0
+        },
+        "light2": {
+            "position": [-1.8, 0.5, -1.5],
+            "color": [1.0, 0.33, 0.43],
+            "intensity": 4.0
+        }
+    }
+}

@@ -162,11 +162,17 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 glBindVertexArray(0);    
             }
 
+            // ==========================================
+            // UPDATE UI STATES
+            // ==========================================
+            engineContext.cameraSpeed = engineContext.camera.MovementSpeed;
+            engineContext.fov = engineContext.camera.Zoom;
+            engineContext.cameraPos = engineContext.camera.Position;
+            engineContext.cameraRot = glm::vec3(engineContext.camera.Pitch, engineContext.camera.Yaw, 0.0f);
 
             // ==========================================
             // END FRAME UI & SWAP
             // ==========================================
-            
             RenderUI(engineContext);
     
             glfwPollEvents();

@@ -48,7 +48,7 @@ public:
         Position = position;
         WorldUp = up;
         
-        // Normalize the GUI vector you passed in
+        // Normalize the GUI vector passed in
         glm::vec3 dir = glm::normalize(startingFront);
         
         // Automatically calculate the exact Pitch and Yaw required to match your Front vector

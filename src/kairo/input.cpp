@@ -26,7 +26,7 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
 
     // Camera Speed modifier (Sprint)
     if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        engineContext.camera.MovementSpeed = 2.5f;
+        engineContext.camera.MovementSpeed = 5.0f;
     else
         engineContext.camera.MovementSpeed = 1.0f;
 

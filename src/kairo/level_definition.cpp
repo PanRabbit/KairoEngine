@@ -49,3 +49,5 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
         }
     }
 }
+
+void SaveLevelToJson(EngineContext& engineContext, const std::string& path){}

@@ -7,7 +7,7 @@
     "alphaMapPath" : "",
 
     "useChecker" : true,
-    "checkerSize" : 0.1,
+    "checkerSize" : 0.01,
     "secondaryColor" : [0.3,0.3,0.3],
 
     "useSpecularMap" : true,
@@ -16,5 +16,5 @@
     "shininess" : 64.0,
 
     "coordOffset" : [0,0],
-    "coordScale" : [1,1]
+    "coordScale" : [10,10]
 }
