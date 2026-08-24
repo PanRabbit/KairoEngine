@@ -9,7 +9,7 @@ Texture::Texture(const std::string& path)
     unsigned char *image_data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);   
     
     GLenum format = GL_RGB;
