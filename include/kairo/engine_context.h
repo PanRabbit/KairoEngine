@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
+#include <string>
 
 #include "kairo/camera.h"
 #include "kairo/shader.h"
@@ -14,15 +16,22 @@
 struct EngineContext {
     
     Camera camera;                         
-    
+     
     SelectionBuffer selectionFB;             
     
-    std::vector<std::unique_ptr<Shader>> shaders;   // owns all shaders
-    std::vector<std::unique_ptr<Material>> materials; // owns all materials
-    std::vector<std::unique_ptr<Model>> models;      // owns mesh loaders
+    // owned maps for assets
+    std::unordered_map<std::string, std::unique_ptr<Shader>> shaders;
+    std::unordered_map<std::string, std::unique_ptr<Material>> materials;
+    std::unordered_map<std::string, std::unique_ptr<Model>> models;
+    std::unordered_map<std::string, std::unique_ptr<GameObject>> sceneObjects;
+
+    // getters to access assets by name
+    Shader* getShaderByName(const std::string& name);
+    Material* getMaterialByName(const std::string& name);
+    Model* getModelByName(const std::string& name);
+    GameObject* getGameObjectByName(const std::string& name);
     
-    std::vector<std::unique_ptr<GameObject>> sceneObjects;  // owns game objects
-    
+    // skybox texture and VAO/VBO
     std::unique_ptr<CubeMapTexture> skyboxTexture;
     unsigned int skyboxVAO;
     unsigned int skyboxVBO;
@@ -73,3 +82,11 @@ struct EngineContext {
     glm::vec3 cameraPos;
     glm::vec3 cameraRot;
 };
+
+// Forward declarations for functions defined in separate .cpp files
+struct GLFWwindow;
+void PostProcess(EngineContext& engineContext);
+void AssetLoad(EngineContext& engineContext);
+void DefineLevel(EngineContext& engineContext);
+void RenderLoop(GLFWwindow* window, EngineContext& engineContext);
+void DefineSkyBox(EngineContext& engineContext, std::string skyboxName);

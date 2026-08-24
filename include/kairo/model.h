@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <iostream>
 #include <vector>
 #include "include/kairo/material.h"
 #include "include/kairo/mesh.h"

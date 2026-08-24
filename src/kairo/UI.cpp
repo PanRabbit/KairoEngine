@@ -38,10 +38,10 @@ void RenderUI(EngineContext& engineContext) {
             ImGui::ColorEdit3("Background Color", engineContext.clearColor);
 
             if (ImGui::Button("Hot Reload Shaders")) {
-                for (auto& shader : engineContext.shaders) {
+                for (auto& [name, shader] : engineContext.shaders) {
                     shader->reload();
                 }
-                for (auto& material : engineContext.materials) {
+                for (auto& [name, material] : engineContext.materials) {
                     material->loadFromJson("reload");
                 }
                 engineContext.reloadShader = true;

@@ -4,7 +4,6 @@
 #include <kairo/game_object.h>
 #include <kairo/shader.h>
 #include <iostream>
-#include <vector>
 
 // Global context pointer for GLFW callbacks (set once at init)
 static EngineContext* g_engineContext = nullptr;
@@ -84,11 +83,14 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
             double mouseX, mouseY;
             glfwGetCursorPos(window, &mouseX, &mouseY);
 
-            int selectedID = PerformSelection(mouseX, mouseY, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight),
-                                              *engineContext.shaders[3], engineContext.selectionFB, engineContext.sceneObjects, engineContext.view, engineContext.projection);
-            
-            std::cout << "Clicked Object ID: " << selectedID << std::endl;
-            engineContext.selectedObjectID = selectedID;
+            Shader* selectionShader = engineContext.getShaderByName("selection");
+            if (selectionShader) {
+                int selectedID = PerformSelection(mouseX, mouseY, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight),
+                                                *selectionShader, engineContext.selectionFB, engineContext.sceneObjects, engineContext.view, engineContext.projection);
+                
+                std::cout << "Clicked Object ID: " << selectedID << std::endl;
+                engineContext.selectedObjectID = selectedID;
+            }
             mouseJustPressed = true;
         }
     }

@@ -27,11 +27,11 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             // ==========================================
             // LIGHTS AND CAMERA VARIABLES
             // ==========================================
-            Shader& phongShader = *engineContext.shaders[0];
-            Shader& lightShader = *engineContext.shaders[1];
-            Shader& singleColorShader = *engineContext.shaders[4];
-            Shader& postProcessingShader = *engineContext.shaders[5];
-            Material& lightMaterial = *engineContext.materials[4];
+            Shader& phongShader = *engineContext.getShaderByName("phong");
+            Shader& lightShader = *engineContext.getShaderByName("light");
+            Shader& singleColorShader = *engineContext.getShaderByName("singleColor");
+            Shader& postProcessingShader = *engineContext.getShaderByName("postProcessing");
+            Material& lightMaterial = *engineContext.getMaterialByName("light");
 
 
 
@@ -106,9 +106,9 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             glEnable(GL_DEPTH_TEST);
 
             // draw skybox
-            engineContext.shaders[6]->use();
-            engineContext.shaders[6]->setMat4("projection", engineContext.projection);
-            engineContext.shaders[6]->setMat4("view", engineContext.centerView);
+            engineContext.getShaderByName("skybox")->use();
+            engineContext.getShaderByName("skybox")->setMat4("projection", engineContext.projection);
+            engineContext.getShaderByName("skybox")->setMat4("view", engineContext.centerView);
             glBindVertexArray(engineContext.skyboxVAO);
             glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.skyboxTexture->ID);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -116,7 +116,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
     
 
             // Render all regular objects
-            for (auto& obj : engineContext.sceneObjects) {
+            for (auto& [name, obj] : engineContext.sceneObjects) {
                     obj->draw(phongShader, engineContext.selectedObjectID);
             }
     
@@ -133,7 +133,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 lightModel = glm::translate(lightModel, engineContext.pointLightPositions[i]); 
                 lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
                 lightShader.setMat4("model", lightModel);
-                engineContext.models[3]->draw(*engineContext.materials[4]);
+                engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
             }
 
             if (engineContext.isPostProcessing) {

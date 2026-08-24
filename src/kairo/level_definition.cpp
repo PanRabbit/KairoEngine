@@ -2,13 +2,6 @@
 #include <kairo/game_object.h>
 #include <kairo/material.h>
 #include <kairo/model.h>
-#include <kairo/mesh.h>
-#include <kairo/shader.h>
-#include <kairo/texture.h>
-#include <kairo/selection.h>
-#include <kairo/input.h>
-#include <kairo/UI.h>
-#include "src/kairo/skybox.cpp"
 
 // will eventually be a json file
 void DefineLevel(EngineContext& engineContext) {
@@ -51,41 +44,41 @@ void DefineLevel(EngineContext& engineContext) {
 
     // Cubes
     for (int i = 0; i < engineContext.cubePositions.size(); i++) {
-        auto* cube = new GameObject("Cube_" + std::to_string(i), engineContext.models[1].get(), engineContext.materials[0].get());
+        auto* cube = new GameObject("Cube_" + std::to_string(i), engineContext.getModelByName("cube"), engineContext.getMaterialByName("wood"));
         cube->position = engineContext.cubePositions[i];
         cube->rotation.y = glm::radians(engineContext.cubeRotations[i]);
         cube->scale = glm::vec3(engineContext.cubeScales[i]);
-        engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(cube));
+        engineContext.sceneObjects["cube" + std::to_string(i)] = std::move(std::unique_ptr<GameObject>(cube));
     }
 
     // Floor
-    auto* floorObj = new GameObject("Floor", engineContext.models[2].get(), engineContext.materials[1].get());
+    auto* floorObj = new GameObject("Floor", engineContext.getModelByName("plane"), engineContext.getMaterialByName("floor"));
     floorObj->scale = glm::vec3(10.0f);
-    engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(floorObj));
+    engineContext.sceneObjects["floor"] = std::move(std::unique_ptr<GameObject>(floorObj));
 
     // Grass
     for (int i = 0; i < engineContext.grassPositions.size(); i++) {
         for (int j = 0; j < 10; j++) {
-            auto* grassObj = new GameObject("Grass_" + std::to_string(i), engineContext.models[2].get(), engineContext.materials[5].get());
+            auto* grassObj = new GameObject("Grass_" + std::to_string(i), engineContext.getModelByName("plane"), engineContext.getMaterialByName("grass"));
             grassObj->scale = glm::vec3(float(rand() % 100) / 100.0f + 0.5f);
             grassObj->position = engineContext.grassPositions[i];
             grassObj->rotation.x = glm::radians(90.0f);
             grassObj->rotation.z = glm::radians(float(rand() % 360));
-            engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(grassObj));
+            engineContext.sceneObjects["grass" + std::to_string(i)] = std::move(std::unique_ptr<GameObject>(grassObj));
         }
     }
 
     // Suzanne
-    auto* suzanneObj = new GameObject("Suzanne", engineContext.models[0].get(), engineContext.materials[3].get());
+    auto* suzanneObj = new GameObject("Suzanne", engineContext.getModelByName("suzanne"), engineContext.getMaterialByName("grunge"));
     suzanneObj->position = glm::vec3(0.0f, 2.0f, 0.0f);
     suzanneObj->rotation.y = glm::radians(180.0f);
     suzanneObj->scale = glm::vec3(0.5f);
-    engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(suzanneObj));
+    engineContext.sceneObjects["suzanne"] = std::move(std::unique_ptr<GameObject>(suzanneObj));
 
     // Suzanne flat
-    auto* suzanneFlatObj = new GameObject("SuzanneFlat", engineContext.models[4].get(), engineContext.materials[3].get());
+    auto* suzanneFlatObj = new GameObject("SuzanneFlat", engineContext.getModelByName("suzanneFlat"), engineContext.getMaterialByName("grunge"));
     suzanneFlatObj->position = glm::vec3(0.0f, 0.5f, 0.0f);
     suzanneFlatObj->rotation.y = glm::radians(180.0f);
     suzanneFlatObj->scale = glm::vec3(0.5f);
-    engineContext.sceneObjects.push_back(std::unique_ptr<GameObject>(suzanneFlatObj));
+    engineContext.sceneObjects["suzanneFlat"] = std::move(std::unique_ptr<GameObject>(suzanneFlatObj));
 }

@@ -13,67 +13,49 @@
 void AssetLoad(EngineContext& engineContext) {
 
     // ==========================================
-    // LOAD SHADERS (But don't push to context yet)
+    // LOAD SHADERS (insert into maps first so materials can reference them)
     // ==========================================
-    auto phongShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/phong_shader.fs");
-    auto lightShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/light_shader.fs");
-    auto depthShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/depth_visualiser.fs");
-    auto selectionShader = std::make_unique<Shader>("shaders/selection.vs", "shaders/selection.fs");
-    auto singleColorShader = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/single_color.fs");
-    auto postProcessingShader = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/post_processing.fs");
-    auto skyboxShader = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
+    engineContext.shaders["phong"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/phong_shader.fs");
+    engineContext.shaders["light"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/light_shader.fs");
+    engineContext.shaders["depth"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/depth_visualiser.fs");
+    engineContext.shaders["selection"] = std::make_unique<Shader>("shaders/selection.vs", "shaders/selection.fs");
+    engineContext.shaders["singleColor"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/single_color.fs");
+    engineContext.shaders["postProcessing"] = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/post_processing.fs");
+    engineContext.shaders["skybox"] = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
+
     // ==========================================
-    // MATERIALS
+    // MATERIALS (reference shaders by name)
     // ==========================================
-    auto woodMaterial = std::make_unique<Material>(phongShader.get());
+    auto woodMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
     woodMaterial->loadFromJson("materials/container.json");
-    engineContext.materials.push_back(std::move(woodMaterial));
+    engineContext.materials["wood"] = std::move(woodMaterial);
 
-    auto floorMaterial = std::make_unique<Material>(phongShader.get());
+    auto floorMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
     floorMaterial->loadFromJson("materials/floor.json");
-    engineContext.materials.push_back(std::move(floorMaterial));
+    engineContext.materials["floor"] = std::move(floorMaterial);
 
-    auto mikuMaterial = std::make_unique<Material>(phongShader.get());
+    auto mikuMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
     mikuMaterial->loadFromJson("materials/mikuCube.json");
-    engineContext.materials.push_back(std::move(mikuMaterial));
+    engineContext.materials["miku"] = std::move(mikuMaterial);
 
-    auto grungeMaterial = std::make_unique<Material>(phongShader.get());
+    auto grungeMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
     grungeMaterial->loadFromJson("materials/grunge.json");
-    engineContext.materials.push_back(std::move(grungeMaterial));
+    engineContext.materials["grunge"] = std::move(grungeMaterial);
 
-    auto lightMaterial = std::make_unique<Material>(lightShader.get());
+    auto lightMaterial = std::make_unique<Material>(engineContext.getShaderByName("light"));
     lightMaterial->loadFromJson("materials/light.json");
-    engineContext.materials.push_back(std::move(lightMaterial));
+    engineContext.materials["light"] = std::move(lightMaterial);
 
-    auto grassMaterial = std::make_unique<Material>(phongShader.get());
+    auto grassMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
     grassMaterial->loadFromJson("materials/grass.json");
-    engineContext.materials.push_back(std::move(grassMaterial));
+    engineContext.materials["grass"] = std::move(grassMaterial);
 
     // ==========================================
-    // PUSH SHADERS TO CONTEXT (After materials loaded)
+    // MODELS (insert directly into maps)
     // ==========================================
-    engineContext.shaders.push_back(std::move(phongShader));
-    engineContext.shaders.push_back(std::move(lightShader));
-    engineContext.shaders.push_back(std::move(depthShader));
-    engineContext.shaders.push_back(std::move(selectionShader));
-    engineContext.shaders.push_back(std::move(singleColorShader));
-    engineContext.shaders.push_back(std::move(postProcessingShader));
-    engineContext.shaders.push_back(std::move(skyboxShader));
-    // ==========================================
-    // MODELS
-    // ==========================================
-    auto meshSuzanne = std::make_unique<Model>("meshes/suzanne.obj");
-    engineContext.models.push_back(std::move(meshSuzanne));
-
-    auto meshCube = std::make_unique<Model>("meshes/prims/cube.obj");
-    engineContext.models.push_back(std::move(meshCube));
-
-    auto meshPlane = std::make_unique<Model>("meshes/prims/plane.obj");
-    engineContext.models.push_back(std::move(meshPlane));
-
-    auto meshSphere = std::make_unique<Model>("meshes/prims/sphere.obj");
-    engineContext.models.push_back(std::move(meshSphere));
-
-    auto meshSuzanneFlat = std::make_unique<Model>("meshes/suzanneFlat.obj");
-    engineContext.models.push_back(std::move(meshSuzanneFlat));
+    engineContext.models["suzanne"] = std::make_unique<Model>("meshes/suzanne.obj");
+    engineContext.models["cube"] = std::make_unique<Model>("meshes/prims/cube.obj");
+    engineContext.models["plane"] = std::make_unique<Model>("meshes/prims/plane.obj");
+    engineContext.models["sphere"] = std::make_unique<Model>("meshes/prims/sphere.obj");
+    engineContext.models["suzanneFlat"] = std::make_unique<Model>("meshes/suzanneFlat.obj");
 }

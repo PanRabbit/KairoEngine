@@ -22,11 +22,6 @@
 #include <kairo/input.h>
 #include <kairo/engine_context.h>
 
-#include "src/kairo/render_loop.cpp"
-#include "src/kairo/level_definition.cpp"
-#include "src/kairo/asset_load.cpp"
-#include "src/kairo/post_process.cpp"
-
 float screenWidth = 1600;
 float screenHeight = 1200;
 
