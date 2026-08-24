@@ -56,11 +56,6 @@ set(PROJECT_SOURCES
     src/kairo/selection.cpp
     src/kairo/input.cpp
     src/kairo/engine_context.cpp
-    src/kairo/asset_load.cpp
-    src/kairo/post_process.cpp
-    src/kairo/level_definition.cpp
-    src/kairo/render_loop.cpp
-    src/kairo/skybox.cpp
 )
 
 # ==============================================================================

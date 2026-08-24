@@ -52,7 +52,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
        
     
             // Point lights
-            for(unsigned int i = 0; i < 3; i++)
+            for(unsigned int i = 0; i < engineContext.pointLightPositions.size(); i++)
             {
                 lightColor = engineContext.pointLightColors[i];
                 std::string uniformID = "pointLights[" + std::to_string(i) + "].";
@@ -125,7 +125,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             lightShader.setMat4("view", engineContext.view);
             lightShader.setMat4("projection", engineContext.projection);
     
-            for(unsigned int i = 0; i < 3; i++)
+            for(unsigned int i = 0; i < engineContext.pointLightPositions.size(); i++)
             {   
                 lightColor = engineContext.pointLightColors[i];
                 lightShader.setVec3("Color", lightColor);

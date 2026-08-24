@@ -1,5 +1,4 @@
 #include <glad/glad.h> // Always load GLAD first to capture OpenGL pointers
-#include <vector>
 #include "kairo/UI.h"        
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -35,7 +34,10 @@ void RenderUI(EngineContext& engineContext) {
             // Modify engineContext directly via references passed from main loop
             ImGui::Checkbox("Enable Wireframe Mode", &engineContext.isWireframe);
             ImGui::Checkbox("Enable Post Processing", &engineContext.isPostProcessing);
-            ImGui::ColorEdit3("Background Color", engineContext.clearColor);
+            
+            float clearColor[3] = { engineContext.clearColor.x, engineContext.clearColor.y, engineContext.clearColor.z };
+            ImGui::ColorEdit3("Background Color", clearColor);
+            engineContext.clearColor = glm::vec3(clearColor[0], clearColor[1], clearColor[2]);
 
             if (ImGui::Button("Hot Reload Shaders")) {
                 for (auto& [name, shader] : engineContext.shaders) {
@@ -61,7 +63,15 @@ void RenderUI(EngineContext& engineContext) {
         if (ImGui::BeginTabItem("Objects"))
         {
             ImGui::Separator();
-            ImGui::Text("Nothing to see here~");
+            if (engineContext.selectedObjectID != 0) {
+                ImGui::Text("Currently selected object: %s", engineContext.getGameObjectByID(engineContext.selectedObjectID)->name.c_str());
+
+                ImGui::DragFloat3("Position", &engineContext.getGameObjectByID(engineContext.selectedObjectID)->position.x, 0.1f);
+                ImGui::DragFloat3("Rotation", &engineContext.getGameObjectByID(engineContext.selectedObjectID)->rotation.x, 0.1f);
+                ImGui::DragFloat3("Scale", &engineContext.getGameObjectByID(engineContext.selectedObjectID)->scale.x, 0.1f);
+            } else {
+                ImGui::Text("No object selected");
+            }
             ImGui::EndTabItem();
         }
 

@@ -4,6 +4,7 @@
 #include <kairo/game_object.h>
 #include <kairo/shader.h>
 #include <iostream>
+#include <imgui.h>
 
 // Global context pointer for GLFW callbacks (set once at init)
 static EngineContext* g_engineContext = nullptr;
@@ -78,7 +79,7 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
     static bool mouseJustPressed = false;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        if (!mouseJustPressed && glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
+        if (!mouseJustPressed && glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL && !ImGui::GetIO().WantCaptureMouse) // only trigger if not controlling camera and not in ImGui
         {
             double mouseX, mouseY;
             glfwGetCursorPos(window, &mouseX, &mouseY);

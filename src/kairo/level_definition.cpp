@@ -2,83 +2,50 @@
 #include <kairo/game_object.h>
 #include <kairo/material.h>
 #include <kairo/model.h>
+#include "src/kairo/skybox.cpp"
 
-// will eventually be a json file
-void DefineLevel(EngineContext& engineContext) {
+#include <nlohmann/json.hpp>
+#include <iostream>
+#include <fstream>
 
-    DefineSkyBox(engineContext, "night");
-
-    engineContext.cubePositions.assign({
-        glm::vec3( 2.6f, 0.5f, 0.24f),
-        glm::vec3( 1.7f, 1.0f, 1.96f),
-        glm::vec3( 1.7f, 2.5f, 1.96f),
-        glm::vec3( -0.67f, 0.5f, 2.0f),
-        glm::vec3( -2.2f, 0.5f, 0.6f),
-        glm::vec3( -2.8f, 0.5f, -0.23f),
-        glm::vec3( -2.5f, 1.375f, 0.2f)
-    });
-
-    engineContext.cubeRotations.assign({ -28.0f, 37.0f, 60.0f, -16.0f, -54.0f, -54.0f, -30.0f });
-
-    engineContext.cubeScales.assign({ 1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.75f });
-
-    engineContext.grassPositions.assign({
-        glm::vec3(3.7f, 0.2f, -1.2f),
-    });
-
-    // Point Lights
-    engineContext.pointLightPositions.assign({
-        glm::vec3( 2.0f, 1.5f, -0.85f),
-        glm::vec3( -1.5f, 2.2f, 1.7f),
-        glm::vec3( -1.8f, 0.5f, -1.5f),
-    });
-    engineContext.pointLightColors.assign({
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(0.19f, 0.75f, 1.0f),
-        glm::vec3(1.0f, 0.33f, 0.43f),
-    });
-    engineContext.pointLightIntensityMults.assign({ 8.0f, 16.0f, 4.0f });
-
-    engineContext.sunDirection = glm::vec3(-0.2f, -1.0f, 0.5f);
-    engineContext.torchColor = glm::vec3(1.0f, 0.95f, 0.8f);
-
-    // Cubes
-    for (int i = 0; i < engineContext.cubePositions.size(); i++) {
-        auto* cube = new GameObject("Cube_" + std::to_string(i), engineContext.getModelByName("cube"), engineContext.getMaterialByName("wood"));
-        cube->position = engineContext.cubePositions[i];
-        cube->rotation.y = glm::radians(engineContext.cubeRotations[i]);
-        cube->scale = glm::vec3(engineContext.cubeScales[i]);
-        engineContext.sceneObjects["cube" + std::to_string(i)] = std::move(std::unique_ptr<GameObject>(cube));
+void LoadLevelFromJson(EngineContext& engineContext, const std::string& path) 
+{
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        std::cout << "ERROR: Could not open level file: " << path << "\n";
+        return;
     }
 
-    // Floor
-    auto* floorObj = new GameObject("Floor", engineContext.getModelByName("plane"), engineContext.getMaterialByName("floor"));
-    floorObj->scale = glm::vec3(10.0f);
-    engineContext.sceneObjects["floor"] = std::move(std::unique_ptr<GameObject>(floorObj));
+    nlohmann::json j = nlohmann::json::parse(file);
 
-    // Grass
-    for (int i = 0; i < engineContext.grassPositions.size(); i++) {
-        for (int j = 0; j < 10; j++) {
-            auto* grassObj = new GameObject("Grass_" + std::to_string(i), engineContext.getModelByName("plane"), engineContext.getMaterialByName("grass"));
-            grassObj->scale = glm::vec3(float(rand() % 100) / 100.0f + 0.5f);
-            grassObj->position = engineContext.grassPositions[i];
-            grassObj->rotation.x = glm::radians(90.0f);
-            grassObj->rotation.z = glm::radians(float(rand() % 360));
-            engineContext.sceneObjects["grass" + std::to_string(i)] = std::move(std::unique_ptr<GameObject>(grassObj));
+    for (auto& [key, value] : j.items()) {
+        if (key.find("GameObjects") != std::string::npos) {
+            for (auto& [objKey, objValue] : value.items()) {
+                auto* gameObject = new GameObject(objKey, engineContext.getModelByName(objValue["model"].get<std::string>()), engineContext.getMaterialByName(objValue["material"].get<std::string>())); 
+                gameObject->position = glm::vec3(objValue["location"][0].get<float>(), objValue["location"][1].get<float>(), objValue["location"][2].get<float>()); 
+                gameObject->rotation = glm::vec3(glm::radians(objValue["rotation"][0].get<float>()), glm::radians(objValue["rotation"][1].get<float>()), glm::radians(objValue["rotation"][2].get<float>())); 
+                gameObject->scale = glm::vec3(objValue["scale"][0].get<float>(), objValue["scale"][1].get<float>(), objValue["scale"][2].get<float>()); 
+                engineContext.sceneObjects[objKey] = std::move(std::unique_ptr<GameObject>(gameObject)); 
+            }
+        }
+        if (key.find("SkyBox") != std::string::npos) {
+            DefineSkyBox(engineContext, value["name"].get<std::string>());
+        }
+        if (key.find("PointLights") != std::string::npos) {
+            for (auto& [lightKey, value] : value.items()) {
+                engineContext.pointLightPositions.push_back(glm::vec3(value["position"][0].get<float>(), value["position"][1].get<float>(), value["position"][2].get<float>())); 
+                engineContext.pointLightColors.push_back(glm::vec3(value["color"][0].get<float>(), value["color"][1].get<float>(), value["color"][2].get<float>())); 
+                engineContext.pointLightIntensityMults.push_back(value["intensity"].get<float>()); 
+            }
+        }
+        if (key.find("SunDirection") != std::string::npos) {
+            engineContext.sunDirection = glm::vec3(value[0].get<float>(), value[1].get<float>(), value[2].get<float>());
+        }
+        if (key.find("SunColor") != std::string::npos) {
+            engineContext.clearColor = glm::vec3(value[0].get<float>(), value[1].get<float>(), value[2].get<float>());
+        }
+        if (key.find("TorchColor") != std::string::npos) {
+            engineContext.torchColor = glm::vec3(value[0].get<float>(), value[1].get<float>(), value[2].get<float>());
         }
     }
-
-    // Suzanne
-    auto* suzanneObj = new GameObject("Suzanne", engineContext.getModelByName("suzanne"), engineContext.getMaterialByName("grunge"));
-    suzanneObj->position = glm::vec3(0.0f, 2.0f, 0.0f);
-    suzanneObj->rotation.y = glm::radians(180.0f);
-    suzanneObj->scale = glm::vec3(0.5f);
-    engineContext.sceneObjects["suzanne"] = std::move(std::unique_ptr<GameObject>(suzanneObj));
-
-    // Suzanne flat
-    auto* suzanneFlatObj = new GameObject("SuzanneFlat", engineContext.getModelByName("suzanneFlat"), engineContext.getMaterialByName("grunge"));
-    suzanneFlatObj->position = glm::vec3(0.0f, 0.5f, 0.0f);
-    suzanneFlatObj->rotation.y = glm::radians(180.0f);
-    suzanneFlatObj->scale = glm::vec3(0.5f);
-    engineContext.sceneObjects["suzanneFlat"] = std::move(std::unique_ptr<GameObject>(suzanneFlatObj));
 }

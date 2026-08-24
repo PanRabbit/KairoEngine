@@ -20,6 +20,10 @@
 #include <kairo/game_object.h>
 #include <kairo/selection.h>
 #include <kairo/input.h>
+#include "src/kairo/post_process.cpp"
+#include "src/kairo/asset_load.cpp"
+#include "src/kairo/render_loop.cpp"
+#include "src/kairo/level_definition.cpp"
 #include <kairo/engine_context.h>
 
 float screenWidth = 1600;
@@ -116,9 +120,6 @@ int main()
     glCullFace(GL_BACK);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-
-
-
     // ==========================================
     // POSTPROCESSING INIT
     // ==========================================
@@ -132,7 +133,7 @@ int main()
     // ==========================================
     // LEVEL DEFINITION (after assets loaded, dk how I mande that mistake lol)
     // ==========================================
-    DefineLevel(engineContext);
+    LoadLevelFromJson(engineContext, "levels/level.json");
 
     // ==========================================
     // UI INITIALIZATION

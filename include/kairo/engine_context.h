@@ -30,6 +30,7 @@ struct EngineContext {
     Material* getMaterialByName(const std::string& name);
     Model* getModelByName(const std::string& name);
     GameObject* getGameObjectByName(const std::string& name);
+    GameObject* getGameObjectByID(int id);
     
     // skybox texture and VAO/VBO
     std::unique_ptr<CubeMapTexture> skyboxTexture;
@@ -75,18 +76,10 @@ struct EngineContext {
     int selectedObjectID = 0;
     
     bool isWireframe = false;
-    float clearColor[3] = { 0.1f, 0.15f, 0.2f };
+    glm::vec3 clearColor = glm::vec3(0.1f, 0.15f, 0.2f);
     bool reloadShader = false;
     float cameraSpeed = 3.0f;
     float fov = 45.0f;
     glm::vec3 cameraPos;
     glm::vec3 cameraRot;
 };
-
-// Forward declarations for functions defined in separate .cpp files
-struct GLFWwindow;
-void PostProcess(EngineContext& engineContext);
-void AssetLoad(EngineContext& engineContext);
-void DefineLevel(EngineContext& engineContext);
-void RenderLoop(GLFWwindow* window, EngineContext& engineContext);
-void DefineSkyBox(EngineContext& engineContext, std::string skyboxName);

@@ -2,33 +2,42 @@
 #include <stdexcept>
 
 Shader* EngineContext::getShaderByName(const std::string& name) {
-    auto it = shaders.find(name);
-    if (it == shaders.end()) {
+    auto assetPointer = shaders.find(name);
+    if (assetPointer == shaders.end()) {
         throw std::runtime_error("Shader not found: " + name);
     }
-    return it->second.get();
+    return assetPointer->second.get();
 }
 
 Material* EngineContext::getMaterialByName(const std::string& name) {
-    auto it = materials.find(name);
-    if (it == materials.end()) {
+    auto assetPointer = materials.find(name);
+    if (assetPointer == materials.end()) {
         throw std::runtime_error("Material not found: " + name);
     }
-    return it->second.get();
+    return assetPointer->second.get();
 }
 
 Model* EngineContext::getModelByName(const std::string& name) {
-    auto it = models.find(name);
-    if (it == models.end()) {
+    auto assetPointer = models.find(name);
+    if (assetPointer == models.end()) {
         throw std::runtime_error("Model not found: " + name);
     }
-    return it->second.get();
+    return assetPointer->second.get();
 }
 
 GameObject* EngineContext::getGameObjectByName(const std::string& name) {
-    auto it = sceneObjects.find(name);
-    if (it == sceneObjects.end()) {
+    auto assetPointer = sceneObjects.find(name);
+    if (assetPointer == sceneObjects.end()) {
         throw std::runtime_error("Game object not found: " + name);
     }
-    return it->second.get();
+    return assetPointer->second.get();
+}
+
+GameObject* EngineContext::getGameObjectByID(int id) {
+    for (auto& [name, object] : sceneObjects) {
+        if (object->id == id) {
+            return object.get();
+        }
+    }
+    throw std::runtime_error("Game object not found: ID of " + std::to_string(id));
 }
