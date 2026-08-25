@@ -4,6 +4,7 @@
 #include "imgui_impl_opengl3.h"
 #include "kairo/shader.h"
 #include "kairo/material.h"
+#include <kairo/level_definition.h>
 
 void InitUI(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
@@ -47,6 +48,17 @@ void RenderUI(EngineContext& engineContext) {
                     material->loadFromJson("reload");
                 }
                 engineContext.reloadShader = true;
+            }
+            ImGui::Separator();
+            ImGui::Text("Environments:");
+            if (ImGui::Button("Day")) {
+                LoadLevelFromJson(engineContext, "levels/day.json");
+            }
+            if (ImGui::Button("Night")) {
+                LoadLevelFromJson(engineContext, "levels/night.json");
+            }
+            if (ImGui::Button("Cloudy")) {
+                LoadLevelFromJson(engineContext, "levels/cloudy.json");
             }
 
             ImGui::Separator();

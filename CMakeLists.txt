@@ -49,6 +49,8 @@ set(PROJECT_SOURCES
     main.cpp
     src/stb/stb_implementation.cpp
     src/kairo/UI.cpp
+    src/kairo/skybox.cpp
+    src/kairo/level_definition.cpp
     src/kairo/texture.cpp
     src/kairo/material.cpp
     src/kairo/model.cpp

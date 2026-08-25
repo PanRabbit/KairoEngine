@@ -2,7 +2,7 @@
 #include <kairo/game_object.h>
 #include <kairo/material.h>
 #include <kairo/model.h>
-#include "src/kairo/skybox.cpp"
+#include <kairo/skybox.h>
 
 #include <nlohmann/json.hpp>
 #include <iostream>

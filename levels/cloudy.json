@@ -1,9 +1,9 @@
 {
     "SkyBox": {
-        "name": "day"
+        "name": "cloudy"
     },
     "SunDirection": [-0.2, -1.0, 0.5],
-    "SunColor": [0.33, 0.33, 0.4],
+    "SunColor": [0.1, 0.1, 0.11],
     "TorchColor": [1.0, 0.95, 0.8],
     "GameObjects": {
         "Cube_0": {

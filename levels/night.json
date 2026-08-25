@@ -3,7 +3,7 @@
         "name": "night"
     },
     "SunDirection": [-0.2, -1.0, 0.5],
-    "SunColor": [0.1, 0.15, 0.2],
+    "SunColor": [0.015, 0.025, 0.04],
     "TorchColor": [1.0, 0.95, 0.8],
     "GameObjects": {
         "Cube_0": {
