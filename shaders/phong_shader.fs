@@ -86,16 +86,14 @@ in vec3 FragPos;
 
 
 
-
-
-
 // handle directional lighting
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
+    vec3 halfwayDir = normalize(lightDir + viewDir); // blinn-phong
+
     float diff = clamp(dot(normal, lightDir), 0.0, 1.0);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(clamp(dot(viewDir, reflectDir), 0.0, 1.0), material.shininess);
+    float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), material.shininess); // blinn-phong
 
     vec3 ambient = light.ambient;
     vec3 diffuse = light.diffuse * diff * diffuseTex;
@@ -130,8 +128,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
     // Specular (Light * Reflection * Specular Map)
     viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 halfwayDir = normalize(lightDir + viewDir); // blinn-phong
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess); // blinn-phong
     vec3 specular = light.specular * spec * specularTex;
 
     // Combine light passes
@@ -171,8 +169,8 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
     // Specular (Light * Reflection * Specular Map)
     viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 halfwayDir = normalize(lightDir + viewDir); // blinn-phong
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess); // blinn-phong
     vec3 specular = light.specular * spec * specularTex;
 
     // Combine light passes
@@ -186,7 +184,6 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 void main()
 {
     // handle map options from material definition
-
     if (material.useChecker) {
         //checker pattern
         float step = floor(TexCoord.x / material.checkerSize) + floor(TexCoord.y / material.checkerSize);

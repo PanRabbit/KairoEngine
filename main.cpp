@@ -133,7 +133,7 @@ int main()
     // ==========================================
     // LEVEL DEFINITION (after assets loaded, dk how I mande that mistake lol)
     // ==========================================
-    LoadLevelFromJson(engineContext, "levels/night.json");
+    LoadLevelFromJson(engineContext, "levels/day.json");
 
     // ==========================================
     // UI INITIALIZATION
