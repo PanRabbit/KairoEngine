@@ -95,7 +95,8 @@ struct EngineContext {
     glm::vec3 clearColor = glm::vec3(0.1f, 0.15f, 0.2f);
     bool reloadShader = false;
     float cameraSpeed = 3.0f;
-    bool vsync = false;
+    bool vsync = true;
+    bool msaa = true;
     float fov = 45.0f;
     glm::vec3 cameraPos;
     glm::vec3 cameraRot;

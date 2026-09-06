@@ -36,6 +36,7 @@ void RenderUI(EngineContext& engineContext) {
             ImGui::Checkbox("Enable Wireframe Mode", &engineContext.isWireframe);
             ImGui::Checkbox("Enable Post Processing", &engineContext.isPostProcessing);
             ImGui::Checkbox("VSync", &engineContext.vsync);
+            ImGui::Checkbox("MSAA", &engineContext.msaa);
             
             float clearColor[3] = { engineContext.clearColor.x, engineContext.clearColor.y, engineContext.clearColor.z };
             ImGui::ColorEdit3("Background Color", clearColor);

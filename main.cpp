@@ -105,8 +105,14 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
-    glfwSwapInterval(0); // vsync
-    glEnable(GL_MULTISAMPLE); // enable multisampling for anti-aliasing
+    #if 0
+    glfwSwapInterval(0); // vsync - handled in render loop
+#endif
+    if (engineContext.msaa) {
+        glEnable(GL_MULTISAMPLE); // enable multisampling for anti-aliasing
+    } else {
+        glDisable(GL_MULTISAMPLE);
+    }
 
 
     glViewport(0, 0, static_cast<int>(screenWidth), static_cast<int>(screenHeight));
