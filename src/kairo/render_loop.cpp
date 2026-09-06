@@ -1,7 +1,10 @@
+#include "kairo/camera.h"
 #include "kairo/engine_context.h"
 #include "kairo/shader.h"
 #include "kairo/UI.h"
 #include "kairo/input.h"
+#include "kairo/shadow_mapping.h"
+#include <iostream>
 
 float lastFrame = 0.0f;
 glm::vec3 lightColor;
@@ -25,7 +28,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             }
 
             // ==========================================
-            // LIGHTS AND CAMERA VARIABLES
+            // SET CONTEXT AND UNIFORMS
             // ==========================================
             Shader& phongShader = *engineContext.getShaderByName("phong");
             Shader& lightShader = *engineContext.getShaderByName("light");
@@ -46,13 +49,16 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             phongShader.setVec3("dirLight.specular", sunColor * 1.0f);
 
             // Skybox
-            glActiveTexture(GL_TEXTURE0 + engineContext.skyboxTexture->ID   );
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.skyboxTexture->ID);
-            phongShader.setInt("skybox", engineContext.skyboxTexture->ID);
+            phongShader.setInt("skybox", 0);
        
     
             // Point lights
-            for(unsigned int i = 0; i < engineContext.pointLightPositions.size(); i++)
+            int pointLightCount = engineContext.pointLightPositions.size();            
+            phongShader.setInt("numPointLights", pointLightCount);
+            phongShader.setFloat("pointLightFarPlane", engineContext.pointLightFarPlane);
+            for(int i = 0; i < pointLightCount; i++)
             {
                 lightColor = engineContext.pointLightColors[i];
                 std::string uniformID = "pointLights[" + std::to_string(i) + "].";
@@ -62,8 +68,13 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 phongShader.setVec3(uniformID + "position", engineContext.pointLightPositions[i]);
                 phongShader.setFloat(uniformID + "radius", 8.0f);
                 phongShader.setFloat(uniformID + "intensity", 0.5f * engineContext.pointLightIntensityMults[i]);
+
+                int shadowMapUnit = 10 + i; // units 10, 11, 12 etc
+                phongShader.setInt("pointShadowMaps[" + std::to_string(i) + "]", shadowMapUnit);
+                glActiveTexture(GL_TEXTURE0 + (10 + i));  // texture unit 10, 11, 12, etc
+                glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.pointLightShadowCubemaps[i]);
             }
-    
+                
             // Flashlight
             if (engineContext.flashlightOn)
             {
@@ -96,11 +107,19 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             // ==========================================
             processInput(window, engineContext);
 
+            // render scene to depth map for shadow mapping
+            RenderSceneToDepthMap(engineContext);
+
+            for(int i = 0; i < pointLightCount; i++)
+            { 
+                RenderSceneToDepthCubemap(engineContext, i);
+            }
+
             // draw scene to post-processing framebuffer (draw scene to a texture)
             if (engineContext.isPostProcessing) {
                 glBindFramebuffer(GL_FRAMEBUFFER, engineContext.postProcessingFB);
             }
-            
+
             glClearColor(sunColor.r, sunColor.g, sunColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);
@@ -110,17 +129,17 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             engineContext.getShaderByName("skybox")->setMat4("projection", engineContext.projection);
             engineContext.getShaderByName("skybox")->setMat4("view", engineContext.centerView);
             glBindVertexArray(engineContext.skyboxVAO);
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.skyboxTexture->ID);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glDepthMask(GL_TRUE);
     
-
-            // Render all regular objects
+            // Render all game objects
             for (auto& [name, obj] : engineContext.sceneObjects) {
                     obj->draw(phongShader, engineContext.selectedObjectID);
             }
     
-            // Render light spheres
+            // Render point lights
             lightShader.use();
             lightShader.setMat4("view", engineContext.view);
             lightShader.setMat4("projection", engineContext.projection);
@@ -135,7 +154,9 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 lightShader.setMat4("model", lightModel);
                 engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
             }
+            
 
+            // draw post-processing quad and render processed texture to screen
             if (engineContext.isPostProcessing) {
                 // resolve MSAA FBO to intermediate regular texture via blit
                 glBindFramebuffer(GL_READ_FRAMEBUFFER, engineContext.postProcessingFB);

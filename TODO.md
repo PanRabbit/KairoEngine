@@ -7,3 +7,10 @@ Future optimisations:
 * rather than hardcode levels, create a json to load dynamically
 * level editor?
 * dynamically load all models/tex/shaders/materials listed in a level.json
+
+
+
+
+Showcase Ideas:
+
+* Stained Glass with coloured shadows?

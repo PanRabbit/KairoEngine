@@ -8,7 +8,7 @@
 #include <kairo/input.h>
 #include <kairo/UI.h>
 
-// should eventually automate on every asset in dir
+// IMPORTANT!!! This should eventually automate on every asset in dir
 
 void AssetLoad(EngineContext& engineContext) {
 
@@ -22,7 +22,8 @@ void AssetLoad(EngineContext& engineContext) {
     engineContext.shaders["singleColor"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/single_color.fs");
     engineContext.shaders["postProcessing"] = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/post_processing.fs");
     engineContext.shaders["skybox"] = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
-
+    engineContext.shaders["dirShadowMapping"] = std::make_unique<Shader>("shaders/dir_shadow_mapping.vs", "shaders/dir_shadow_mapping.fs");
+    engineContext.shaders["pointShadowMapping"] = std::make_unique<Shader>("shaders/point_shadow_mapping.vs", "shaders/point_shadow_mapping.fs", "shaders/point_shadow_mapping.gs");
     // ==========================================
     // MATERIALS (reference shaders by name)
     // ==========================================

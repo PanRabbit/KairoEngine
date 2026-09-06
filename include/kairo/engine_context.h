@@ -1,9 +1,14 @@
 #pragma once
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <array>
 #include <vector>
 #include <memory>
 #include <unordered_map>
 #include <string>
+
 
 #include "kairo/camera.h"
 #include "kairo/shader.h"
@@ -58,6 +63,17 @@ struct EngineContext {
     // Timing states
     float deltaTime = 0.0f;
     static inline float lastFrame = 0.0f;     
+
+    // Shadow mapping states
+    unsigned int shadowDepthMapFBO = 0;
+    unsigned int shadowDepthMapTexture = 0;
+    glm::mat4 lightSpaceMatrix = glm::mat4(1.0f);
+
+    std::vector<unsigned int> pointLightShadowCubemaps; // one cubemap per point light
+    std::vector<unsigned int> pointLightShadowFBOs; // one FBO per point light
+    std::vector<std::array<glm::mat4, 6>> pointLightSpaceMatrices; // 6 view projection matrices per point light
+    float pointLightFarPlane = 25.0f; // far plane distance (matches defualt attenuation distance - IMPORTANT!!! MUST CHANGE THIS WHEN I UPDATE ATTENUATION DISTANCE)
+
     
     //  Post processing states 
     bool isPostProcessing = true;
@@ -83,3 +99,4 @@ struct EngineContext {
     glm::vec3 cameraPos;
     glm::vec3 cameraRot;
 };
+

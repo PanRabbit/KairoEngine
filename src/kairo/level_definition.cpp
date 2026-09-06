@@ -3,6 +3,7 @@
 #include <kairo/material.h>
 #include <kairo/model.h>
 #include <kairo/skybox.h>
+#include <kairo/shadow_mapping.h>
 
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -10,6 +11,12 @@
 
 void LoadLevelFromJson(EngineContext& engineContext, const std::string& path) 
 {
+    // clear existing 
+    engineContext.sceneObjects.clear();
+    engineContext.pointLightPositions.clear();
+    engineContext.pointLightColors.clear();
+    engineContext.pointLightIntensityMults.clear();
+
     std::ifstream file(path);
     if (!file.is_open()) {
         std::cout << "ERROR: Could not open level file: " << path << "\n";
@@ -48,6 +55,8 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
             engineContext.torchColor = glm::vec3(value[0].get<float>(), value[1].get<float>(), value[2].get<float>());
         }
     }
+
+    InitPointLightCubemaps(engineContext);
 }
 
 void SaveLevelToJson(EngineContext& engineContext, const std::string& path){}

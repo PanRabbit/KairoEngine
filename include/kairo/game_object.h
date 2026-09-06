@@ -51,6 +51,7 @@ public:
     }
 
     void drawShader(Shader& shader) const {
+        shader.use();
         shader.setMat4("model", getTransformMatrix());
         model->drawShader(shader);
     }

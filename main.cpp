@@ -25,6 +25,7 @@
 #include "src/kairo/render_loop.cpp"
 #include <kairo/level_definition.h>
 #include <kairo/engine_context.h>
+#include <kairo/shadow_mapping.h>
 
 float screenWidth = 1600;
 float screenHeight = 1200;
@@ -38,7 +39,7 @@ int selectedObjectID = 0;
 // CAMERA SETUP
 // ====================================
                         // pos                          //rot
-Camera camera(glm::vec3(3.5f, 1.0f, -5.0f), glm::vec3(-0.55f, -0.05f, 0.83f));
+Camera camera(glm::vec3(0.0f, 2.5f, -8.0f), glm::vec3(-0.1f, -0.05f, 0.9f));
 
 // ===================================
 // MAIN FUNCTION
@@ -117,7 +118,7 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    //glCullFace(GL_BACK);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     // ==========================================
@@ -135,6 +136,12 @@ int main()
     // ==========================================
     LoadLevelFromJson(engineContext, "levels/day.json");
 
+    // ==========================================
+    // SHADOW INIT
+    // ==========================================
+    CreateSunDepthMapFBO(engineContext.shadowDepthMapFBO, engineContext.shadowDepthMapTexture);
+    InitPointLightCubemaps(engineContext);
+    
     // ==========================================
     // UI INITIALIZATION
     // ==========================================

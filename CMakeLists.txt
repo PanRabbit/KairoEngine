@@ -58,6 +58,7 @@ set(PROJECT_SOURCES
     src/kairo/selection.cpp
     src/kairo/input.cpp
     src/kairo/engine_context.cpp
+    src/kairo/shadow_mapping.cpp
 )
 
 # ==============================================================================

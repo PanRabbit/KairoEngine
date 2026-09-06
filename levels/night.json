@@ -2,7 +2,7 @@
     "SkyBox": {
         "name": "night"
     },
-    "SunDirection": [-0.2, -1.0, 0.5],
+    "SunDirection": [0.5, -0.7, -0.2],
     "SunColor": [0.015, 0.025, 0.04],
     "TorchColor": [1.0, 0.95, 0.8],
     "GameObjects": {
