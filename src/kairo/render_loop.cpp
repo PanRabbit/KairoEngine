@@ -194,6 +194,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             // ==========================================
             // END FRAME UI & SWAP
             // ==========================================
+            glfwSwapInterval(engineContext.vsync ? 1 : 0);
             RenderUI(engineContext);
     
             glfwPollEvents();

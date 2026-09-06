@@ -35,6 +35,7 @@ void RenderUI(EngineContext& engineContext) {
             // Modify engineContext directly via references passed from main loop
             ImGui::Checkbox("Enable Wireframe Mode", &engineContext.isWireframe);
             ImGui::Checkbox("Enable Post Processing", &engineContext.isPostProcessing);
+            ImGui::Checkbox("VSync", &engineContext.vsync);
             
             float clearColor[3] = { engineContext.clearColor.x, engineContext.clearColor.y, engineContext.clearColor.z };
             ImGui::ColorEdit3("Background Color", clearColor);

@@ -98,7 +98,7 @@ vec3 blur(vec2 blurCoords)
     return col;
 }
 
-vec2 pixelate(float resolution = 256.0)
+vec2 pixelate(float resolution)
 {
     float pixelSize = scrHeight / resolution; // calc size of pixel based on resolution
     float pixelsX = scrWidth / pixelSize;
