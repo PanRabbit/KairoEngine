@@ -96,7 +96,6 @@ struct EngineContext {
     bool reloadShader = false;
     float cameraSpeed = 3.0f;
     bool vsync = true;
-    bool msaa = true;
     float fov = 45.0f;
     glm::vec3 cameraPos;
     glm::vec3 cameraRot;

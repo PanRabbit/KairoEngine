@@ -4,7 +4,6 @@
 #include "kairo/UI.h"
 #include "kairo/input.h"
 #include "kairo/shadow_mapping.h"
-#include <iostream>
 
 float lastFrame = 0.0f;
 glm::vec3 lightColor;
@@ -35,8 +34,6 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             Shader& singleColorShader = *engineContext.getShaderByName("singleColor");
             Shader& postProcessingShader = *engineContext.getShaderByName("postProcessing");
             Material& lightMaterial = *engineContext.getMaterialByName("light");
-
-
 
             phongShader.use();
     

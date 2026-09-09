@@ -111,5 +111,5 @@ void main()
 {
     vec3 color = vec3(texture(screenTexture, TexCoords));
     vec4 sharpened = vec4(sharpen(TexCoords), 1.0);
-    FragColor = vec4(color, 1.0);
+    FragColor = sharpened;
 }
