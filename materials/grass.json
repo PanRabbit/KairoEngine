@@ -6,6 +6,9 @@
     "useAlphaMap" : true,
     "alphaMapPath" : "textures/grass/plants_0002_opacity_2k.jpg",
 
+    "useNormalMap" : true,
+    "normalMapPath" : "textures/grass/plants_0002_normal_2k.jpg",
+
     "useChecker" : false,
     "checkerSize" : 1.0,
     "secondaryColor" : [0,0,0],

@@ -13,6 +13,9 @@ struct Material {
     float checkerSize;
     vec3 secondaryColor;
 
+    bool useNormalMap;
+    sampler2D normalMap;
+
     bool useSpecularMap;
     sampler2D specularMap;
     float specularStrength;
@@ -90,7 +93,7 @@ in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
 in vec4 FragPosLightSpace;
-
+in mat3 TBN;
 
 
 float CalcDirShadows(vec4 FragPosLightSpace)
@@ -117,14 +120,14 @@ float CalcDirShadows(vec4 FragPosLightSpace)
 float CalcPointShadow(PointLight light, samplerCube shadowMap, vec3 fragPos)
 {
 
-vec3 sampleOffsetDirections[20] = vec3[]
-    (
-        vec3( 1, 1, 1), vec3( 1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
-        vec3( 1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-        vec3( 1, 1, 0), vec3( 1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
-        vec3( 1, 0, 1), vec3(-1, 0, 1), vec3( 1, 0, -1), vec3(-1, 0, -1),
-        vec3( 0, 1, 1), vec3( 0, -1, 1), vec3( 0, -1, -1), vec3( 0, 1, -1)
-    );
+    vec3 sampleOffsetDirections[20] = vec3[]
+        (
+            vec3( 1, 1, 1), vec3( 1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+            vec3( 1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+            vec3( 1, 1, 0), vec3( 1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+            vec3( 1, 0, 1), vec3(-1, 0, 1), vec3( 1, 0, -1), vec3(-1, 0, -1),
+            vec3( 0, 1, 1), vec3( 0, -1, 1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+        );
 
     vec3 lightToFrag = fragPos - light.position;
     float currentDepth = length(lightToFrag) / pointLightFarPlane;
@@ -147,8 +150,6 @@ vec3 sampleOffsetDirections[20] = vec3[]
     shadow /= float(samples);
     return shadow;
 }
-
-
 
 // handle directional lighting
 void CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, out vec3 outDiffuse, out vec3 outSpecular, out vec3 outAmbient)
@@ -194,14 +195,6 @@ void CalcPointLight(PointLight light, samplerCube shadowMap, vec3 normal, vec3 f
     outDiffuse = diffuse * attenuation * light.intensity;
     outSpecular = (light.specular * spec * specularTex) * attenuation * light.intensity;
     outAmbient = ambient * attenuation * light.intensity;
-
-    // calc shadows
-    float shadow = CalcPointShadow(light, shadowMap, fragPos);
-
-    outDiffuse *= (1.0 - shadow);
-    outSpecular *= (1.0 - shadow);
-    // out ambient is not affected by shadow
-
 }
 
 // handle spot light
@@ -270,14 +263,27 @@ void main()
     }
 
     // sample spec texture
-    if (material.useSpecularMap) { specularTex = vec3(texture(material.specularMap, TexCoord * material.coordScale + material.coordOffset)) * material.specularStrength; }
+    if (material.useSpecularMap) { specularTex = vec3(texture(material.specularMap, TexCoord * material.coordScale + material.coordOffset).r) * material.specularStrength; }
     else { specularTex = vec3(material.specularStrength); }
 
     // calc lighting geometry
-    vec3 norm = normalize(Normal);
+    vec3 norm;
+
+    // sample normal map
+    if (material.useNormalMap) 
+    { 
+        vec3 normalMapSample = texture(material.normalMap, TexCoord * material.coordScale + material.coordOffset).rgb; 
+        vec3 tangentNormal = normalize(normalMapSample * 2.0 - 1.0);
+        norm = normalize(TBN * tangentNormal);
+    }
+    else 
+    { 
+        norm = normalize(Normal); 
+    }
+
     vec3 viewDir = normalize(viewPos - FragPos);
 
-    // Accumulators for diffuse and specular and ambient
+    // Accumulators for light
     vec3 totalDiffuse = vec3(0.0);
     vec3 totalSpecular = vec3(0.0);
     vec3 totalAmbient = vec3(0.0);
@@ -285,9 +291,9 @@ void main()
 
     // Directional lighting
     CalcDirLight(dirLight, norm, viewDir, d, s, a);
-    float shadow = CalcDirShadows(FragPosLightSpace); // sun shadow
-    totalDiffuse += d * (1.0 - shadow);
-    totalSpecular += s * (1.0 - shadow);
+    float dirShadow = CalcDirShadows(FragPosLightSpace); // sun shadow
+    totalDiffuse += d * (1.0 - dirShadow);
+    totalSpecular += s * (1.0 - dirShadow);
     totalAmbient += a;
 
     // Point lights (numPointLights is set from the level; cap is MAX_POINT_LIGHTS)
@@ -295,6 +301,14 @@ void main()
     for (int i = 0; i < pointCount; ++i)
     {
         CalcPointLight(pointLights[i], pointShadowMaps[i], norm, FragPos, viewDir, d, s, a);
+
+        // calc shadows
+        float pointShadow = CalcPointShadow(pointLights[i], pointShadowMaps[i], FragPos);
+
+        d *= (1.0 - pointShadow);
+        s *= (1.0 - pointShadow);
+        // out ambient is not affected by shadow
+
         totalDiffuse += d;
         totalSpecular += s;
         totalAmbient += a;
@@ -331,7 +345,7 @@ void main()
     vec3 kD = vec3(1.0) - kS;        // Remaining energy available for diffuse
 
     // combine diffuse, specular & skybox reflection
-    vec3 result = (totalDiffuse * kD) + totalSpecular + (reflection * kS);
+    vec3 result = (totalDiffuse * kD) + totalSpecular + (reflection * kS * (mix(0.4, 1.0, 1.0 - dirShadow))); // 0.4 is the minimum skybox reflection intensity when in shadow
     result = result + totalAmbient;
 
     if (isSelected) {result = result / (1.0 - vec3(0.2, 0.55, 0.85)); } // color dodge

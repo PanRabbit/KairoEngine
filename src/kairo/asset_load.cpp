@@ -51,6 +51,10 @@ void AssetLoad(EngineContext& engineContext) {
     grassMaterial->loadFromJson("materials/grass.json");
     engineContext.materials["grass"] = std::move(grassMaterial);
 
+    auto brickMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
+    brickMaterial->loadFromJson("materials/brick.json");
+    engineContext.materials["brick"] = std::move(brickMaterial);
+
     // ==========================================
     // MODELS (insert directly into maps)
     // ==========================================

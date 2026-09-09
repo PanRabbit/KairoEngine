@@ -1,22 +1,22 @@
 {
     "useDiffuseMap" : true,
-    "diffuseMapPath" : "textures/container2.png",
+    "diffuseMapPath" : "textures/brick/brick_wall_10_diff_2k.png",
     "diffuseColor" : [1,0,0],
 
     "useAlphaMap" : false,
     "alphaMapPath" : "",
 
-    "useNormalMap" : false,
-    "normalMapPath" : "",
+    "useNormalMap" : true,
+    "normalMapPath" : "textures/brick/brick_wall_10_nor_gl_2k.png",
 
     "useChecker" : false,
     "checkerSize" : 1.0,
     "secondaryColor" : [0,0,0],
 
     "useSpecularMap" : true,
-    "specularMapPath" : "textures/container2_specular.png",
+    "specularMapPath" : "textures/brick/brick_wall_10_invertrough_2k.png",
     "specularStrength" : 1.0,
-    "shininess" : 128.0,
+    "shininess" : 64.0,
 
     "coordOffset" : [0,0],
     "coordScale" : [1,1]

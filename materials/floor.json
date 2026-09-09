@@ -6,6 +6,9 @@
     "useAlphaMap" : false,
     "alphaMapPath" : "",
 
+    "useNormalMap" : false,
+    "normalMapPath" : "",
+
     "useChecker" : true,
     "checkerSize" : 0.01,
     "secondaryColor" : [0.3,0.3,0.3],

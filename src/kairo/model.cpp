@@ -20,7 +20,7 @@ void Model::drawShader(Shader &shader) {
 void Model::loadModel(std::string path)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs); // flip UVs for correct orientation
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace); // flip UVs for correct orientation
 
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -83,6 +83,18 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         {
             workingVertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
+        // tangents
+        glm::vec3 tangents;
+        glm::vec3 bitangents;
+        tangents.x = mesh->mTangents[i].x;
+        tangents.y = mesh->mTangents[i].y;
+        tangents.z = mesh->mTangents[i].z;
+        bitangents.x = mesh->mBitangents[i].x;
+        bitangents.y = mesh->mBitangents[i].y;
+        bitangents.z = mesh->mBitangents[i].z;
+        float handedness = (dot(cross(workingVertex.Normal, tangents), bitangents) < 0.0f) ? -1.0f : 1.0f; // calculate if the tangent is left or right handed
+        workingVertex.Tangent = glm::vec4(tangents, handedness);
+
 
         // push the vertex to the vertices vector 
         vertices.push_back(workingVertex);
