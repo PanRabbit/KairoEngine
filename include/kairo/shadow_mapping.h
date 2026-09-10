@@ -7,3 +7,5 @@ void CreateSunDepthMapFBO(unsigned int& depthMapFBO, unsigned int& depthMapTextu
 void RenderSceneToDepthMap(EngineContext& engineContext);
 void InitPointLightCubemaps(EngineContext& engineContext);
 void RenderSceneToDepthCubemap(EngineContext& engineContext, unsigned int lightIndex);
+void InitSpotLightShadowMaps(EngineContext& engineContext);
+void RenderSceneToSpotDepthMap(EngineContext& engineContext, unsigned int lightIndex);

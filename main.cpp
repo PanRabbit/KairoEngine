@@ -139,6 +139,7 @@ int main()
     // ==========================================
     CreateSunDepthMapFBO(engineContext.shadowDepthMapFBO, engineContext.shadowDepthMapTexture);
     InitPointLightCubemaps(engineContext);
+    InitSpotLightShadowMaps(engineContext);
     
     // ==========================================
     // UI INITIALIZATION

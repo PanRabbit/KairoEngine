@@ -52,9 +52,9 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
        
     
             // Point lights
-            int pointLightCount = engineContext.pointLightPositions.size();            
+            int pointLightCount = static_cast<int>(engineContext.pointLightPositions.size());
+            if (pointLightCount > EngineContext::MAX_POINT_LIGHTS) pointLightCount = EngineContext::MAX_POINT_LIGHTS;
             phongShader.setInt("numPointLights", pointLightCount);
-            phongShader.setFloat("pointLightFarPlane", engineContext.pointLightFarPlane);
             for(int i = 0; i < pointLightCount; i++)
             {
                 lightColor = engineContext.pointLightColors[i];
@@ -63,33 +63,55 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 phongShader.setVec3(uniformID + "diffuse", lightColor * 1.0f);
                 phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
                 phongShader.setVec3(uniformID + "position", engineContext.pointLightPositions[i]);
-                phongShader.setFloat(uniformID + "radius", 8.0f);
-                phongShader.setFloat(uniformID + "intensity", 0.5f * engineContext.pointLightIntensityMults[i]);
+                phongShader.setFloat(uniformID + "radius", engineContext.pointLightRadii[i]);
+                phongShader.setFloat(uniformID + "intensity", engineContext.pointLightIntensityMults[i]);
 
-                int shadowMapUnit = 10 + i; // units 10, 11, 12 etc
+                int shadowMapUnit = EngineContext::POINT_SHADOW_TEXTURE_UNIT + i;
                 phongShader.setInt("pointShadowMaps[" + std::to_string(i) + "]", shadowMapUnit);
-                glActiveTexture(GL_TEXTURE0 + (10 + i));  // texture unit 10, 11, 12, etc
+                glActiveTexture(GL_TEXTURE0 + shadowMapUnit);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.pointLightShadowCubemaps[i]);
             }
-                
-            // Flashlight
-            if (engineContext.flashlightOn)
-            {
-                phongShader.setVec3("spotLight.position", engineContext.camera.Position);
-                phongShader.setVec3("spotLight.direction", engineContext.camera.Front);
-                phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-                phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(20.0f)));
-                phongShader.setVec3("spotLight.ambient", engineContext.torchColor * 0.15f);
-                phongShader.setVec3("spotLight.diffuse", engineContext.torchColor * 1.0f);
-                phongShader.setVec3("spotLight.specular", engineContext.torchColor * 1.0f);
-                phongShader.setFloat("spotLight.radius", 64.0f);
-                phongShader.setFloat("spotLight.intensity", 32.0f);
+
+            // Spotlights (flashlight is the last slot, included only when on)
+            int flashlightIndex = engineContext.flashlightIndex;
+            int worldSpotCount = (flashlightIndex >= 0)
+                ? flashlightIndex
+                : static_cast<int>(engineContext.spotLightPositions.size());
+            if (worldSpotCount > EngineContext::MAX_SPOT_LIGHTS) worldSpotCount = EngineContext::MAX_SPOT_LIGHTS;
+
+            if (flashlightIndex >= 0) {
+                engineContext.spotLightPositions[flashlightIndex] = engineContext.camera.Position;
+                engineContext.spotLightDirections[flashlightIndex] = engineContext.camera.Front;
+                engineContext.spotLightColors[flashlightIndex] = engineContext.torchColor;
+                engineContext.spotLightIntensityMults[flashlightIndex] = EngineContext::FLASHLIGHT_INTENSITY;
+                engineContext.spotLightCutOffs[flashlightIndex] = EngineContext::FLASHLIGHT_CUT_OFF;
+                engineContext.spotLightOuterCutOffs[flashlightIndex] = EngineContext::FLASHLIGHT_OUTER_CUT_OFF;
+                engineContext.spotLightRadii[flashlightIndex] = EngineContext::FLASHLIGHT_RADIUS;
             }
-            else
+
+            int spotLightCount = worldSpotCount;
+            if (engineContext.flashlightOn && flashlightIndex >= 0 && worldSpotCount + 1 <= EngineContext::MAX_SPOT_LIGHTS)
+                spotLightCount = flashlightIndex + 1;
+
+            phongShader.setInt("numSpotLights", spotLightCount);
+            for (int i = 0; i < spotLightCount; i++)
             {
-                phongShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(0.0f)));
-                phongShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(0.0f)));
-                phongShader.setFloat("spotLight.intensity", 0.0f);
+                lightColor = engineContext.spotLightColors[i];
+                std::string uniformID = "spotLights[" + std::to_string(i) + "].";
+                phongShader.setVec3(uniformID + "ambient", lightColor * 0.15f);
+                phongShader.setVec3(uniformID + "diffuse", lightColor * 1.0f);
+                phongShader.setVec3(uniformID + "specular", lightColor * 1.0f);
+                phongShader.setVec3(uniformID + "position", engineContext.spotLightPositions[i]);
+                phongShader.setVec3(uniformID + "direction", engineContext.spotLightDirections[i]);
+                phongShader.setFloat(uniformID + "cutOff", glm::cos(glm::radians(engineContext.spotLightCutOffs[i])));
+                phongShader.setFloat(uniformID + "outerCutOff", glm::cos(glm::radians(engineContext.spotLightOuterCutOffs[i])));
+                phongShader.setFloat(uniformID + "radius", engineContext.spotLightRadii[i]);
+                phongShader.setFloat(uniformID + "intensity", engineContext.spotLightIntensityMults[i]);
+
+                int shadowMapUnit = EngineContext::SPOT_SHADOW_TEXTURE_UNIT + i;
+                phongShader.setInt("spotShadowMaps[" + std::to_string(i) + "]", shadowMapUnit);
+                glActiveTexture(GL_TEXTURE0 + shadowMapUnit);
+                glBindTexture(GL_TEXTURE_2D, engineContext.spotLightShadowMaps[i]);
             }
     
             // update camera matrices
@@ -110,6 +132,11 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             for(int i = 0; i < pointLightCount; i++)
             { 
                 RenderSceneToDepthCubemap(engineContext, i);
+            }
+
+            for (int i = 0; i < spotLightCount; i++)
+            {
+                RenderSceneToSpotDepthMap(engineContext, i);
             }
 
             // draw scene to post-processing framebuffer (draw scene to a texture)
@@ -148,6 +175,20 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 glm::mat4 lightModel = glm::mat4(1.0f); 
                 lightModel = glm::translate(lightModel, engineContext.pointLightPositions[i]); 
                 lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
+                lightShader.setMat4("model", lightModel);
+                engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+            }
+
+            for (int i = 0; i < spotLightCount; i++)
+            {
+                if (i == flashlightIndex)
+                    continue;
+
+                lightColor = engineContext.spotLightColors[i];
+                lightShader.setVec3("Color", lightColor);
+                glm::mat4 lightModel = glm::mat4(1.0f);
+                lightModel = glm::translate(lightModel, engineContext.spotLightPositions[i]);
+                lightModel = glm::scale(lightModel, glm::vec3(0.2f));
                 lightShader.setMat4("model", lightModel);
                 engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
             }

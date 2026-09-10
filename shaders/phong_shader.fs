@@ -52,11 +52,10 @@ struct PointLight {
     vec3 diffuse;
     vec3 specular;
 };
-#define MAX_POINT_LIGHTS 8
+#define MAX_POINT_LIGHTS 32
 uniform int numPointLights;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform samplerCube pointShadowMaps[MAX_POINT_LIGHTS];
-uniform float pointLightFarPlane;
 
 struct SpotLight {
     vec3 position;
@@ -72,7 +71,11 @@ struct SpotLight {
     vec3 diffuse;
     vec3 specular;
 };
-uniform SpotLight spotLight;
+#define MAX_SPOT_LIGHTS 32
+uniform int numSpotLights;
+uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
+uniform sampler2D spotShadowMaps[MAX_SPOT_LIGHTS];
+uniform mat4 spotLightSpaceMatrices[MAX_SPOT_LIGHTS];
 
 uniform samplerCube skybox;
 uniform vec3 viewPos;
@@ -130,7 +133,7 @@ float CalcPointShadow(PointLight light, samplerCube shadowMap, vec3 fragPos)
         );
 
     vec3 lightToFrag = fragPos - light.position;
-    float currentDepth = length(lightToFrag) / pointLightFarPlane;
+    float currentDepth = length(lightToFrag) / max(light.radius, 0.001);
     if (currentDepth > 1.0)
         return 0.0;
 
@@ -148,6 +151,34 @@ float CalcPointShadow(PointLight light, samplerCube shadowMap, vec3 fragPos)
 
 
     shadow /= float(samples);
+    return shadow;
+}
+
+float CalcSpotShadow(sampler2D shadowMap, mat4 lightSpaceMatrix, vec3 fragPos)
+{
+    vec4 fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);
+    if (fragPosLightSpace.w <= 0.0)
+        return 0.0;
+
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    if (projCoords.z > 1.0 || projCoords.z < 0.0 ||
+        projCoords.x < 0.0 || projCoords.x > 1.0 ||
+        projCoords.y < 0.0 || projCoords.y > 1.0)
+        return 0.0;
+
+    float currentDepth = projCoords.z;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    float bias = 0.0005;
+    float shadow = 0.0;
+
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
     return shadow;
 }
 
@@ -209,6 +240,7 @@ void CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, out
     if (coneIntensity <= 0.0) {
         outDiffuse = vec3(0.0);
         outSpecular = vec3(0.0);
+        outAmbient = vec3(0.0);
         return;
     }
     float distance = length(light.position - FragPos);
@@ -314,11 +346,16 @@ void main()
         totalAmbient += a;
     }
 
-    // Spot lights
-    CalcSpotLight(spotLight, norm, FragPos, viewDir, d, s, a);
-    totalDiffuse += d;
-    totalSpecular += s;
-    totalAmbient += a;
+    // Spotlights (numSpotLights is set from the level + flashlight; cap is MAX_SPOT_LIGHTS)
+    int spotCount = min(numSpotLights, MAX_SPOT_LIGHTS);
+    for (int i = 0; i < spotCount; ++i)
+    {
+        CalcSpotLight(spotLights[i], norm, FragPos, viewDir, d, s, a);
+        float spotShadow = CalcSpotShadow(spotShadowMaps[i], spotLightSpaceMatrices[i], FragPos);
+        totalDiffuse += d * (1.0 - spotShadow);
+        totalSpecular += s * (1.0 - spotShadow);
+        totalAmbient += a;
+    }
 
 
     // Skybox reflection sample

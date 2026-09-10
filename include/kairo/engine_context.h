@@ -19,6 +19,20 @@
 #include "kairo/texture.h"
 
 struct EngineContext {
+    static constexpr int MAX_POINT_LIGHTS = 32;
+    static constexpr int MAX_SPOT_LIGHTS = 32;
+    static constexpr int POINT_SHADOW_TEXTURE_UNIT = 16;
+    static constexpr int SPOT_SHADOW_TEXTURE_UNIT = 48;
+    static constexpr int SUN_SHADOW_TEXTURE_UNIT = 99;
+
+    static constexpr float FLASHLIGHT_INTENSITY = 32.0f;
+    static constexpr float FLASHLIGHT_RADIUS = 64.0f;
+    static constexpr float FLASHLIGHT_CUT_OFF = 12.5f;
+    static constexpr float FLASHLIGHT_OUTER_CUT_OFF = 20.0f;
+    static constexpr float DEFAULT_POINT_LIGHT_RADIUS = 8.0f;
+    static constexpr float DEFAULT_SPOT_LIGHT_RADIUS = 16.0f;
+    static constexpr float DEFAULT_SPOT_CUT_OFF = 20.0f;
+    static constexpr float DEFAULT_SPOT_OUTER_CUT_OFF = 28.0f;
     
     Camera camera;                         
      
@@ -50,6 +64,16 @@ struct EngineContext {
     std::vector<glm::vec3> pointLightPositions;
     std::vector<glm::vec3> pointLightColors;
     std::vector<float> pointLightIntensityMults;
+    std::vector<float> pointLightRadii;
+
+    std::vector<glm::vec3> spotLightPositions;
+    std::vector<glm::vec3> spotLightDirections;
+    std::vector<glm::vec3> spotLightColors;
+    std::vector<float> spotLightIntensityMults;
+    std::vector<float> spotLightCutOffs;      // inner cone, degrees
+    std::vector<float> spotLightOuterCutOffs; // outer cone, degrees
+    std::vector<float> spotLightRadii;
+
     glm::vec3 sunDirection;
     glm::vec3 torchColor;
 
@@ -72,7 +96,11 @@ struct EngineContext {
     std::vector<unsigned int> pointLightShadowCubemaps; // one cubemap per point light
     std::vector<unsigned int> pointLightShadowFBOs; // one FBO per point light
     std::vector<std::array<glm::mat4, 6>> pointLightSpaceMatrices; // 6 view projection matrices per point light
-    float pointLightFarPlane = 25.0f; // far plane distance (matches defualt attenuation distance - IMPORTANT!!! MUST CHANGE THIS WHEN I UPDATE ATTENUATION DISTANCE)
+
+    std::vector<unsigned int> spotLightShadowMaps; // one 2D depth map per spotlight
+    std::vector<unsigned int> spotLightShadowFBOs;
+    std::vector<glm::mat4> spotLightSpaceMatrices;
+    int flashlightIndex = -1; // flashlight is a normal spotlight slot; -1 if none
 
     
     //  Post processing states 

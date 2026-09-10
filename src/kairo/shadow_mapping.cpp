@@ -1,6 +1,7 @@
 #include <kairo/shadow_mapping.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 const unsigned int SHADOW_WIDTH = 2048;
 const unsigned int SHADOW_HEIGHT = 2048;
@@ -69,14 +70,16 @@ void RenderSceneToDepthMap(EngineContext& engineContext) {
     phongShader->use();
     phongShader->setMat4("lightSpaceMatrix", engineContext.lightSpaceMatrix);
 
-    glActiveTexture(GL_TEXTURE0 + 99);
+    glActiveTexture(GL_TEXTURE0 + EngineContext::SUN_SHADOW_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, engineContext.shadowDepthMapTexture);
-    phongShader->setInt("shadowMap", 99); // set shadow map texture unit to 99 to avoid conflict with other textures
+    phongShader->setInt("shadowMap", EngineContext::SUN_SHADOW_TEXTURE_UNIT);
 }
 
 void InitPointLightCubemaps(EngineContext& engineContext) {
     
     unsigned int numPointLights = engineContext.pointLightPositions.size();
+    if (numPointLights > EngineContext::MAX_POINT_LIGHTS)
+        numPointLights = EngineContext::MAX_POINT_LIGHTS;
     engineContext.pointLightShadowCubemaps.resize(numPointLights);
     engineContext.pointLightShadowFBOs.resize(numPointLights);
     engineContext.pointLightSpaceMatrices.resize(numPointLights);
@@ -116,7 +119,8 @@ void InitPointLightCubemaps(EngineContext& engineContext) {
 void RenderSceneToDepthCubemap(EngineContext& engineContext, unsigned int lightIndex) {
     // Perspective projection for cubemap faces: 90° FOV
     float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
-    glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, 0.01f, engineContext.pointLightFarPlane);
+    float farPlane = glm::max(engineContext.pointLightRadii[lightIndex], 0.02f);
+    glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, 0.01f, farPlane);
 
     glm::vec3 lightPos = engineContext.pointLightPositions[lightIndex];  // USE PARAMETER
     std::array<glm::mat4, 6>& matrices = engineContext.pointLightSpaceMatrices[lightIndex];
@@ -143,7 +147,7 @@ void RenderSceneToDepthCubemap(EngineContext& engineContext, unsigned int lightI
     glClear(GL_DEPTH_BUFFER_BIT);
     
     pointShadowShader->setVec3("lightPos", lightPos);
-    pointShadowShader->setFloat("farPlane", engineContext.pointLightFarPlane);
+    pointShadowShader->setFloat("farPlane", farPlane);
     for (int face = 0; face < 6; ++face) {
         pointShadowShader->setMat4("lightSpaceMatrices[" + std::to_string(face) + "]", 
                                    matrices[face]);
@@ -159,3 +163,104 @@ void RenderSceneToDepthCubemap(EngineContext& engineContext, unsigned int lightI
     glViewport(0, 0, engineContext.scrWidth, engineContext.scrHeight);
 }
 
+void InitSpotLightShadowMaps(EngineContext& engineContext)
+{
+    for (unsigned int fbo : engineContext.spotLightShadowFBOs) {
+        if (fbo != 0) glDeleteFramebuffers(1, &fbo);
+    }
+    for (unsigned int tex : engineContext.spotLightShadowMaps) {
+        if (tex != 0) glDeleteTextures(1, &tex);
+    }
+
+    unsigned int worldCount = engineContext.spotLightPositions.size();
+    if (engineContext.flashlightIndex >= 0)
+        worldCount = static_cast<unsigned int>(engineContext.flashlightIndex);
+    if (worldCount > EngineContext::MAX_SPOT_LIGHTS - 1)
+        worldCount = EngineContext::MAX_SPOT_LIGHTS - 1;
+
+    engineContext.flashlightIndex = static_cast<int>(worldCount);
+    unsigned int numSpotLights = worldCount + 1;
+
+    engineContext.spotLightPositions.resize(numSpotLights);
+    engineContext.spotLightDirections.resize(numSpotLights);
+    engineContext.spotLightColors.resize(numSpotLights);
+    engineContext.spotLightIntensityMults.resize(numSpotLights);
+    engineContext.spotLightCutOffs.resize(numSpotLights);
+    engineContext.spotLightOuterCutOffs.resize(numSpotLights);
+    engineContext.spotLightRadii.resize(numSpotLights);
+
+    engineContext.spotLightShadowMaps.resize(numSpotLights);
+    engineContext.spotLightShadowFBOs.resize(numSpotLights);
+    engineContext.spotLightSpaceMatrices.resize(numSpotLights);
+
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    for (unsigned int i = 0; i < numSpotLights; ++i) {
+        glGenFramebuffers(1, &engineContext.spotLightShadowFBOs[i]);
+        glGenTextures(1, &engineContext.spotLightShadowMaps[i]);
+
+        glBindTexture(GL_TEXTURE_2D, engineContext.spotLightShadowMaps[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, engineContext.spotLightShadowFBOs[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, engineContext.spotLightShadowMaps[i], 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "Spot light " << i << " shadow FBO incomplete!\n";
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+}
+
+void RenderSceneToSpotDepthMap(EngineContext& engineContext, unsigned int lightIndex)
+{
+    glm::vec3 position = engineContext.spotLightPositions[lightIndex];
+    glm::vec3 direction = engineContext.spotLightDirections[lightIndex];
+    float fov = glm::clamp(engineContext.spotLightOuterCutOffs[lightIndex] * 2.0f, 1.0f, 179.0f);
+    float nearPlane = 0.1f;
+    float farPlane = glm::max(engineContext.spotLightRadii[lightIndex], nearPlane + 0.01f);
+    glm::mat4 projection = glm::perspective(glm::radians(fov), 1.0f, nearPlane, farPlane);
+
+    glm::vec3 dir = (glm::dot(direction, direction) < 1e-8f)
+        ? glm::vec3(0.0f, -1.0f, 0.0f)
+        : glm::normalize(direction);
+    glm::vec3 up = (glm::abs(dir.y) > 0.99f) ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+    engineContext.spotLightSpaceMatrices[lightIndex] = projection * glm::lookAt(position, position + dir, up);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS);
+
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, engineContext.spotLightShadowFBOs[lightIndex]);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "SPOT SHADOW FBO INCOMPLETE!\n";
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    Shader* shadowShader = engineContext.getShaderByName("dirShadowMapping");
+    shadowShader->use();
+    shadowShader->setMat4("lightSpaceMatrix", engineContext.spotLightSpaceMatrices[lightIndex]);
+
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(2.0f, 4.0f);
+
+    for (auto& [name, obj] : engineContext.sceneObjects) {
+        obj->drawShader(*shadowShader);
+    }
+
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, static_cast<GLuint>(engineContext.scrWidth), static_cast<GLuint>(engineContext.scrHeight));
+
+    Shader* phongShader = engineContext.getShaderByName("phong");
+    phongShader->use();
+    phongShader->setMat4("spotLightSpaceMatrices[" + std::to_string(lightIndex) + "]",
+                         engineContext.spotLightSpaceMatrices[lightIndex]);
+}

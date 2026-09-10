@@ -3,7 +3,7 @@ layout (triangles) in;
 layout (triangle_strip, max_vertices = 18) out;  // 6 faces × 3 vertices
 
 in vec3 FragPos[];
-uniform mat4 lightSpaceMatrices[6];
+uniform mat4 lightSpaceMatrices[6];  // 6 view-projection matrices
 
 out vec3 FragPosGS;
 

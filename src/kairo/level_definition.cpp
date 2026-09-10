@@ -16,6 +16,15 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
     engineContext.pointLightPositions.clear();
     engineContext.pointLightColors.clear();
     engineContext.pointLightIntensityMults.clear();
+    engineContext.pointLightRadii.clear();
+    engineContext.spotLightPositions.clear();
+    engineContext.spotLightDirections.clear();
+    engineContext.spotLightColors.clear();
+    engineContext.spotLightIntensityMults.clear();
+    engineContext.spotLightCutOffs.clear();
+    engineContext.spotLightOuterCutOffs.clear();
+    engineContext.spotLightRadii.clear();
+    engineContext.flashlightIndex = -1;
 
     std::ifstream file(path);
     if (!file.is_open()) {
@@ -42,7 +51,19 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
             for (auto& [lightKey, value] : value.items()) {
                 engineContext.pointLightPositions.push_back(glm::vec3(value["position"][0].get<float>(), value["position"][1].get<float>(), value["position"][2].get<float>())); 
                 engineContext.pointLightColors.push_back(glm::vec3(value["color"][0].get<float>(), value["color"][1].get<float>(), value["color"][2].get<float>())); 
-                engineContext.pointLightIntensityMults.push_back(value["intensity"].get<float>()); 
+                engineContext.pointLightIntensityMults.push_back(value["intensity"].get<float>());
+                engineContext.pointLightRadii.push_back(value.value("radius", EngineContext::DEFAULT_POINT_LIGHT_RADIUS)); 
+            }
+        }
+        if (key.find("SpotLights") != std::string::npos) {
+            for (auto& [lightKey, value] : value.items()) {
+                engineContext.spotLightPositions.push_back(glm::vec3(value["position"][0].get<float>(), value["position"][1].get<float>(), value["position"][2].get<float>()));
+                engineContext.spotLightDirections.push_back(glm::vec3(value["direction"][0].get<float>(), value["direction"][1].get<float>(), value["direction"][2].get<float>()));
+                engineContext.spotLightColors.push_back(glm::vec3(value["color"][0].get<float>(), value["color"][1].get<float>(), value["color"][2].get<float>()));
+                engineContext.spotLightIntensityMults.push_back(value["intensity"].get<float>());
+                engineContext.spotLightCutOffs.push_back(value.value("cutOff", EngineContext::DEFAULT_SPOT_CUT_OFF));
+                engineContext.spotLightOuterCutOffs.push_back(value.value("outerCutOff", EngineContext::DEFAULT_SPOT_OUTER_CUT_OFF));
+                engineContext.spotLightRadii.push_back(value.value("radius", EngineContext::DEFAULT_SPOT_LIGHT_RADIUS));
             }
         }
         if (key.find("SunDirection") != std::string::npos) {
@@ -57,6 +78,7 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
     }
 
     InitPointLightCubemaps(engineContext);
+    InitSpotLightShadowMaps(engineContext);
 }
 
 void SaveLevelToJson(EngineContext& engineContext, const std::string& path){}
