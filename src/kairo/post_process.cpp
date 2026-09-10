@@ -18,7 +18,7 @@ void PostProcess(EngineContext& engineContext) {
     engineContext.texColorBuffer = 0;
     glGenTextures(1, &engineContext.texColorBuffer);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, engineContext.texColorBuffer);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), GL_TRUE);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB16F, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), GL_TRUE);
     glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // prevent edge bleeding
@@ -55,13 +55,15 @@ void PostProcess(EngineContext& engineContext) {
     engineContext.intermediateTex = 0;
     glGenTextures(1, &engineContext.intermediateTex);
     glBindTexture(GL_TEXTURE_2D, engineContext.intermediateTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, engineContext.intermediateTex, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    
+
+
+
     float PPQuadVertices[] = {
         -1.0f,  1.0f,  0.0f, 1.0f,
         -1.0f, -1.0f,  0.0f, 0.0f,

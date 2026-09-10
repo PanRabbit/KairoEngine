@@ -113,6 +113,8 @@ struct EngineContext {
     unsigned int intermediateFBO;
     unsigned int intermediateTex;
 
+    float exposure = 1.0f;
+
     // UI states 
     float scrWidth = 1600.0f;
     float scrHeight = 1200.0f;

@@ -98,7 +98,6 @@ in vec3 FragPos;
 in vec4 FragPosLightSpace;
 in mat3 TBN;
 
-
 float CalcDirShadows(vec4 FragPosLightSpace)
 {
     // Shadow maping with PCF (Percentage Closer Filtering)

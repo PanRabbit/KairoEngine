@@ -12,6 +12,7 @@ uniform float scrHeight;
 float sharpness = 0.005;
 float blurStrength = 0.25;
 float edgeDetectionStrength = 0.1;
+uniform float exposure;
 
 vec2[9] getOffsets(float offsetDistance)
 {
@@ -74,7 +75,6 @@ vec3 edgeDetection(vec2 edgeDetectionCoords)
     return col;
 }
 
-
 vec3 blur(vec2 blurCoords)
 {  
     float blurKernel[9] = float[](
@@ -109,7 +109,9 @@ vec2 pixelate(float resolution)
 
 void main()
 {
-    vec3 color = vec3(texture(screenTexture, TexCoords));
-    vec4 sharpened = vec4(sharpen(TexCoords), 1.0);
-    FragColor = sharpened;
+    vec3 sharpened = sharpen(TexCoords);
+    vec3 hdrColor = texture(screenTexture, TexCoords).rgb;
+    vec3 mapped = sharpened * exposure;
+
+    FragColor = vec4(mapped, 1.0);
 }

@@ -216,6 +216,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 postProcessingShader.setFloat("time", currentFrame);
                 postProcessingShader.setFloat("scrWidth", engineContext.scrWidth);
                 postProcessingShader.setFloat("scrHeight", engineContext.scrHeight);
+                postProcessingShader.setFloat("exposure", engineContext.exposure);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
                 glBindVertexArray(0);    
             }
