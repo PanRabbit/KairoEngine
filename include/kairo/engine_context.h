@@ -101,7 +101,7 @@ struct EngineContext {
     std::vector<unsigned int> spotLightShadowFBOs;
     std::vector<glm::mat4> spotLightSpaceMatrices;
     int flashlightIndex = -1; // flashlight is a normal spotlight slot; -1 if none
-
+    glm::vec3 flashlightOffset = glm::vec3(-0.25f, -0.25f, 0.0f);
     
     //  Post processing states 
     bool isPostProcessing = true;
@@ -118,7 +118,10 @@ struct EngineContext {
     float scrHeight = 1200.0f;
     bool flashlightOn = false;
     int selectedObjectID = 0;
-    
+    int transformMode = 1; // ImGuizmo::WORLD
+    int transformOperation = 7; // ImGuizmo::TRANSLATE
+    bool flyCamLocked = false; // Tab toggles cursor lock
+    bool rmbLooking = false; // hold right-click look in UI mode
     bool isWireframe = false;
     glm::vec3 clearColor = glm::vec3(0.1f, 0.15f, 0.2f);
     bool reloadShader = false;

@@ -28,7 +28,8 @@ Model* EngineContext::getModelByName(const std::string& name) {
 GameObject* EngineContext::getGameObjectByName(const std::string& name) {
     auto assetPointer = sceneObjects.find(name);
     if (assetPointer == sceneObjects.end()) {
-        throw std::runtime_error("Game object not found: " + name);
+        std::cout << "Game object not found: " << name << std::endl;
+        return nullptr;
     }
     return assetPointer->second.get();
 }
@@ -39,5 +40,6 @@ GameObject* EngineContext::getGameObjectByID(int id) {
             return object.get();
         }
     }
-    throw std::runtime_error("Game object not found: ID of " + std::to_string(id));
+    std::cout << "Game object not found: ID of " << id << std::endl;
+    return nullptr;
 }

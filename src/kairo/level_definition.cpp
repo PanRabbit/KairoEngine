@@ -39,7 +39,7 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
             for (auto& [objKey, objValue] : value.items()) {
                 auto* gameObject = new GameObject(objKey, engineContext.getModelByName(objValue["model"].get<std::string>()), engineContext.getMaterialByName(objValue["material"].get<std::string>())); 
                 gameObject->position = glm::vec3(objValue["location"][0].get<float>(), objValue["location"][1].get<float>(), objValue["location"][2].get<float>()); 
-                gameObject->rotation = glm::vec3(glm::radians(objValue["rotation"][0].get<float>()), glm::radians(objValue["rotation"][1].get<float>()), glm::radians(objValue["rotation"][2].get<float>())); 
+                gameObject->setEulerXYZ(glm::vec3(glm::radians(objValue["rotation"][0].get<float>()), glm::radians(objValue["rotation"][1].get<float>()), glm::radians(objValue["rotation"][2].get<float>()))); 
                 gameObject->scale = glm::vec3(objValue["scale"][0].get<float>(), objValue["scale"][1].get<float>(), objValue["scale"][2].get<float>()); 
                 engineContext.sceneObjects[objKey] = std::move(std::unique_ptr<GameObject>(gameObject)); 
             }

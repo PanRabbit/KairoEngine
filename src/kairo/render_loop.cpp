@@ -74,13 +74,12 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
 
             // Spotlights (flashlight is the last slot, included only when on)
             int flashlightIndex = engineContext.flashlightIndex;
-            int worldSpotCount = (flashlightIndex >= 0)
-                ? flashlightIndex
-                : static_cast<int>(engineContext.spotLightPositions.size());
+            // determines the number of "world" spotlights (excluding the flashlight if present).
+            int worldSpotCount = (flashlightIndex >= 0) ? flashlightIndex : static_cast<int>(engineContext.spotLightPositions.size());
             if (worldSpotCount > EngineContext::MAX_SPOT_LIGHTS) worldSpotCount = EngineContext::MAX_SPOT_LIGHTS;
 
             if (flashlightIndex >= 0) {
-                engineContext.spotLightPositions[flashlightIndex] = engineContext.camera.Position;
+                engineContext.spotLightPositions[flashlightIndex] = engineContext.camera.Position + engineContext.flashlightOffset;
                 engineContext.spotLightDirections[flashlightIndex] = engineContext.camera.Front;
                 engineContext.spotLightColors[flashlightIndex] = engineContext.torchColor;
                 engineContext.spotLightIntensityMults[flashlightIndex] = EngineContext::FLASHLIGHT_INTENSITY;

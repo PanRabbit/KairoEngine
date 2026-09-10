@@ -5,6 +5,7 @@
 #include "kairo/shader.h"
 #include "kairo/material.h"
 #include <kairo/level_definition.h>
+#include <ImGuizmo.h>
 
 void InitUI(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
@@ -20,6 +21,35 @@ void RenderUI(EngineContext& engineContext) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    // add imguizmo
+    ImGuizmo::BeginFrame();
+    ImGuizmo::SetOrthographic(false); // we're not using an orthographic camera
+    ImGuizmo::SetRect(0, 0, engineContext.scrWidth, engineContext.scrHeight); // set the rect to the screen size
+    const bool cameraLookActive = engineContext.flyCamLocked || engineContext.rmbLooking;
+    ImGuizmo::Enable(!cameraLookActive); // don't steal mouse while looking around
+    if (!cameraLookActive && engineContext.selectedObjectID != 0) {
+        if (GameObject* obj = engineContext.getGameObjectByID(engineContext.selectedObjectID)) {
+            static int gizmoObjectID = 0;
+            static glm::mat4 gizmoMatrix(1.0f);
+            if (obj->id != gizmoObjectID || !ImGuizmo::IsUsing()) {
+                gizmoMatrix = obj->getTransformMatrix(); // rebuild from quat only when not dragging
+                gizmoObjectID = obj->id;
+            }
+            ImGuizmo::Manipulate(
+                glm::value_ptr(engineContext.view),
+                glm::value_ptr(engineContext.projection),
+                static_cast<ImGuizmo::OPERATION>(engineContext.transformOperation),
+                static_cast<ImGuizmo::MODE>(engineContext.transformMode),
+                glm::value_ptr(gizmoMatrix)
+            );
+            if (ImGuizmo::IsUsing()) {
+                obj->setFromMatrix(gizmoMatrix); // write T/Q/S; no euler round-trip
+            }
+        }
+    }
+
+
 
     // Design the window layouts
     ImGui::Begin("Kairo Engine");
@@ -73,15 +103,46 @@ void RenderUI(EngineContext& engineContext) {
             ImGui::EndTabItem(); 
         }
 
-        if (ImGui::BeginTabItem("Objects"))
+        static int lastSelectedID = 0;
+        const bool focusObjectTab = engineContext.selectedObjectID != 0 && engineContext.selectedObjectID != lastSelectedID; // flag on object change, but only for 1 cycle
+        lastSelectedID = engineContext.selectedObjectID;
+        if (ImGui::BeginTabItem("Objects", nullptr, focusObjectTab ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
         {
+            // Transform Space Controls
+            if (ImGui::RadioButton("World", engineContext.transformMode == ImGuizmo::WORLD)) {
+                engineContext.transformMode = ImGuizmo::WORLD;
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton("Local", engineContext.transformMode == ImGuizmo::LOCAL)) {
+                engineContext.transformMode = ImGuizmo::LOCAL;
+            }
+            ImGui::SameLine();
+            ImGui::Text("Transform Space: %s", engineContext.transformMode == ImGuizmo::WORLD ? "World" : "Local");
+
+            // Transform Operation Controls (1/2/3 shortcuts, WASD stays free for camera)
+            if (ImGui::RadioButton("Translate (1)", engineContext.transformOperation == ImGuizmo::TRANSLATE)) {
+                engineContext.transformOperation = ImGuizmo::TRANSLATE;
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton("Rotate (2)", engineContext.transformOperation == ImGuizmo::ROTATE)) {
+                engineContext.transformOperation = ImGuizmo::ROTATE;
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton("Scale (3)", engineContext.transformOperation == ImGuizmo::SCALE)) {
+                engineContext.transformOperation = ImGuizmo::SCALE;
+            }
+
             ImGui::Separator();
             if (engineContext.selectedObjectID != 0) {
-                ImGui::Text("Currently selected object: %s", engineContext.getGameObjectByID(engineContext.selectedObjectID)->name.c_str());
+                GameObject* selected = engineContext.getGameObjectByID(engineContext.selectedObjectID);
+                ImGui::Text("Currently selected object: %s", selected->name.c_str());
 
-                ImGui::DragFloat3("Position", &engineContext.getGameObjectByID(engineContext.selectedObjectID)->position.x, 0.1f);
-                ImGui::DragFloat3("Rotation", &engineContext.getGameObjectByID(engineContext.selectedObjectID)->rotation.x, 0.1f);
-                ImGui::DragFloat3("Scale", &engineContext.getGameObjectByID(engineContext.selectedObjectID)->scale.x, 0.1f);
+                ImGui::DragFloat3("Position", &selected->position.x, 0.1f);
+                glm::vec3 rotationDeg = glm::degrees(selected->getEulerXYZ());
+                if (ImGui::DragFloat3("Rotation (deg)", &rotationDeg.x, 0.5f)) {
+                    selected->setEulerXYZ(glm::radians(rotationDeg));
+                }
+                ImGui::DragFloat3("Scale", &selected->scale.x, 0.1f);
             } else {
                 ImGui::Text("No object selected");
             }

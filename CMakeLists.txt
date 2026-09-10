@@ -38,6 +38,7 @@ add_library(imgui_lib STATIC
     imgui/imgui_widgets.cpp
     imgui/imgui_tables.cpp
     imgui/imgui_demo.cpp
+    imgui/ImGuizmo/ImGuizmo.cpp
     imgui/backend/imgui_impl_glfw.cpp
     imgui/backend/imgui_impl_opengl3.cpp
 )
@@ -78,6 +79,8 @@ if(WIN32)
     # ImGui static library includes and dependencies for Windows
     target_include_directories(imgui_lib PRIVATE . imgui imgui/backend)
     target_link_libraries(imgui_lib PUBLIC glfw glad::glad)
+    target_include_directories(imgui_lib PRIVATE . imgui imgui/backend imgui/ImGuizmo)
+    target_include_directories(KairoEngine PRIVATE include . imgui imgui/backend imgui/ImGuizmo)
 
     # Link everything together for Windows (using standard vcpkg target aliases)
     target_link_libraries(KairoEngine PRIVATE 
@@ -100,6 +103,8 @@ else()
     # Let BOTH your main executable and the static library see the headers
     target_include_directories(KairoEngine PRIVATE include . imgui imgui/backend)
     target_include_directories(imgui_lib PRIVATE . imgui imgui/backend)
+    target_include_directories(imgui_lib PRIVATE . imgui imgui/backend imgui/ImGuizmo)
+    target_include_directories(KairoEngine PRIVATE include . imgui imgui/backend imgui/ImGuizmo)
 
     # Linked assimp here at the end
     target_link_libraries(KairoEngine PRIVATE imgui_lib glfw glm::glm OpenGL::GL ${CMAKE_DL_LIBS} assimp)

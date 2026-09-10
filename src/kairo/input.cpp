@@ -5,6 +5,7 @@
 #include <kairo/shader.h>
 #include <iostream>
 #include <imgui.h>
+#include <ImGuizmo.h>
 
 // Global context pointer for GLFW callbacks (set once at init)
 static EngineContext* g_engineContext = nullptr;
@@ -17,6 +18,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
+
+// Mouse state (moved from file-scope globals to per-context)
+struct MouseState {
+    float lastX = 0.0f;
+    float lastY = 0.0f;
+    bool firstMouse = true;
+};
+
+static MouseState g_mouseState;
 
 // process input
 void processInput(GLFWwindow *window, EngineContext& engineContext)
@@ -59,14 +69,49 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
     if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
         engineContext.camera.ProcessKeyboard(DOWN, engineContext.deltaTime);
 
+    // Gizmo operation shortcuts (1/2/3)
+    if (!ImGui::GetIO().WantTextInput)
+    {
+        static bool opKeyJustPressed = false;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_1) == GLFW_PRESS)
+        {
+            if (!opKeyJustPressed)
+            {
+                engineContext.transformOperation = ImGuizmo::TRANSLATE;
+                opKeyJustPressed = true;
+            }
+        }
+        else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_2) == GLFW_PRESS)
+        {
+            if (!opKeyJustPressed)
+            {
+                engineContext.transformOperation = ImGuizmo::ROTATE;
+                opKeyJustPressed = true;
+            }
+        }
+        else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_3) == GLFW_PRESS)
+        {
+            if (!opKeyJustPressed)
+            {
+                engineContext.transformOperation = ImGuizmo::SCALE;
+                opKeyJustPressed = true;
+            }
+        }
+        else
+        {
+            opKeyJustPressed = false;
+        }
+    }
+
     // toggle mouse lock
     static bool tabJustPressed = false;
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) 
     {
         if (!tabJustPressed) 
         {
-            int currentMode = glfwGetInputMode(window, GLFW_CURSOR);
-            glfwSetInputMode(window, GLFW_CURSOR, (currentMode == GLFW_CURSOR_NORMAL) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+            engineContext.flyCamLocked = !engineContext.flyCamLocked;
+            if (!engineContext.rmbLooking)
+                glfwSetInputMode(window, GLFW_CURSOR, engineContext.flyCamLocked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
             tabJustPressed = true;
         }
     }
@@ -75,11 +120,30 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
         tabJustPressed = false;
     }
 
+    // Hold right-click to look around while the cursor is in UI mode
+    const bool rmbHeld = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+    if (rmbHeld && !engineContext.flyCamLocked)
+    {
+        if (!engineContext.rmbLooking && !ImGui::GetIO().WantCaptureMouse)
+        {
+            engineContext.rmbLooking = true;
+            g_mouseState.firstMouse = true;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+    }
+    else if (engineContext.rmbLooking)
+    {
+        engineContext.rmbLooking = false;
+        g_mouseState.firstMouse = true;
+        if (!engineContext.flyCamLocked)
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
     // Mouse click selection (Only trigger when cursor is not captured by camera look)
     static bool mouseJustPressed = false;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        if (!mouseJustPressed && glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL && !ImGui::GetIO().WantCaptureMouse) // only trigger if not controlling camera and not in ImGui
+        if (!mouseJustPressed && glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL && !ImGui::GetIO().WantCaptureMouse && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing()) // only trigger if not controlling camera, not in ImGui and not in ImGuizmo
         {
             double mouseX, mouseY;
             glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -100,15 +164,6 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
         mouseJustPressed = false;
     }
 }
-
-// Mouse state (moved from file-scope globals to per-context)
-struct MouseState {
-    float lastX = 0.0f;
-    float lastY = 0.0f;
-    bool firstMouse = true;
-};
-
-static MouseState g_mouseState;
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
