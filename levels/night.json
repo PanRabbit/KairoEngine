@@ -6,7 +6,9 @@
                 0.5,
                 0.23999999463558197
             ],
-            "material": "wood",
+            "materials": [
+                "wood"
+            ],
             "model": "cube",
             "rotation": [
                 0.0,
@@ -25,7 +27,9 @@
                 1.0,
                 1.9600000381469727
             ],
-            "material": "brick",
+            "materials": [
+                "brick"
+            ],
             "model": "cube",
             "rotation": [
                 -0.0,
@@ -44,7 +48,9 @@
                 2.5,
                 1.9600000381469727
             ],
-            "material": "wood",
+            "materials": [
+                "wood"
+            ],
             "model": "cube",
             "rotation": [
                 -0.0,
@@ -63,7 +69,9 @@
                 0.5,
                 2.0
             ],
-            "material": "wood",
+            "materials": [
+                "wood"
+            ],
             "model": "cube",
             "rotation": [
                 0.0,
@@ -82,7 +90,9 @@
                 0.5,
                 0.6000000238418579
             ],
-            "material": "wood",
+            "materials": [
+                "wood"
+            ],
             "model": "cube",
             "rotation": [
                 0.0,
@@ -101,7 +111,9 @@
                 0.5,
                 -0.23000000417232513
             ],
-            "material": "wood",
+            "materials": [
+                "wood"
+            ],
             "model": "cube",
             "rotation": [
                 0.0,
@@ -120,7 +132,9 @@
                 1.375,
                 0.20000000298023224
             ],
-            "material": "wood",
+            "materials": [
+                "wood"
+            ],
             "model": "cube",
             "rotation": [
                 0.0,
@@ -139,7 +153,9 @@
                 0.0,
                 0.0
             ],
-            "material": "floor",
+            "materials": [
+                "floor"
+            ],
             "model": "plane",
             "rotation": [
                 -0.0,
@@ -158,12 +174,14 @@
                 2.0,
                 0.0
             ],
-            "material": "grunge",
+            "materials": [
+                "grunge"
+            ],
             "model": "suzanne",
             "rotation": [
-                180.0,
+                -180.0,
                 -5.008955668017734e-06,
-                180.0
+                -180.0
             ],
             "scale": [
                 0.5,
@@ -177,12 +195,14 @@
                 0.5,
                 0.0
             ],
-            "material": "grunge",
+            "materials": [
+                "grunge"
+            ],
             "model": "suzanneFlat",
             "rotation": [
-                180.0,
+                -180.0,
                 -5.008955668017734e-06,
-                180.0
+                -180.0
             ],
             "scale": [
                 0.5,
@@ -196,7 +216,9 @@
                 2.0,
                 4.646158695220947
             ],
-            "material": "brick",
+            "materials": [
+                "brick"
+            ],
             "model": "plane",
             "rotation": [
                 -90.00000762939453,
@@ -215,7 +237,9 @@
                 2.0,
                 3.781168222427368
             ],
-            "material": "brick",
+            "materials": [
+                "brick"
+            ],
             "model": "plane",
             "rotation": [
                 -90.00000762939453,
@@ -234,7 +258,9 @@
                 2.0,
                 5.510154724121094
             ],
-            "material": "brick",
+            "materials": [
+                "brick"
+            ],
             "model": "plane",
             "rotation": [
                 -90.00000762939453,
@@ -253,7 +279,9 @@
                 6.0,
                 5.510154724121094
             ],
-            "material": "brick",
+            "materials": [
+                "brick"
+            ],
             "model": "plane",
             "rotation": [
                 -90.00000762939453,
@@ -272,7 +300,9 @@
                 6.0,
                 4.646158695220947
             ],
-            "material": "brick",
+            "materials": [
+                "brick"
+            ],
             "model": "plane",
             "rotation": [
                 -90.00000762939453,
@@ -291,7 +321,9 @@
                 6.0,
                 3.7832207679748535
             ],
-            "material": "brick",
+            "materials": [
+                "brick"
+            ],
             "model": "plane",
             "rotation": [
                 -90.00000762939453,
@@ -361,7 +393,7 @@
         "enablePixelate": false,
         "enableSharpen": true,
         "enabled": true,
-        "exposure": 1.5,
+        "exposure": 1.2999999523162842,
         "pixelateResolution": 256.0,
         "sharpness": 0.10000000149011612
     },

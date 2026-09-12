@@ -31,9 +31,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             // ==========================================
             Shader& phongShader = *engineContext.getShaderByName("phong");
             Shader& lightShader = *engineContext.getShaderByName("light");
-            Shader& singleColorShader = *engineContext.getShaderByName("singleColor");
             Shader& postProcessingShader = *engineContext.getShaderByName("postProcessing");
-            Material& lightMaterial = *engineContext.getMaterialByName("light");
 
             phongShader.use();
     

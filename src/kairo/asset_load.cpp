@@ -30,9 +30,7 @@ void AssetLoad(EngineContext& engineContext) {
     // ==========================================
     engineContext.shaders["phong"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/phong_shader.fs");
     engineContext.shaders["light"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/light_shader.fs");
-    engineContext.shaders["depth"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/depth_visualiser.fs");
     engineContext.shaders["selection"] = std::make_unique<Shader>("shaders/selection.vs", "shaders/selection.fs");
-    engineContext.shaders["singleColor"] = std::make_unique<Shader>("shaders/vertex_shader.vs", "shaders/single_color.fs");
     engineContext.shaders["postProcessing"] = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/post_processing.fs");
     engineContext.shaders["skybox"] = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
     engineContext.shaders["dirShadowMapping"] = std::make_unique<Shader>("shaders/dir_shadow_mapping.vs", "shaders/dir_shadow_mapping.fs");

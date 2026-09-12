@@ -1,4 +1,5 @@
 #include "kairo/engine_context.h"
+#include <iostream>
 #include <stdexcept>
 
 Shader* EngineContext::getShaderByName(const std::string& name) {
@@ -21,15 +22,6 @@ Model* EngineContext::getModelByName(const std::string& name) {
     auto assetPointer = models.find(name);
     if (assetPointer == models.end()) {
         throw std::runtime_error("Model not found: " + name);
-    }
-    return assetPointer->second.get();
-}
-
-GameObject* EngineContext::getGameObjectByName(const std::string& name) {
-    auto assetPointer = sceneObjects.find(name);
-    if (assetPointer == sceneObjects.end()) {
-        std::cout << "Game object not found: " << name << std::endl;
-        return nullptr;
     }
     return assetPointer->second.get();
 }

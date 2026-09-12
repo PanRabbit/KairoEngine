@@ -1,20 +1,48 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
 
 #include <kairo/model.h>
 #include <kairo/mesh.h>
+
+#include <iostream>
+#include <string>
 
 
 void Model::draw(Material &material)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].draw(material);
-};
+}
+
+void Model::draw(const std::vector<Material*>& materials)
+{
+    for (unsigned int i = 0; i < meshes.size(); i++) {
+        const unsigned int slot = meshes[i].materialSlot;
+        Material* material = nullptr;
+        if (slot < materials.size())
+            material = materials[slot];
+        else if (!materials.empty())
+            material = materials[0];
+        if (!material)
+            continue;
+        meshes[i].draw(*material);
+    }
+}
 
 void Model::drawShader(Shader &shader) {
     for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].drawShader(shader);
+}
+
+// get the name of a material slot
+const std::string& Model::slotName(size_t slot) const
+{
+    static const std::string kFallback = "Material";
+    if (slot >= slotNames.size() || slotNames[slot].empty())
+        return kFallback;
+    return slotNames[slot];
 }
 
 void Model::loadModel(std::string path)
@@ -28,9 +56,20 @@ void Model::loadModel(std::string path)
         std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
         return;
     }
-    directory = path.substr(0, path.find_last_of('/'));
+
+    slotNames.assign(scene->mNumMaterials, {});
+    // assign material slot names
+    for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+        aiString name;
+        if (scene->mMaterials[i]->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
+            slotNames[i] = name.C_Str();
+        if (slotNames[i].empty())
+            slotNames[i] = "Material " + std::to_string(i);
+    }
 
     processNode(scene->mRootNode, scene);
+    // clean up unused material slots
+    compactMaterialSlots();
 }
 
 void Model::processNode(aiNode *node, const aiScene *scene)
@@ -39,7 +78,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(processMesh(mesh, scene));
+        meshes.push_back(processMesh(mesh));
     }
     // then do the same for each of its children
     for(unsigned int i = 0; i < node->mNumChildren; i++)
@@ -49,11 +88,10 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 }
 
 // convert assimp's mesh data to our Mesh format
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
+Mesh Model::processMesh(aiMesh *mesh)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures;
 
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -107,12 +145,40 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
             indices.push_back(face.mIndices[j]);
     }
 
-    return Mesh(vertices, indices);
-    
+    Mesh result(vertices, indices);
+    result.materialSlot = mesh->mMaterialIndex;
+    return result;
 }
 
-void Model::cleanup() {
-    for (auto& mesh : meshes) {
-        mesh.cleanup();
+// remove garbage material slots from assimp import
+void Model::compactMaterialSlots()
+{
+    if (slotNames.empty())
+        slotNames.emplace_back("Material 0");
+
+    std::vector<char> used(slotNames.size(), 0);
+    for (const Mesh& mesh : meshes) {
+        if (mesh.materialSlot < used.size())
+            used[mesh.materialSlot] = 1;
     }
+
+    std::vector<unsigned int> remap(slotNames.size(), 0);
+    std::vector<std::string> compacted;
+    compacted.reserve(slotNames.size());
+    for (size_t i = 0; i < slotNames.size(); ++i) {
+        if (!used[i])
+            continue;
+        remap[i] = static_cast<unsigned int>(compacted.size());
+        compacted.push_back(slotNames[i]);
+    }
+    if (compacted.empty())
+        compacted.emplace_back("Material 0");
+
+    for (Mesh& mesh : meshes) {
+        if (mesh.materialSlot < used.size() && used[mesh.materialSlot])
+            mesh.materialSlot = remap[mesh.materialSlot];
+        else
+            mesh.materialSlot = 0;
+    }
+    slotNames = std::move(compacted);
 }

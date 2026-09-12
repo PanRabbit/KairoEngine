@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cctype>
 
+// empty private namespace for level definition functions
 namespace {
 
     // get the keys of a map and sort them (keeps objects in a consistent order)
@@ -39,6 +40,24 @@ namespace {
     // spawn an object in front of the camera
     glm::vec3 SpawnInFrontOfCamera(const EngineContext& engineContext) {
         return engineContext.camera.Position + engineContext.camera.Front * 4.0f;
+    }
+
+    std::string DefaultMaterialName(const EngineContext& engineContext) {
+        if (engineContext.materials.count("wood"))
+            return "wood";
+        for (const auto& [name, _] : engineContext.materials) {
+            if (name != "light")
+                return name;
+        }
+        return {};
+    }
+
+    std::vector<std::string> ReadObjectMaterialNames(const nlohmann::json& objValue) {
+        if (objValue.contains("materials") && objValue["materials"].is_array())
+            return objValue["materials"].get<std::vector<std::string>>();
+        if (objValue.contains("material") && objValue["material"].is_string())
+            return { objValue["material"].get<std::string>() };
+        return {};
     }
 
     void LoadPostProcess(EngineContext& engineContext, const nlohmann::json& j) {
@@ -145,14 +164,14 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
         if (key.find("GameObjects") != std::string::npos) {
             for (auto& [objKey, objValue] : value.items()) {
                 const std::string modelName = objValue["model"].get<std::string>();
-                const std::string materialName = objValue["material"].get<std::string>();
                 auto* gameObject = new GameObject(
                     objKey,
                     engineContext.getModelByName(modelName),
-                    engineContext.getMaterialByName(materialName),
+                    {},
                     modelName,
-                    materialName
+                    ReadObjectMaterialNames(objValue)
                 );
+                SyncObjectMaterialSlots(engineContext, *gameObject);
                 gameObject->position = glm::vec3(objValue["location"][0].get<float>(), objValue["location"][1].get<float>(), objValue["location"][2].get<float>());
                 gameObject->setEulerXYZ(glm::radians(glm::vec3(objValue["rotation"][0].get<float>(), objValue["rotation"][1].get<float>(), objValue["rotation"][2].get<float>())));
                 gameObject->scale = glm::vec3(objValue["scale"][0].get<float>(), objValue["scale"][1].get<float>(), objValue["scale"][2].get<float>());
@@ -203,6 +222,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
 {
     nlohmann::json j;
 
+    // Save skybox name (if any)
     if (!engineContext.currentSkyboxName.empty())
         j["SkyBox"] = { { "name", engineContext.currentSkyboxName } };
 
@@ -211,6 +231,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
     j["TorchColor"] = { engineContext.torchColor.x, engineContext.torchColor.y, engineContext.torchColor.z };
     j["PostProcess"] = SavePostProcess(engineContext);
 
+    // Save game objects
     nlohmann::json objects = nlohmann::json::object();
     std::vector<std::string> objectNames = SortedMapKeys(engineContext.sceneObjects);
     for (const std::string& objKey : objectNames) {
@@ -218,7 +239,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
         const glm::vec3 rotationDeg = glm::degrees(obj->getEulerXYZ());
         objects[objKey] = {
             { "model", obj->modelName },
-            { "material", obj->materialName },
+            { "materials", obj->materialNames },
             { "location", { obj->position.x, obj->position.y, obj->position.z } },
             { "rotation", { rotationDeg.x, rotationDeg.y, rotationDeg.z } },
             { "scale", { obj->scale.x, obj->scale.y, obj->scale.z } }
@@ -226,6 +247,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
     }
     j["GameObjects"] = objects;
 
+    // Save point lights
     nlohmann::json pointLights = nlohmann::json::object();
     for (size_t i = 0; i < engineContext.pointLightPositions.size(); ++i) {
         pointLights["light" + std::to_string(i)] = {
@@ -237,6 +259,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
     }
     j["PointLights"] = pointLights;
 
+    // Save spot lights
     nlohmann::json spotLights = nlohmann::json::object();
     for (size_t i = 1; i < engineContext.spotLightPositions.size(); ++i) {
         spotLights["spot" + std::to_string(i - 1)] = {
@@ -251,6 +274,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
     }
     j["SpotLights"] = spotLights;
 
+    // Create directories if needed
     std::filesystem::path outPath(path);
     if (outPath.has_parent_path())
         std::filesystem::create_directories(outPath.parent_path());
@@ -265,6 +289,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
     std::cout << "Saved level: " << path << "\n";
 }
 
+// Save level as a new file
 bool SaveLevelAs(EngineContext& engineContext, const std::string& rawName)
 {
     const std::string path = MakeLevelPath(rawName);
@@ -276,6 +301,7 @@ bool SaveLevelAs(EngineContext& engineContext, const std::string& rawName)
     return true;
 }
 
+// Make a level path from just a name
 std::string MakeLevelPath(const std::string& rawName)
 {
     const std::string stem = SanitizeLevelStem(rawName);
@@ -284,6 +310,7 @@ std::string MakeLevelPath(const std::string& rawName)
     return "levels/" + stem + ".json";
 }
 
+// list all level files in the levels directory
 std::vector<std::string> ListLevelFiles()
 {
     std::vector<std::string> files;
@@ -298,6 +325,7 @@ std::vector<std::string> ListLevelFiles()
     return files;
 }
 
+// list all skybox names in the textures sets/Cubemap directory
 std::vector<std::string> ListSkyboxNames()
 {
     std::vector<std::string> names;
@@ -312,11 +340,7 @@ std::vector<std::string> ListSkyboxNames()
     return names;
 }
 
-std::vector<std::string> ListModelNames(const EngineContext& engineContext)
-{
-    return SortedMapKeys(engineContext.models);
-}
-
+// list all model names grouped by folder
 std::map<std::string, std::vector<std::string>> ListModelsByFolder(const EngineContext& engineContext)
 {
     std::map<std::string, std::vector<std::string>> grouped;
@@ -339,31 +363,37 @@ std::vector<std::string> ListMaterialNames(const EngineContext& engineContext)
     return names;
 }
 
+void SyncObjectMaterialSlots(EngineContext& engineContext, GameObject& object)
+{
+    const std::string fillName = DefaultMaterialName(engineContext);
+    if (fillName.empty()) {
+        std::cout << "ERROR: No material available to assign to object.\n";
+        return;
+    }
+
+    Material* fill = engineContext.getMaterialByName(fillName);
+    const size_t slots = object.model ? object.model->materialSlotCount() : 1;
+    object.syncMaterialSlots(slots, fill, fillName);
+    for (size_t i = 0; i < object.materialNames.size(); ++i) {
+        auto it = engineContext.materials.find(object.materialNames[i]);
+        if (it == engineContext.materials.end())
+            object.setMaterial(i, fill, fillName);
+        else
+            object.setMaterial(i, it->second.get(), object.materialNames[i]);
+    }
+}
+
 void AddObjectToLevel(EngineContext& engineContext, const std::string& modelName)
 {
     Model* model = engineContext.getModelByName(modelName);
-    std::string materialName = engineContext.materials.count("wood") ? "wood" : "";
-    if (materialName.empty()) {
-        for (const auto& [name, _] : engineContext.materials) {
-            if (name != "light") {
-                materialName = name;
-                break;
-            }
-        }
-    }
-    if (materialName.empty()) {
+    if (DefaultMaterialName(engineContext).empty()) {
         std::cout << "ERROR: No material available to assign to new object.\n";
         return;
     }
 
     const std::string objectName = MakeUniqueObjectName(engineContext, modelName);
-    auto object = std::make_unique<GameObject>(
-        objectName,
-        model,
-        engineContext.getMaterialByName(materialName),
-        modelName,
-        materialName
-    );
+    auto object = std::make_unique<GameObject>(objectName, model, std::vector<Material*>{}, modelName);
+    SyncObjectMaterialSlots(engineContext, *object);
     object->position = SpawnInFrontOfCamera(engineContext);
     engineContext.selectedObjectID = object->id;
     engineContext.sceneObjects[objectName] = std::move(object);
@@ -459,10 +489,11 @@ void DuplicateSelectedObject(EngineContext& engineContext)
     auto clone = std::make_unique<GameObject>(
         objectName,
         source->model,
-        source->material,
+        source->materials,
         source->modelName,
-        source->materialName
+        source->materialNames
     );
+    SyncObjectMaterialSlots(engineContext, *clone);
     clone->setFromMatrix(source->getTransformMatrix());
     engineContext.selectedObjectID = clone->id;
     engineContext.sceneObjects[objectName] = std::move(clone);

@@ -30,9 +30,6 @@
 float screenWidth = 1600;
 float screenHeight = 1200;
 
-bool flashlightOn = false;
-int selectedObjectID = 0;
-
 
 
 // ====================================

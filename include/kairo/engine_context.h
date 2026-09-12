@@ -68,7 +68,6 @@ struct EngineContext {
     Shader* getShaderByName(const std::string& name);
     Material* getMaterialByName(const std::string& name);
     Model* getModelByName(const std::string& name);
-    GameObject* getGameObjectByName(const std::string& name);
     GameObject* getGameObjectByID(int id);
     
     // skybox texture and VAO/VBO
@@ -98,17 +97,9 @@ struct EngineContext {
 
     glm::vec3 sunDirection;
     glm::vec3 torchColor;
-
-    // Level data 
-    std::vector<glm::vec3> cubePositions;
-    std::vector<float> cubeRotations;
-    std::vector<float> cubeScales;
-
-    std::vector<glm::vec3> grassPositions;
     
     // Timing states
-    float deltaTime = 0.0f;
-    static inline float lastFrame = 0.0f;     
+    float deltaTime = 0.0f;     
 
     // Shadow mapping states
     unsigned int shadowDepthMapFBO = 0;
@@ -170,7 +161,6 @@ struct EngineContext {
     bool isWireframe = false;
     bool showLightSpheres = true;
     glm::vec3 clearColor = glm::vec3(0.1f, 0.15f, 0.2f);
-    bool reloadShader = false;
     float cameraSpeed = 3.0f;
     bool vsync = true;
     float fov = 45.0f;

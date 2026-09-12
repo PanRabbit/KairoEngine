@@ -6,6 +6,8 @@
 #include <kairo/model.h>
 #include <kairo/material.h>
 #include <kairo/shader.h>
+#include <string>
+#include <vector>
 
 class GameObject {
 public:
@@ -14,19 +16,42 @@ public:
     int id;
     std::string name;
     std::string modelName;
-    std::string materialName;
+    std::vector<std::string> materialNames;
     Model* model;
-    Material* material;
+    std::vector<Material*> materials;
     
     // Transform parameters (orientation is source of truth; euler is display/edit only)
     glm::vec3 position{0.0f};
     glm::quat orientation{1.0f, 0.0f, 0.0f, 0.0f};
     glm::vec3 scale{1.0f};
 
-    GameObject(const std::string& name, Model* model, Material* material,
-               const std::string& modelName = "", const std::string& materialName = ""):
-        id(nextID++), name(name), modelName(modelName), materialName(materialName),
-        model(model), material(material) {}
+    GameObject(const std::string& name, Model* model, std::vector<Material*> materials,
+               const std::string& modelName = "", std::vector<std::string> materialNames = {}):
+        id(nextID++), name(name), modelName(modelName), materialNames(std::move(materialNames)),
+        model(model), materials(std::move(materials)) {}
+
+    void setMaterial(size_t slot, Material* mat, const std::string& materialName) {
+        if (slot >= materials.size()) {
+            materials.resize(slot + 1, nullptr);
+            materialNames.resize(slot + 1);
+        }
+        materials[slot] = mat;
+        materialNames[slot] = materialName;
+    }
+    // sync the object's material slots with the engine context
+    void syncMaterialSlots(size_t slotCount, Material* fill, const std::string& fillName) {
+        if (slotCount == 0)
+            slotCount = 1;
+        const size_t previous = materialNames.size();
+        materialNames.resize(slotCount);
+        materials.resize(slotCount, nullptr);
+        for (size_t i = 0; i < slotCount; ++i) {
+            if (i >= previous || materialNames[i].empty())
+                materialNames[i] = fillName;
+            if (!materials[i])
+                materials[i] = fill;
+        }
+    }
 
     // Matches the old T * Rx * Ry * Rz * S compose used by level JSON
     void setEulerXYZ(const glm::vec3& radians) {
@@ -89,11 +114,10 @@ public:
 
     // rendering pass
     void draw(Shader& shader, int selectedID) const {
-        material->apply();
+        shader.use();
         shader.setMat4("model", getTransformMatrix());
         shader.setBool("isSelected", id == selectedID);
-
-        model->draw(*material);
+        model->draw(materials);
     }
 
     void drawShader(Shader& shader) const {

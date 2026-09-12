@@ -477,10 +477,21 @@ static void SelectionInspectorUI(EngineContext& engineContext)
     ImGui::Text("Object: %s", selected->name.c_str());
     ImGui::Text("Model: %s", selected->modelName.c_str());
 
-    std::string chosenMaterial;
-    if (ComboStringList("Material", selected->materialName, ListMaterialNames(engineContext), chosenMaterial)) {
-        selected->material = engineContext.getMaterialByName(chosenMaterial);
-        selected->materialName = chosenMaterial;
+    // sync the object's material slots with the engine context
+    SyncObjectMaterialSlots(engineContext, *selected);
+    const std::vector<std::string> materialList = ListMaterialNames(engineContext);
+    const size_t slotCount = selected->materialNames.size();
+    for (size_t i = 0; i < slotCount; ++i) {
+        ImGui::PushID(static_cast<int>(i));
+        std::string label = (selected->model && i < selected->model->materialSlotCount())
+            ? selected->model->slotName(i)
+            : "Material";
+        if (label.empty())
+            label = "Material " + std::to_string(i);
+        std::string chosenMaterial;
+        if (ComboStringList(label.c_str(), selected->materialNames[i], materialList, chosenMaterial))
+            selected->setMaterial(i, engineContext.getMaterialByName(chosenMaterial), chosenMaterial);
+        ImGui::PopID();
     }
 
     ImGui::DragFloat3("Position", &selected->position.x, 0.1f);
@@ -534,7 +545,6 @@ void RenderUI(EngineContext& engineContext) {
                 for (auto& [name, material] : engineContext.materials) {
                     material->loadFromJson("reload");
                 }
-                engineContext.reloadShader = true;
             }
 
             ImGui::Separator();

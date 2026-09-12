@@ -12,10 +12,10 @@ std::string MakeLevelPath(const std::string& rawName);
 
 std::vector<std::string> ListLevelFiles();
 std::vector<std::string> ListSkyboxNames();
-std::vector<std::string> ListModelNames(const EngineContext& engineContext);
 std::map<std::string, std::vector<std::string>> ListModelsByFolder(const EngineContext& engineContext);
 std::vector<std::string> ListMaterialNames(const EngineContext& engineContext);
 
+void SyncObjectMaterialSlots(EngineContext& engineContext, GameObject& object);
 void AddObjectToLevel(EngineContext& engineContext, const std::string& modelName);
 void AddPointLightToLevel(EngineContext& engineContext);
 void AddSpotLightToLevel(EngineContext& engineContext);
