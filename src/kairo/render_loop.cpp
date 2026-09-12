@@ -72,25 +72,18 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 glBindTexture(GL_TEXTURE_CUBE_MAP, engineContext.pointLightShadowCubemaps[i]);
             }
 
-            // Spotlights (flashlight is the last slot, included only when on)
-            int flashlightIndex = engineContext.flashlightIndex;
-            // determines the number of "world" spotlights (excluding the flashlight if present).
-            int worldSpotCount = (flashlightIndex >= 0) ? flashlightIndex : static_cast<int>(engineContext.spotLightPositions.size());
-            if (worldSpotCount > EngineContext::MAX_SPOT_LIGHTS) worldSpotCount = EngineContext::MAX_SPOT_LIGHTS;
-
-            if (flashlightIndex >= 0) {
-                engineContext.spotLightPositions[flashlightIndex] = engineContext.camera.Position + engineContext.flashlightOffset;
-                engineContext.spotLightDirections[flashlightIndex] = engineContext.camera.Front;
-                engineContext.spotLightColors[flashlightIndex] = engineContext.torchColor;
-                engineContext.spotLightIntensityMults[flashlightIndex] = EngineContext::FLASHLIGHT_INTENSITY;
-                engineContext.spotLightCutOffs[flashlightIndex] = EngineContext::FLASHLIGHT_CUT_OFF;
-                engineContext.spotLightOuterCutOffs[flashlightIndex] = EngineContext::FLASHLIGHT_OUTER_CUT_OFF;
-                engineContext.spotLightRadii[flashlightIndex] = EngineContext::FLASHLIGHT_RADIUS;
+            // Slot 0 is always the flashlight; intensity 0 when off so world spots keep their indices.
+            int spotLightCount = static_cast<int>(engineContext.spotLightPositions.size());
+            if (spotLightCount > EngineContext::MAX_SPOT_LIGHTS) spotLightCount = EngineContext::MAX_SPOT_LIGHTS;
+            if (spotLightCount > 0) {
+                engineContext.spotLightPositions[0] = engineContext.camera.Position + engineContext.flashlightOffset;
+                engineContext.spotLightDirections[0] = engineContext.camera.Front;
+                engineContext.spotLightColors[0] = engineContext.torchColor;
+                engineContext.spotLightIntensityMults[0] = engineContext.flashlightOn ? EngineContext::FLASHLIGHT_INTENSITY : 0.0f;
+                engineContext.spotLightCutOffs[0] = EngineContext::FLASHLIGHT_CUT_OFF;
+                engineContext.spotLightOuterCutOffs[0] = EngineContext::FLASHLIGHT_OUTER_CUT_OFF;
+                engineContext.spotLightRadii[0] = EngineContext::FLASHLIGHT_RADIUS;
             }
-
-            int spotLightCount = worldSpotCount;
-            if (engineContext.flashlightOn && flashlightIndex >= 0 && worldSpotCount + 1 <= EngineContext::MAX_SPOT_LIGHTS)
-                spotLightCount = flashlightIndex + 1;
 
             phongShader.setInt("numSpotLights", spotLightCount);
             for (int i = 0; i < spotLightCount; i++)
@@ -135,6 +128,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
 
             for (int i = 0; i < spotLightCount; i++)
             {
+                if (i == 0 && !engineContext.flashlightOn)
+                    continue;
                 RenderSceneToSpotDepthMap(engineContext, i);
             }
 
@@ -166,32 +161,38 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             lightShader.use();
             lightShader.setMat4("view", engineContext.view);
             lightShader.setMat4("projection", engineContext.projection);
-    
-            for(unsigned int i = 0; i < engineContext.pointLightPositions.size(); i++)
-            {   
-                lightColor = engineContext.pointLightColors[i];
-                lightShader.setVec3("Color", lightColor);
-                glm::mat4 lightModel = glm::mat4(1.0f); 
-                lightModel = glm::translate(lightModel, engineContext.pointLightPositions[i]); 
-                lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
-                lightShader.setMat4("model", lightModel);
-                engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
-            }
 
-            for (int i = 0; i < spotLightCount; i++)
-            {
-                if (i == flashlightIndex)
-                    continue;
+            if (engineContext.showLightSpheres) {
+                for(unsigned int i = 0; i < engineContext.pointLightPositions.size(); i++)
+                {   
+                    lightColor = engineContext.pointLightColors[i];
+                    lightShader.setVec3("Color", lightColor);
+                    glm::mat4 lightModel = glm::mat4(1.0f); 
+                    lightModel = glm::translate(lightModel, engineContext.pointLightPositions[i]); 
+                    lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
+                    lightShader.setMat4("model", lightModel);
+                    engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+                }
 
-                lightColor = engineContext.spotLightColors[i];
-                lightShader.setVec3("Color", lightColor);
-                glm::mat4 lightModel = glm::mat4(1.0f);
-                lightModel = glm::translate(lightModel, engineContext.spotLightPositions[i]);
-                lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-                lightShader.setMat4("model", lightModel);
-                engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+                for (int i = 1; i < spotLightCount; i++)
+                {
+                    lightColor = engineContext.spotLightColors[i];
+                    lightShader.setVec3("Color", lightColor);
+                    glm::mat4 lightModel = glm::mat4(1.0f);
+                    lightModel = glm::translate(lightModel, engineContext.spotLightPositions[i]);
+                    lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+                    lightShader.setMat4("model", lightModel);
+                    engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+                }
+
+                {
+                    lightShader.setVec3("Color", sunColor);
+                    glm::mat4 sunModel = glm::translate(glm::mat4(1.0f), engineContext.sunHandlePosition());
+                    sunModel = glm::scale(sunModel, glm::vec3(0.35f));
+                    lightShader.setMat4("model", sunModel);
+                    engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+                }
             }
-            
 
             // draw post-processing quad and render processed texture to screen
             if (engineContext.isPostProcessing) {

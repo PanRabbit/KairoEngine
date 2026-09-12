@@ -151,7 +151,7 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
             Shader* selectionShader = engineContext.getShaderByName("selection");
             if (selectionShader) {
                 int selectedID = PerformSelection(mouseX, mouseY, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight),
-                                                *selectionShader, engineContext.selectionFB, engineContext.sceneObjects, engineContext.view, engineContext.projection);
+                 *selectionShader, engineContext.selectionFB, engineContext, engineContext.view, engineContext.projection);
                 
                 std::cout << "Clicked Object ID: " << selectedID << std::endl;
                 engineContext.selectedObjectID = selectedID;
@@ -194,9 +194,11 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     engineContext.camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// scroll to change fov
+// scroll to change fov (only while looking around)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     auto& engineContext = *g_engineContext;
+    if (!engineContext.flyCamLocked && !engineContext.rmbLooking)
+        return;
     engineContext.camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }

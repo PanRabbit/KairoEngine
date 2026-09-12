@@ -16,6 +16,8 @@ struct SelectionBuffer {
     void cleanup();
 };
 
-int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHeight, 
-    Shader& selectionShader, SelectionBuffer& selectionFB, const std::unordered_map<std::string, std::unique_ptr<GameObject>>& sceneObjects,
+struct EngineContext;
+
+int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHeight,
+    Shader& selectionShader, SelectionBuffer& selectionFB, EngineContext& engineContext,
     const glm::mat4& view, const glm::mat4& projection); 

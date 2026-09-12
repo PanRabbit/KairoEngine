@@ -15,7 +15,10 @@ void DefineSkyBox(EngineContext& engineContext, std::string skyboxName)
         skyboxPath + skyboxName + "/nz.png"
     };
     engineContext.skyboxTexture = std::make_unique<CubeMapTexture>(skyboxFaces);
+    engineContext.currentSkyboxName = skyboxName;
 
+    if (engineContext.skyboxVAO != 0)
+        return;
 
     const float SKYBOX_SCALE = 100.0f;
     float skyboxVertices[] = {

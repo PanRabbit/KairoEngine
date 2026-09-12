@@ -76,7 +76,17 @@ void RenderSceneToDepthMap(EngineContext& engineContext) {
 }
 
 void InitPointLightCubemaps(EngineContext& engineContext) {
-    
+    // clear existing point light cubemaps and FBOs
+    for (unsigned int tex : engineContext.pointLightShadowCubemaps) {
+        if (tex != 0) glDeleteTextures(1, &tex);
+    }
+    for (unsigned int fbo : engineContext.pointLightShadowFBOs) {
+        if (fbo != 0) glDeleteFramebuffers(1, &fbo);
+    }
+    engineContext.pointLightShadowCubemaps.clear();
+    engineContext.pointLightShadowFBOs.clear();
+    engineContext.pointLightSpaceMatrices.clear();
+
     unsigned int numPointLights = engineContext.pointLightPositions.size();
     if (numPointLights > EngineContext::MAX_POINT_LIGHTS)
         numPointLights = EngineContext::MAX_POINT_LIGHTS;
@@ -172,25 +182,12 @@ void InitSpotLightShadowMaps(EngineContext& engineContext)
         if (tex != 0) glDeleteTextures(1, &tex);
     }
 
-    unsigned int worldCount = engineContext.spotLightPositions.size();
-    if (engineContext.flashlightIndex >= 0)
-        worldCount = static_cast<unsigned int>(engineContext.flashlightIndex);
-    if (worldCount > EngineContext::MAX_SPOT_LIGHTS - 1)
-        worldCount = EngineContext::MAX_SPOT_LIGHTS - 1;
+    unsigned int numSpotLights = engineContext.spotLightPositions.size();
+    if (numSpotLights > EngineContext::MAX_SPOT_LIGHTS)
+        numSpotLights = EngineContext::MAX_SPOT_LIGHTS;
 
-    engineContext.flashlightIndex = static_cast<int>(worldCount);
-    unsigned int numSpotLights = worldCount + 1;
-
-    engineContext.spotLightPositions.resize(numSpotLights);
-    engineContext.spotLightDirections.resize(numSpotLights);
-    engineContext.spotLightColors.resize(numSpotLights);
-    engineContext.spotLightIntensityMults.resize(numSpotLights);
-    engineContext.spotLightCutOffs.resize(numSpotLights);
-    engineContext.spotLightOuterCutOffs.resize(numSpotLights);
-    engineContext.spotLightRadii.resize(numSpotLights);
-
-    engineContext.spotLightShadowMaps.resize(numSpotLights);
-    engineContext.spotLightShadowFBOs.resize(numSpotLights);
+    engineContext.spotLightShadowMaps.assign(numSpotLights, 0);
+    engineContext.spotLightShadowFBOs.assign(numSpotLights, 0);
     engineContext.spotLightSpaceMatrices.resize(numSpotLights);
 
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };

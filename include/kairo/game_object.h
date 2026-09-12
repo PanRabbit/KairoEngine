@@ -13,6 +13,8 @@ public:
 
     int id;
     std::string name;
+    std::string modelName;
+    std::string materialName;
     Model* model;
     Material* material;
     
@@ -21,8 +23,10 @@ public:
     glm::quat orientation{1.0f, 0.0f, 0.0f, 0.0f};
     glm::vec3 scale{1.0f};
 
-    GameObject(const std::string& name, Model* model, Material*material):
-        id (nextID++), name(name), model(model), material(material) {}
+    GameObject(const std::string& name, Model* model, Material* material,
+               const std::string& modelName = "", const std::string& materialName = ""):
+        id(nextID++), name(name), modelName(modelName), materialName(materialName),
+        model(model), material(material) {}
 
     // Matches the old T * Rx * Ry * Rz * S compose used by level JSON
     void setEulerXYZ(const glm::vec3& radians) {

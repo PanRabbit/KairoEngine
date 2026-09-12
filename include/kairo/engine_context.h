@@ -33,6 +33,26 @@ struct EngineContext {
     static constexpr float DEFAULT_SPOT_LIGHT_RADIUS = 16.0f;
     static constexpr float DEFAULT_SPOT_CUT_OFF = 20.0f;
     static constexpr float DEFAULT_SPOT_OUTER_CUT_OFF = 28.0f;
+
+    static constexpr int POINT_LIGHT_SELECT_BASE = 100000;
+    static constexpr int SPOT_LIGHT_SELECT_BASE = 200000;
+    static constexpr int SUN_SELECT_ID = 300000;
+    static constexpr glm::vec3 SUN_GIZMO_ORIGIN = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    static int PointLightSelectID(int index) { return POINT_LIGHT_SELECT_BASE + index; }
+    static int SpotLightSelectID(int index) { return SPOT_LIGHT_SELECT_BASE + index; }
+    static bool IsPointLightSelectID(int id) {
+        return id >= POINT_LIGHT_SELECT_BASE && id < SPOT_LIGHT_SELECT_BASE;
+    }
+    static bool IsSpotLightSelectID(int id) {
+        return id >= SPOT_LIGHT_SELECT_BASE && id < SUN_SELECT_ID;
+    }
+    static int PointLightIndexFromSelectID(int id) { return id - POINT_LIGHT_SELECT_BASE; }
+    static int SpotLightIndexFromSelectID(int id) { return id - SPOT_LIGHT_SELECT_BASE; }
+
+    glm::vec3 sunHandlePosition() const {
+        return SUN_GIZMO_ORIGIN;
+    }
     
     Camera camera;                         
      
@@ -53,8 +73,10 @@ struct EngineContext {
     
     // skybox texture and VAO/VBO
     std::unique_ptr<CubeMapTexture> skyboxTexture;
-    unsigned int skyboxVAO;
-    unsigned int skyboxVBO;
+    unsigned int skyboxVAO = 0;
+    unsigned int skyboxVBO = 0;
+    std::string currentSkyboxName;
+    std::string currentLevelPath;
 
     glm::mat4 view = glm::mat4(1.0f);       // view matrix for the camera
     glm::mat4 centerView = glm::mat4(1.0f); // view matrix for the center of the world
@@ -100,7 +122,6 @@ struct EngineContext {
     std::vector<unsigned int> spotLightShadowMaps; // one 2D depth map per spotlight
     std::vector<unsigned int> spotLightShadowFBOs;
     std::vector<glm::mat4> spotLightSpaceMatrices;
-    int flashlightIndex = -1; // flashlight is a normal spotlight slot; -1 if none
     glm::vec3 flashlightOffset = glm::vec3(-0.25f, -0.25f, 0.0f);
     
     //  Post processing states 
@@ -147,6 +168,7 @@ struct EngineContext {
     bool flyCamLocked = false; // Tab toggles cursor lock
     bool rmbLooking = false; // hold right-click look in UI mode
     bool isWireframe = false;
+    bool showLightSpheres = true;
     glm::vec3 clearColor = glm::vec3(0.1f, 0.15f, 0.2f);
     bool reloadShader = false;
     float cameraSpeed = 3.0f;

@@ -1,120 +1,316 @@
 {
-    "SkyBox": {
-        "name": "cloudy"
-    },
-    "SunDirection": [0.5, -0.7, -0.2],
-    "SunColor": [0.1, 0.1, 0.11],
-    "TorchColor": [1.0, 0.95, 0.8],
     "GameObjects": {
         "Cube_0": {
-            "model": "cube",
+            "location": [
+                2.5999999046325684,
+                0.5,
+                0.23999999463558197
+            ],
             "material": "wood",
-            "location": [2.6, 0.5, 0.24],
-            "rotation": [0.0, -28.0, 0.0],
-            "scale": [1.0, 1.0, 1.0]
+            "model": "cube",
+            "rotation": [
+                0.0,
+                -28.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         },
         "Cube_1": {
-            "model": "cube",
+            "location": [
+                1.7000000476837158,
+                1.0,
+                1.9600000381469727
+            ],
             "material": "brick",
-            "location": [1.7, 1.0, 1.96],
-            "rotation": [0.0, 37.0, 0.0],
-            "scale": [2.0, 2.0, 2.0]
+            "model": "cube",
+            "rotation": [
+                -0.0,
+                37.0,
+                -0.0
+            ],
+            "scale": [
+                2.0,
+                2.0,
+                2.0
+            ]
         },
         "Cube_2": {
-            "model": "cube",
+            "location": [
+                1.7000000476837158,
+                2.5,
+                1.9600000381469727
+            ],
             "material": "wood",
-            "location": [1.7, 2.5, 1.96],
-            "rotation": [0.0, 60.0, 0.0],
-            "scale": [1.0, 1.0, 1.0]
+            "model": "cube",
+            "rotation": [
+                -0.0,
+                59.999996185302734,
+                -0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         },
         "Cube_3": {
-            "model": "cube",
+            "location": [
+                -0.6700000166893005,
+                0.5,
+                2.0
+            ],
             "material": "wood",
-            "location": [-0.67, 0.5, 2.0],
-            "rotation": [0.0, -16.0, 0.0],
-            "scale": [1.0, 1.0, 1.0]
+            "model": "cube",
+            "rotation": [
+                0.0,
+                -16.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         },
         "Cube_4": {
-            "model": "cube",
+            "location": [
+                -2.200000047683716,
+                0.5,
+                0.6000000238418579
+            ],
             "material": "wood",
-            "location": [-2.2, 0.5, 0.6],
-            "rotation": [0.0, -54.0, 0.0],
-            "scale": [1.0, 1.0, 1.0]
+            "model": "cube",
+            "rotation": [
+                0.0,
+                -54.000003814697266,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         },
         "Cube_5": {
-            "model": "cube",
+            "location": [
+                -2.799999952316284,
+                0.5,
+                -0.23000000417232513
+            ],
             "material": "wood",
-            "location": [-2.8, 0.5, -0.23],
-            "rotation": [0.0, -54.0, 0.0],
-            "scale": [1.0, 1.0, 1.0]
+            "model": "cube",
+            "rotation": [
+                0.0,
+                -54.000003814697266,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         },
         "Cube_6": {
-            "model": "cube",
+            "location": [
+                -2.5,
+                1.375,
+                0.20000000298023224
+            ],
             "material": "wood",
-            "location": [-2.5, 1.375, 0.2],
-            "rotation": [0.0, -30.0, 0.0],
-            "scale": [0.75, 0.75, 0.75]
+            "model": "cube",
+            "rotation": [
+                0.0,
+                -30.00000762939453,
+                0.0
+            ],
+            "scale": [
+                0.75,
+                0.75,
+                0.75
+            ]
         },
         "Floor": {
-            "model": "plane",
+            "location": [
+                0.0,
+                0.0,
+                0.0
+            ],
             "material": "floor",
-            "location": [0.0, 0.0, 0.0],
-            "rotation": [0.0, 0.0, 0.0],
-            "scale": [100.0, 100.0, 100.0]
+            "model": "plane",
+            "rotation": [
+                -0.0,
+                0.0,
+                -0.0
+            ],
+            "scale": [
+                100.0,
+                100.0,
+                100.0
+            ]
         },
         "Suzanne": {
-            "model": "suzanne",
+            "location": [
+                0.0,
+                2.0,
+                0.0
+            ],
             "material": "grunge",
-            "location": [0.0, 2.0, 0.0],
-            "rotation": [0.0, 180.0, 0.0],
-            "scale": [0.5, 0.5, 0.5]
+            "model": "suzanne",
+            "rotation": [
+                -180.0,
+                -5.008956122765085e-06,
+                -180.0
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ]
         },
         "SuzanneFlat": {
-            "model": "suzanneFlat",
+            "location": [
+                0.0,
+                0.5,
+                0.0
+            ],
             "material": "grunge",
-            "location": [0.0, 0.5, 0.0],
-            "rotation": [0.0, 180.0, 0.0],
-            "scale": [0.5, 0.5, 0.5]
+            "model": "suzanneFlat",
+            "rotation": [
+                -180.0,
+                -5.008956122765085e-06,
+                -180.0
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ]
         }
     },
     "PointLights": {
         "light0": {
-            "position": [2.0, 1.5, -0.85],
-            "color": [1.0, 1.0, 1.0],
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
             "intensity": 4.0,
+            "position": [
+                2.0,
+                1.5,
+                -0.8500000238418579
+            ],
             "radius": 8.0
         },
         "light1": {
-            "position": [-1.5, 2.2, 1.7],
-            "color": [0.19, 0.75, 1.0],
+            "color": [
+                0.1899999976158142,
+                0.75,
+                1.0
+            ],
             "intensity": 8.0,
+            "position": [
+                -1.5,
+                2.200000047683716,
+                1.7000000476837158
+            ],
             "radius": 8.0
         },
         "light2": {
-            "position": [-1.8, 0.5, -1.5],
-            "color": [1.0, 0.33, 0.43],
+            "color": [
+                1.0,
+                0.33000001311302185,
+                0.4300000071525574
+            ],
             "intensity": 2.0,
+            "position": [
+                -1.7999999523162842,
+                0.5,
+                -1.5
+            ],
             "radius": 8.0
         }
     },
+    "PostProcess": {
+        "bloomBlurRadius": 3.0,
+        "bloomIntensity": 1.0,
+        "bloomThreshold": 0.800000011920929,
+        "blurStrength": 1.0,
+        "edgeDetectionStrength": 1.0,
+        "enableBloom": true,
+        "enableBlur": false,
+        "enableEdgeDetection": false,
+        "enablePixelate": false,
+        "enableSharpen": true,
+        "enabled": true,
+        "exposure": 1.2599999904632568,
+        "pixelateResolution": 256.0,
+        "sharpness": 0.10000000149011612
+    },
+    "SkyBox": {
+        "name": "cloudy"
+    },
     "SpotLights": {
         "spot0": {
-            "position": [4.0, 6.0, 1.5],
-            "direction": [0.0, -1.0, 0.1],
-            "color": [1.0, 0.85, 0.55],
-            "intensity": 16.0,
+            "color": [
+                1.0,
+                0.8500000238418579,
+                0.550000011920929
+            ],
             "cutOff": 18.0,
+            "direction": [
+                0.0,
+                -1.0,
+                0.10000000149011612
+            ],
+            "intensity": 16.0,
             "outerCutOff": 26.0,
+            "position": [
+                4.0,
+                6.0,
+                1.5
+            ],
             "radius": 20.0
         },
         "spot1": {
-            "position": [-4.0, 6.0, -1.0],
-            "direction": [0.1, -1.0, 0.0],
-            "color": [1.0, 0.8, 0.5],
-            "intensity": 16.0,
+            "color": [
+                1.0,
+                0.800000011920929,
+                0.5
+            ],
             "cutOff": 18.0,
+            "direction": [
+                0.10000000149011612,
+                -1.0,
+                0.0
+            ],
+            "intensity": 16.0,
             "outerCutOff": 26.0,
+            "position": [
+                -4.0,
+                6.0,
+                -1.0
+            ],
             "radius": 20.0
         }
-    }
+    },
+    "SunColor": [
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10999999940395355
+    ],
+    "SunDirection": [
+        0.5,
+        -0.699999988079071,
+        -0.20000000298023224
+    ],
+    "TorchColor": [
+        1.0,
+        0.949999988079071,
+        0.800000011920929
+    ]
 }

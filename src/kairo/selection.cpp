@@ -1,8 +1,11 @@
 #include "kairo/selection.h"
+#include "kairo/engine_context.h"
 #include "kairo/game_object.h"
 #include "kairo/shader.h"
+#include "kairo/model.h"
 #include <memory>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -31,10 +34,19 @@ void SelectionBuffer::cleanup() {
     if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
 
-int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHeight, 
-    Shader& selectionShader, SelectionBuffer& selectionFB, 
-    const std::unordered_map<std::string, std::unique_ptr<GameObject>>& sceneObjects, 
-    const glm::mat4& view, const glm::mat4& projection) 
+// draw a sphere to select a point light, spot light, or sun
+static void DrawSelectableSphere(Shader& selectionShader, Model& sphere, const glm::vec3& position, int id, float scale = 0.2f)
+{
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+    model = glm::scale(model, glm::vec3(scale));
+    selectionShader.setInt("objectID", id);
+    selectionShader.setMat4("model", model);
+    sphere.drawShader(selectionShader);
+}
+
+int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHeight,
+    Shader& selectionShader, SelectionBuffer& selectionFB, EngineContext& engineContext,
+    const glm::mat4& view, const glm::mat4& projection)
 {
     // Bind our offscreen framebuffer so we render to a texture instead of the screen
     glBindFramebuffer(GL_FRAMEBUFFER, selectionFB.fbo);
@@ -51,8 +63,23 @@ int PerformSelection(double mouseX, double mouseY, int screenWidth, int screenHe
     selectionShader.setMat4("projection", projection);
 
     // Render every object — each one writes its own ID into the fragment color
-    for (const auto& [name, obj] : sceneObjects) {
+    for (const auto& [name, obj] : engineContext.sceneObjects) {
         obj->drawSelection(selectionShader);
+    }
+    // draw invisible spheres for point lights, spot lights, and sun
+    auto sphereIt = engineContext.models.find("sphere");
+    if (engineContext.showLightSpheres && sphereIt != engineContext.models.end()) {
+        Model& sphere = *sphereIt->second;
+        for (int i = 0; i < static_cast<int>(engineContext.pointLightPositions.size()); ++i) {
+            DrawSelectableSphere(selectionShader, sphere, engineContext.pointLightPositions[i],
+                                 EngineContext::PointLightSelectID(i));
+        }
+        for (int i = 1; i < static_cast<int>(engineContext.spotLightPositions.size()); ++i) {
+            DrawSelectableSphere(selectionShader, sphere, engineContext.spotLightPositions[i],
+                                 EngineContext::SpotLightSelectID(i));
+        }
+        DrawSelectableSphere(selectionShader, sphere, engineContext.sunHandlePosition(),
+                             EngineContext::SUN_SELECT_ID, 0.35f);
     }
 
     // Read the single pixel under the mouse. OpenGL Y is flipped relative to GLFW, so we flip it back.
