@@ -24,6 +24,8 @@ void AssetLoad(EngineContext& engineContext) {
     engineContext.shaders["skybox"] = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
     engineContext.shaders["dirShadowMapping"] = std::make_unique<Shader>("shaders/dir_shadow_mapping.vs", "shaders/dir_shadow_mapping.fs");
     engineContext.shaders["pointShadowMapping"] = std::make_unique<Shader>("shaders/point_shadow_mapping.vs", "shaders/point_shadow_mapping.fs", "shaders/point_shadow_mapping.gs");
+    engineContext.shaders["bloomExtract"] = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/bloom_extract.fs");
+    engineContext.shaders["bloomBlur"] = std::make_unique<Shader>("shaders/post_processing.vs", "shaders/bloom_blur.fs");
     // ==========================================
     // MATERIALS (reference shaders by name)
     // ==========================================

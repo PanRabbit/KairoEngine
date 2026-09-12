@@ -61,6 +61,37 @@ void PostProcess(EngineContext& engineContext) {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, engineContext.intermediateTex, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+
+    // bloom
+    // bright-pass with 1 FBO + 1 texture
+    glGenFramebuffers(1, &engineContext.bloomExtractFBO);
+    glGenTextures(1, &engineContext.bloomExtractTex);
+    glBindFramebuffer(GL_FRAMEBUFFER, engineContext.bloomExtractFBO);
+    glBindTexture(GL_TEXTURE_2D, engineContext.bloomExtractTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, engineContext.bloomExtractTex, 0);
+
+    // ping-pong: 2 FBOs, each with own texture
+    glGenFramebuffers(2, engineContext.bloomBlurFBO);
+    glGenTextures(2, engineContext.bloomBlurTex);
+    for (int i = 0; i < 2; i++) {
+        glBindFramebuffer(GL_FRAMEBUFFER, engineContext.bloomBlurFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, engineContext.bloomBlurTex[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight), 0, GL_RGB, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, engineContext.bloomBlurTex[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 
 
 

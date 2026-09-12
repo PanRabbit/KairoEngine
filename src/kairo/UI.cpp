@@ -66,6 +66,8 @@ void RenderUI(EngineContext& engineContext) {
             ImGui::Checkbox("Enable Wireframe Mode", &engineContext.isWireframe);
             ImGui::Checkbox("Enable Post Processing", &engineContext.isPostProcessing);
             ImGui::DragFloat("Exposure", &engineContext.exposure, 0.01f, 0.01f, 10.0f);
+            ImGui::DragFloat("Bloom Threshold", &engineContext.bloomThreshold, 0.01f, 0.01f, 1.0f);
+            ImGui::DragFloat("Bloom Blur Radius", &engineContext.bloomBlurRadius, 0.01f, 0.01f, 10.0f);
             ImGui::Checkbox("VSync", &engineContext.vsync);
             
             float clearColor[3] = { engineContext.clearColor.x, engineContext.clearColor.y, engineContext.clearColor.z };

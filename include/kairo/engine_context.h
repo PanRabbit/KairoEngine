@@ -115,6 +115,14 @@ struct EngineContext {
 
     float exposure = 1.0f;
 
+    // bloom states
+    unsigned int bloomExtractFBO;
+    unsigned int bloomExtractTex;
+    unsigned int bloomBlurFBO[2];
+    unsigned int bloomBlurTex[2];
+    float bloomThreshold = 0.8f;
+    float bloomBlurRadius = 3.0f;
+
     // UI states 
     float scrWidth = 1600.0f;
     float scrHeight = 1200.0f;

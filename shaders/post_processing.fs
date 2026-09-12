@@ -14,6 +14,9 @@ float blurStrength = 0.25;
 float edgeDetectionStrength = 0.1;
 uniform float exposure;
 
+uniform sampler2D bloomBlur;
+
+
 vec2[9] getOffsets(float offsetDistance)
 {
     return vec2[9](
@@ -107,11 +110,18 @@ vec2 pixelate(float resolution)
     return NewTexCoords;
 }
 
+vec3 compBloom (vec3 color)
+{
+    vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
+    return color + bloomColor;
+}
+
 void main()
 {
-    vec3 sharpened = sharpen(TexCoords);
     vec3 hdrColor = texture(screenTexture, TexCoords).rgb;
-    vec3 mapped = sharpened * exposure;
+    vec3 sharpened = sharpen(TexCoords);
+    vec3 bloomApplied = compBloom(hdrColor);
+    vec3 mapped = bloomApplied * exposure;
 
     FragColor = vec4(mapped, 1.0);
 }
