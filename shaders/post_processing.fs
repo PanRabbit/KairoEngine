@@ -5,17 +5,26 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
+uniform sampler2D bloomBlur;
 uniform float time;
 uniform float scrWidth;
 uniform float scrHeight;
-
-float sharpness = 0.005;
-float blurStrength = 0.25;
-float edgeDetectionStrength = 0.1;
 uniform float exposure;
 
-uniform sampler2D bloomBlur;
+uniform bool enableSharpen;
+uniform float sharpness;
 
+uniform bool enableBlur;
+uniform float blurStrength;
+
+uniform bool enableEdgeDetection;
+uniform float edgeDetectionStrength;
+
+uniform bool enablePixelate;
+uniform float pixelateResolution;
+
+uniform bool enableBloom;
+uniform float bloomIntensity;
 
 vec2[9] getOffsets(float offsetDistance)
 {
@@ -40,7 +49,7 @@ vec3 sharpen(vec2 sharpCoords)
         -1, -1, -1
     );
 
-    vec2[9] sharpOffsets = getOffsets(sharpness / 100.0);
+    vec2[9] sharpOffsets = getOffsets(sharpness / max(scrHeight, 1.0));
 
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++)
@@ -63,7 +72,7 @@ vec3 edgeDetection(vec2 edgeDetectionCoords)
         1, 1, 1
     );
 
-    vec2[9] edgeDetectionOffsets = getOffsets(edgeDetectionStrength / 100.0);
+    vec2[9] edgeDetectionOffsets = getOffsets(edgeDetectionStrength / max(scrHeight, 1.0));
 
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++)
@@ -86,7 +95,7 @@ vec3 blur(vec2 blurCoords)
         1.0, 2.0, 1.0
     );
 
-    vec2[9] blurOffsets = getOffsets(blurStrength / 100.0);
+    vec2[9] blurOffsets = getOffsets(blurStrength / max(scrHeight, 1.0));
 
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++)
@@ -103,25 +112,32 @@ vec3 blur(vec2 blurCoords)
 
 vec2 pixelate(float resolution)
 {
-    float pixelSize = scrHeight / resolution; // calc size of pixel based on resolution
+    float pixelSize = scrHeight / max(resolution, 1.0);
     float pixelsX = scrWidth / pixelSize;
     float pixelsY = scrHeight / pixelSize;
     vec2 NewTexCoords = vec2((floor(TexCoords.x * (pixelsX))) / (pixelsX), (floor(TexCoords.y * (pixelsY))) / (pixelsY));
     return NewTexCoords;
 }
 
-vec3 compBloom (vec3 color)
-{
-    vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
-    return color + bloomColor;
-}
-
 void main()
 {
-    vec3 hdrColor = texture(screenTexture, TexCoords).rgb;
-    vec3 sharpened = sharpen(TexCoords);
-    vec3 bloomApplied = compBloom(hdrColor);
-    vec3 mapped = bloomApplied * exposure;
+    vec2 uv = TexCoords;
+    if (enablePixelate)
+        uv = pixelate(pixelateResolution);
 
-    FragColor = vec4(mapped, 1.0);
+    vec3 original = texture(screenTexture, uv).rgb;
+    vec3 color = original;
+
+    // Stack effects
+    if (enableBlur)
+        color = blur(uv);
+    if (enableSharpen)
+        color += sharpen(uv) - original;
+    if (enableEdgeDetection)
+        color += edgeDetection(uv);
+    if (enableBloom)
+        color += texture(bloomBlur, TexCoords).rgb * bloomIntensity;
+
+    color *= exposure;
+    FragColor = vec4(color, 1.0);
 }

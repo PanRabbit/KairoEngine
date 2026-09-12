@@ -64,10 +64,6 @@ void RenderUI(EngineContext& engineContext) {
 
             // Modify engineContext directly via references passed from main loop
             ImGui::Checkbox("Enable Wireframe Mode", &engineContext.isWireframe);
-            ImGui::Checkbox("Enable Post Processing", &engineContext.isPostProcessing);
-            ImGui::DragFloat("Exposure", &engineContext.exposure, 0.01f, 0.01f, 10.0f);
-            ImGui::DragFloat("Bloom Threshold", &engineContext.bloomThreshold, 0.01f, 0.01f, 1.0f);
-            ImGui::DragFloat("Bloom Blur Radius", &engineContext.bloomBlurRadius, 0.01f, 0.01f, 10.0f);
             ImGui::Checkbox("VSync", &engineContext.vsync);
             
             float clearColor[3] = { engineContext.clearColor.x, engineContext.clearColor.y, engineContext.clearColor.z };
@@ -104,6 +100,50 @@ void RenderUI(EngineContext& engineContext) {
 
             
             ImGui::EndTabItem(); 
+        }
+
+        if (ImGui::BeginTabItem("Post Processing"))
+        {
+            ImGui::Checkbox("Enable Post Processing", &engineContext.isPostProcessing);
+            ImGui::BeginDisabled(!engineContext.isPostProcessing);
+
+            ImGui::SeparatorText("Tonemap");
+            ImGui::DragFloat("Exposure", &engineContext.exposure, 0.01f, 0.01f, 10.0f);
+
+            ImGui::SeparatorText("Bloom");
+            ImGui::Checkbox("Enable Bloom", &engineContext.enableBloom);
+            ImGui::BeginDisabled(!engineContext.enableBloom);
+            ImGui::DragFloat("Threshold", &engineContext.bloomThreshold, 0.01f, 0.0f, 8.0f);
+            ImGui::DragFloat("Blur Radius", &engineContext.bloomBlurRadius, 0.01f, 0.01f, 10.0f);
+            ImGui::DragFloat("Intensity", &engineContext.bloomIntensity, 0.01f, 0.0f, 8.0f);
+            ImGui::EndDisabled();
+
+            ImGui::SeparatorText("Sharpen");
+            ImGui::Checkbox("Enable Sharpen", &engineContext.enableSharpen);
+            ImGui::BeginDisabled(!engineContext.enableSharpen);
+            ImGui::DragFloat("Sharpness", &engineContext.sharpness, 0.05f, 0.0f, 16.0f);
+            ImGui::EndDisabled();
+
+            ImGui::SeparatorText("Blur");
+            ImGui::Checkbox("Enable Blur", &engineContext.enableBlur);
+            ImGui::BeginDisabled(!engineContext.enableBlur);
+            ImGui::DragFloat("Blur Strength", &engineContext.blurStrength, 0.05f, 0.0f, 16.0f);
+            ImGui::EndDisabled();
+
+            ImGui::SeparatorText("Edge Detection");
+            ImGui::Checkbox("Enable Edge Detection", &engineContext.enableEdgeDetection);
+            ImGui::BeginDisabled(!engineContext.enableEdgeDetection);
+            ImGui::DragFloat("Edge Strength", &engineContext.edgeDetectionStrength, 0.05f, 0.0f, 16.0f);
+            ImGui::EndDisabled();
+
+            ImGui::SeparatorText("Pixelate");
+            ImGui::Checkbox("Enable Pixelate", &engineContext.enablePixelate);
+            ImGui::BeginDisabled(!engineContext.enablePixelate);
+            ImGui::DragFloat("Resolution", &engineContext.pixelateResolution, 1.0f, 8.0f, 1080.0f);
+            ImGui::EndDisabled();
+
+            ImGui::EndDisabled();
+            ImGui::EndTabItem();
         }
 
         static int lastSelectedID = 0;

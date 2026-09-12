@@ -113,15 +113,29 @@ struct EngineContext {
     unsigned int intermediateFBO;
     unsigned int intermediateTex;
 
-    float exposure = 1.0f;
+    float exposure = 1.5f;
+
+    bool enableSharpen = true;
+    float sharpness = 0.1f;
+
+    bool enableBlur = false;
+    float blurStrength = 1.0f;
+
+    bool enableEdgeDetection = false;
+    float edgeDetectionStrength = 1.0f;
+
+    bool enablePixelate = false;
+    float pixelateResolution = 256.0f;
 
     // bloom states
+    bool enableBloom = true;
     unsigned int bloomExtractFBO;
     unsigned int bloomExtractTex;
     unsigned int bloomBlurFBO[2];
     unsigned int bloomBlurTex[2];
     float bloomThreshold = 0.8f;
     float bloomBlurRadius = 3.0f;
+    float bloomIntensity = 1.0f;
 
     // UI states 
     float scrWidth = 1600.0f;

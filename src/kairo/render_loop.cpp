@@ -202,37 +202,41 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                                   0, 0, static_cast<int>(engineContext.scrWidth), static_cast<int>(engineContext.scrHeight),
                                   GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-                // bloom extract
-                Shader& bloomExtractShader = *engineContext.getShaderByName("bloomExtract");
-
-                glBindFramebuffer(GL_FRAMEBUFFER, engineContext.bloomExtractFBO);
+                unsigned int bloomResult = engineContext.intermediateTex;
                 glDisable(GL_DEPTH_TEST);
-                bloomExtractShader.use();
                 glBindVertexArray(engineContext.PPVAO);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, engineContext.intermediateTex);
-                bloomExtractShader.setInt("screenTexture", 0);
-                bloomExtractShader.setFloat("threshold", engineContext.bloomThreshold);
-                glDrawArrays(GL_TRIANGLES, 0, 6);
 
-                // bloom blur
-                Shader& bloomBlurShader = *engineContext.getShaderByName("bloomBlur");
-                bloomBlurShader.use();
-                bloomBlurShader.setInt("image", 0);
+                if (engineContext.enableBloom) {
+                    // bloom extract
+                    Shader& bloomExtractShader = *engineContext.getShaderByName("bloomExtract");
 
-                bool horizontal = true;
-                bool firstIteration = true;
-                for (int i = 0; i < 10; i++) // 10 passes = 5 horizontal + 5 vertical (the size of the weight array)
-                {
-                    glBindFramebuffer(GL_FRAMEBUFFER, engineContext.bloomBlurFBO[horizontal]);
-                    bloomBlurShader.setBool("horizontal", horizontal);
-                    glBindTexture(GL_TEXTURE_2D, firstIteration ? engineContext.bloomExtractTex : engineContext.bloomBlurTex[!horizontal]); // first iteration uses extract texture, subsequent iterations use the previous buffer
-                    bloomBlurShader.setFloat("radius", engineContext.bloomBlurRadius);
+                    glBindFramebuffer(GL_FRAMEBUFFER, engineContext.bloomExtractFBO);
+                    bloomExtractShader.use();
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, engineContext.intermediateTex);
+                    bloomExtractShader.setInt("screenTexture", 0);
+                    bloomExtractShader.setFloat("threshold", engineContext.bloomThreshold);
                     glDrawArrays(GL_TRIANGLES, 0, 6);
-                    horizontal = !horizontal;
-                    firstIteration = false;
+
+                    // bloom blur
+                    Shader& bloomBlurShader = *engineContext.getShaderByName("bloomBlur");
+                    bloomBlurShader.use();
+                    bloomBlurShader.setInt("image", 0);
+
+                    bool horizontal = true;
+                    bool firstIteration = true;
+                    for (int i = 0; i < 10; i++) // 10 passes = 5 horizontal + 5 vertical (the size of the weight array)
+                    {
+                        glBindFramebuffer(GL_FRAMEBUFFER, engineContext.bloomBlurFBO[horizontal]);
+                        bloomBlurShader.setBool("horizontal", horizontal);
+                        glBindTexture(GL_TEXTURE_2D, firstIteration ? engineContext.bloomExtractTex : engineContext.bloomBlurTex[!horizontal]); // first iteration uses extract texture, subsequent iterations use the previous buffer
+                        bloomBlurShader.setFloat("radius", engineContext.bloomBlurRadius);
+                        glDrawArrays(GL_TRIANGLES, 0, 6);
+                        horizontal = !horizontal;
+                        firstIteration = false;
+                    }
+                    bloomResult = engineContext.bloomBlurTex[!horizontal]; // last buffer (ends on vertical blur) becomes the final result
                 }
-                unsigned int bloomResult = engineContext.bloomBlurTex[!horizontal]; // last buffer (ends on vertical blur) becomes the final result
 
                 // bind default framebuffer and draw post-processing quad
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -240,20 +244,26 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 postProcessingShader.use();
-                glBindVertexArray(engineContext.PPVAO); // bind post-processing VAO
-                glDisable(GL_DEPTH_TEST);
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, engineContext.intermediateTex);
                 postProcessingShader.setInt("screenTexture", 0);
-                // bind bloom blur texture
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D, bloomResult);
                 postProcessingShader.setInt("bloomBlur", 1);
-                // set other uniforms
                 postProcessingShader.setFloat("time", currentFrame);
                 postProcessingShader.setFloat("scrWidth", engineContext.scrWidth);
                 postProcessingShader.setFloat("scrHeight", engineContext.scrHeight);
                 postProcessingShader.setFloat("exposure", engineContext.exposure);
+                postProcessingShader.setBool("enableSharpen", engineContext.enableSharpen);
+                postProcessingShader.setFloat("sharpness", engineContext.sharpness);
+                postProcessingShader.setBool("enableBlur", engineContext.enableBlur);
+                postProcessingShader.setFloat("blurStrength", engineContext.blurStrength);
+                postProcessingShader.setBool("enableEdgeDetection", engineContext.enableEdgeDetection);
+                postProcessingShader.setFloat("edgeDetectionStrength", engineContext.edgeDetectionStrength);
+                postProcessingShader.setBool("enablePixelate", engineContext.enablePixelate);
+                postProcessingShader.setFloat("pixelateResolution", engineContext.pixelateResolution);
+                postProcessingShader.setBool("enableBloom", engineContext.enableBloom);
+                postProcessingShader.setFloat("bloomIntensity", engineContext.bloomIntensity);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
                 glBindVertexArray(0);    
             }
