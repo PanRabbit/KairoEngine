@@ -7,9 +7,22 @@
 #include <kairo/selection.h>
 #include <kairo/input.h>
 #include <kairo/UI.h>
+#include <filesystem>
+#include <iostream>
+
+static bool IsModelFile(const std::string& path)
+{
+    static const std::string kValidExtensions[] = { ".obj", ".fbx", ".gltf", ".glb" }; // valid model extensions
+    std::string pathExtension = std::filesystem::path(path).extension().string(); // get the extension of the provided path
+    for (const std::string& extension : kValidExtensions) {
+        if (pathExtension == extension) {
+            return true;
+        }
+    }
+    return false;
+}
 
 // IMPORTANT!!! This should eventually automate on every asset in dir
-
 void AssetLoad(EngineContext& engineContext) {
 
     // ==========================================
@@ -60,9 +73,23 @@ void AssetLoad(EngineContext& engineContext) {
     // ==========================================
     // MODELS (insert directly into maps)
     // ==========================================
-    engineContext.models["suzanne"] = std::make_unique<Model>("meshes/suzanne.obj");
-    engineContext.models["cube"] = std::make_unique<Model>("meshes/prims/cube.obj");
-    engineContext.models["plane"] = std::make_unique<Model>("meshes/prims/plane.obj");
-    engineContext.models["sphere"] = std::make_unique<Model>("meshes/prims/sphere.obj");
-    engineContext.models["suzanneFlat"] = std::make_unique<Model>("meshes/suzanneFlat.obj");
+
+    const std::filesystem::path meshesRoot("meshes");
+    std::error_code ec;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(meshesRoot, ec)) {
+        if (!entry.is_regular_file() || !IsModelFile(entry.path()))
+            continue;
+        const auto rel = std::filesystem::relative(entry.path(), meshesRoot);
+        const std::string key = rel.stem().string();          // "cube"
+        const std::string folder = rel.parent_path().generic_string(); // "" or "prims"
+        if (engineContext.models.count(key)) {
+            std::cerr << "Duplicate model name '" << key
+                      << "' skipped: " << entry.path() << '\n';
+            continue;
+        }
+        engineContext.models[key] = std::make_unique<Model>(entry.path().generic_string());
+        engineContext.modelFolders[key] = folder;
+    }
+
+
 }

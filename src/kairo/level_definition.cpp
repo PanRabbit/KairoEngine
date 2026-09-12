@@ -317,6 +317,21 @@ std::vector<std::string> ListModelNames(const EngineContext& engineContext)
     return SortedMapKeys(engineContext.models);
 }
 
+std::map<std::string, std::vector<std::string>> ListModelsByFolder(const EngineContext& engineContext)
+{
+    std::map<std::string, std::vector<std::string>> grouped;
+    for (const auto& [name, _] : engineContext.models) {
+        auto it = engineContext.modelFolders.find(name);
+        const std::string folder = (it != engineContext.modelFolders.end() && !it->second.empty())
+            ? it->second
+            : "(root)";
+        grouped[folder].push_back(name);
+    }
+    for (auto& [_, names] : grouped)
+        std::sort(names.begin(), names.end());
+    return grouped;
+}
+
 std::vector<std::string> ListMaterialNames(const EngineContext& engineContext)
 {
     std::vector<std::string> names = SortedMapKeys(engineContext.materials);

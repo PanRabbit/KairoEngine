@@ -63,7 +63,7 @@ struct EngineContext {
     std::unordered_map<std::string, std::unique_ptr<Material>> materials;
     std::unordered_map<std::string, std::unique_ptr<Model>> models;
     std::unordered_map<std::string, std::unique_ptr<GameObject>> sceneObjects;
-
+    std::unordered_map<std::string, std::string> modelFolders;
     // getters to access assets by name
     Shader* getShaderByName(const std::string& name);
     Material* getMaterialByName(const std::string& name);

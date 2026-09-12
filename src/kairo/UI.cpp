@@ -306,14 +306,18 @@ static void LevelEditorUI(EngineContext& engineContext)
         DefineSkyBox(engineContext, chosenSkybox);
 
     ImGui::SeparatorText("Add to Level");
-    const float listHeight = ImGui::GetTextLineHeightWithSpacing() * 7.0f;
-    const float columnWidth = ImGui::GetContentRegionAvail().x * 0.5f - 4.0f;
+    const float listHeight = ImGui::GetTextLineHeightWithSpacing() * 8.0f;
+    const float lightsHeight = ImGui::GetTextLineHeightWithSpacing()
+        + ImGui::GetFrameHeightWithSpacing() * 3.0f
+        + ImGui::GetStyle().ItemSpacing.y * 2.0f;
 
-    ImGui::BeginChild("AddObjects", ImVec2(columnWidth, listHeight), true);
+    ImGui::BeginChild("AddObjects", ImVec2(0.0f, listHeight), true);
     ImGui::TextUnformatted("Objects");
     ImGui::Separator();
-    if (ImGui::BeginListBox("##AddObjectList", ImVec2(-1, -1))) {
-        for (const std::string& modelName : ListModelNames(engineContext)) {
+    for (const auto& [folder, names] : ListModelsByFolder(engineContext)) {
+        if (!ImGui::TreeNodeEx(folder.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+            continue;
+        for (const std::string& modelName : names) {
             ImGui::PushID(modelName.c_str());
             ImGui::AlignTextToFramePadding();
             ImGui::TextUnformatted(modelName.c_str());
@@ -322,12 +326,11 @@ static void LevelEditorUI(EngineContext& engineContext)
                 AddObjectToLevel(engineContext, modelName);
             ImGui::PopID();
         }
-        ImGui::EndListBox();
+        ImGui::TreePop();
     }
     ImGui::EndChild();
 
-    ImGui::SameLine();
-    ImGui::BeginChild("AddLights", ImVec2(columnWidth, listHeight), true);
+    ImGui::BeginChild("AddLights", ImVec2(0.0f, lightsHeight), true);
     ImGui::TextUnformatted("Lights");
     ImGui::Separator();
     if (ImGui::Button("Point Light", ImVec2(-1, 0)))
