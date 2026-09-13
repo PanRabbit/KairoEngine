@@ -13,10 +13,17 @@
     "checkerSize" : 1.0,
     "secondaryColor" : [0,0,0],
 
-    "useSpecularMap" : true,
-    "specularMapPath" : "textures/brick/brick_wall_10_invertrough_2k.png",
-    "specularStrength" : 1.0,
-    "shininess" : 64.0,
+    "useRoughnessMap" : true,
+    "roughnessMapPath" : "textures/brick/brick_wall_10_rough_2k.png",
+    "roughness" : 1.0,
+
+    "useMetallicMap" : false,
+    "metallicMapPath" : "",
+    "metallic" : 0.0,
+
+    "useAO" : true,
+    "aoMapPath" : "textures/brick/brick_wall_10_ao_2k.png",
+    "ao" : 1.0,
 
     "coordOffset" : [0,0],
     "coordScale" : [1,1]

@@ -13,10 +13,17 @@
     "checkerSize" : 0.01,
     "secondaryColor" : [0.3,0.3,0.3],
 
-    "useSpecularMap" : true,
-    "specularMapPath" : "textures/grunge_spec.png",
-    "specularStrength" : 0.4,
-    "shininess" : 64.0,
+    "useRoughnessMap" : true,
+    "roughnessMapPath" : "textures/grunge_rough.png",
+    "roughness" : 0.0,
+
+    "useMetallicMap" : true,
+    "metallicMapPath" : "textures/grunge_rough.png",
+    "metallic" : 0.0,
+
+    "useAO" : false,
+    "aoMapPath" : "",
+    "ao" : 1.0,
 
     "coordOffset" : [0,0],
     "coordScale" : [10,10]

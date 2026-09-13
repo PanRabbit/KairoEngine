@@ -13,10 +13,17 @@
     "checkerSize" : 0.1,
     "secondaryColor" : [0,0.5,1],
 
-    "useSpecularMap" : true,
-    "specularMapPath" : "textures/miku_spec.png",
-    "specularStrength" : 1.0,
-    "shininess" : 256.0,
+    "useRoughnessMap" : false,
+    "roughnessMapPath" : "",
+    "roughness" : 0.09,
+
+    "useMetallicMap" : true,
+    "metallicMapPath" : "textures/miku_spec.png",
+    "metallic" : 1.0,
+
+    "useAO" : false,
+    "aoMapPath" : "",
+    "ao" : 1.0,
 
     "coordOffset" : [0,0],
     "coordScale" : [1,1]
