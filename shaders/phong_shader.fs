@@ -16,18 +16,27 @@ struct Material {
     bool useNormalMap;
     sampler2D normalMap;
 
-    bool useSpecularMap;
-    sampler2D specularMap;
-    float specularStrength;
+    bool useRoughnessMap;
+    sampler2D roughnessMap;
+    float roughness;
 
-    float shininess;
+    bool useMetallicMap;
+    sampler2D metallicMap;
+    float metallic;
+
+    bool useAO;
+    sampler2D aoMap;
+    float ao;
 
     vec2 coordOffset;
     vec2 coordScale;
 };
 uniform Material material;
-vec3 diffuseTex, specularTex;
+vec3 diffuseTex;
+vec3 specColor;
 float alphaTex;
+float roughnessTex, metallicTex, aoTex;
+float shininess;
 
 
 //lighting defs
@@ -188,13 +197,13 @@ void CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, out vec3 outDiffuse
     vec3 halfwayDir = normalize(lightDir + viewDir); // blinn-phong
 
     float diff = clamp(dot(normal, lightDir), 0.0, 1.0);
-    float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), material.shininess); // blinn-phong
+    float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), shininess); // blinn-phong
 
     vec3 ambient = light.ambient * diffuseTex;
     vec3 diffuse = light.diffuse * diff * diffuseTex;
     
     outDiffuse = diffuse * light.intensity;
-    outSpecular = (light.specular * spec * specularTex) * light.intensity;
+    outSpecular = (light.specular * spec * specColor) * light.intensity;
     outAmbient = ambient * light.intensity;
 }
 
@@ -218,12 +227,12 @@ void CalcPointLight(PointLight light, samplerCube shadowMap, vec3 normal, vec3 f
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = light.diffuse * diff * diffuseTex;
 
-    // Specular (Light * Reflection * Specular Map)
+    // Specular (Light * Reflection * F0 from metallic)
     vec3 halfwayDir = normalize(lightDir + viewDir); // blinn-phong
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess); // blinn-phong
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess); // blinn-phong
 
     outDiffuse = diffuse * attenuation * light.intensity;
-    outSpecular = (light.specular * spec * specularTex) * attenuation * light.intensity;
+    outSpecular = (light.specular * spec * specColor) * attenuation * light.intensity;
     outAmbient = ambient * attenuation * light.intensity;
 }
 
@@ -259,10 +268,10 @@ void CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, out
 
     // Specular
     vec3 halfwayDir = normalize(lightDir + viewDir); // blinn-phong
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess); // blinn-phong
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess); // blinn-phong
 
     outDiffuse = diffuse * attenuation * light.intensity * coneIntensity;
-    outSpecular = (light.specular * spec * specularTex) * attenuation * light.intensity * coneIntensity;
+    outSpecular = (light.specular * spec * specColor) * attenuation * light.intensity * coneIntensity;
     outAmbient = ambient * attenuation * light.intensity * coneIntensity;
 }
 
@@ -293,9 +302,25 @@ void main()
         alphaTex = min(alphaTex, diffuseMapSample.a);
     }
 
-    // sample spec texture
-    if (material.useSpecularMap) { specularTex = vec3(texture(material.specularMap, TexCoord * material.coordScale + material.coordOffset).r) * material.specularStrength; }
-    else { specularTex = vec3(material.specularStrength); }
+// sample the textures/roughness/metallic/ao
+    vec2 uv = TexCoord * material.coordScale + material.coordOffset;
+
+    if (material.useRoughnessMap) { roughnessTex = texture(material.roughnessMap, uv).r; }
+    else { roughnessTex = material.roughness; }
+    roughnessTex = clamp(roughnessTex, 0.0, 1.0);
+
+    if (material.useMetallicMap) { metallicTex = texture(material.metallicMap, uv).r; }
+    else { metallicTex = material.metallic; }
+    metallicTex = clamp(metallicTex, 0.0, 1.0);
+
+    if (material.useAO) { aoTex = texture(material.aoMap, uv).r; }
+    else { aoTex = material.ao; }
+    aoTex = clamp(aoTex, 0.0, 1.0);
+
+    // Blinn-Phong exponent from roughness (inverse of Beckmann: r = sqrt(2/(n+2)))
+    float r = max(roughnessTex, 0.04);
+    shininess = max(2.0 / (r * r) - 2.0, 1.0);
+    specColor = mix(vec3(0.04), diffuseTex, metallicTex);
 
     // calc lighting geometry
     vec3 norm;
@@ -361,11 +386,8 @@ void main()
     vec3 I = normalize(FragPos - viewPos);
     vec3 R = reflect(I, norm);
 
-    float roughness = sqrt(2.0 / (material.shininess + 2.0));
-    roughness = clamp(roughness / max(specularTex.r, 0.001), 0.0, 1.0);
-
-    float maxLod   = 9.0; 
-    float lod = roughness * maxLod;
+    float maxLod = 9.0;
+    float lod = roughnessTex * maxLod;
     vec3 reflection = textureLod(skybox, R, lod).rgb;
 
 
@@ -374,15 +396,13 @@ void main()
     // view angle
     float NdotV = max(dot(norm, viewDir), 0.0);
 
-    // base reflectance
-    vec3 F0 = specularTex * 0.33; // multiplied down as a placeholder for metallicness
-
+    vec3 F0 = specColor;
     vec3 kS = F0 + (vec3(1.0) - F0) * pow(1.0 - NdotV, 5.0);     // % of light reflected
-    vec3 kD = vec3(1.0) - kS;        // Remaining energy available for diffuse
+    vec3 kD = (vec3(1.0) - kS) * (1.0 - metallicTex);            // Remaining energy available for diffuse
 
     // combine diffuse, specular & skybox reflection
-    vec3 result = (totalDiffuse * kD) + totalSpecular + (reflection * kS * (mix(0.4, 1.0, 1.0 - dirShadow))); // 0.4 is the minimum skybox reflection intensity when in shadow
-    result = result + totalAmbient;
+    vec3 result = (totalDiffuse * kD) + totalSpecular + (reflection * kS * aoTex * (mix(0.4, 1.0, 1.0 - dirShadow))); // 0.4 is the minimum skybox reflection intensity when in shadow
+    result = result + totalAmbient * aoTex;
 
     if (isSelected) {result = result / (1.0 - vec3(0.2, 0.55, 0.85)); } // color dodge
 

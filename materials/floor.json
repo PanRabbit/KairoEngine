@@ -14,12 +14,12 @@
     "secondaryColor" : [0.3,0.3,0.3],
 
     "useRoughnessMap" : true,
-    "roughnessMapPath" : "textures/grunge_rough.png",
+    "roughnessMapPath" : "textures/grunge_rough_heavy.png",
     "roughness" : 0.0,
 
-    "useMetallicMap" : true,
-    "metallicMapPath" : "textures/grunge_rough.png",
-    "metallic" : 0.0,
+    "useMetallicMap" : false,
+    "metallicMapPath" : "",
+    "metallic" : 0.25,
 
     "useAO" : false,
     "aoMapPath" : "",

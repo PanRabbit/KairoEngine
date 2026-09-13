@@ -1,7 +1,7 @@
 {
     "useDiffuseMap" : false,
     "diffuseMapPath" : "textures/container2.png",
-    "diffuseColor" : [0.1,0.1,0.2],
+    "diffuseColor" : [0.3,0.3,0.4],
 
     "useAlphaMap" : false,
     "alphaMapPath" : "",
@@ -11,7 +11,7 @@
 
     "useChecker" : true,
     "checkerSize" : 0.125,
-    "secondaryColor" : [0.15,0.1,0.2],
+    "secondaryColor" : [0.45,0.4,0.5],
 
     "useRoughnessMap" : true,
     "roughnessMapPath" : "textures/grunge_rough.png",
@@ -19,7 +19,7 @@
 
     "useMetallicMap" : false,
     "metallicMapPath" : "",
-    "metallic" : 1.0,
+    "metallic" : 0.75,
 
     "useAO" : false,
     "aoMapPath" : "",

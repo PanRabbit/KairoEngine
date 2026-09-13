@@ -60,13 +60,21 @@ void AssetLoad(EngineContext& engineContext) {
     lightMaterial->loadFromJson("materials/light.json");
     engineContext.materials["light"] = std::move(lightMaterial);
 
-    auto grassMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    grassMaterial->loadFromJson("materials/grass.json");
-    engineContext.materials["grass"] = std::move(grassMaterial);
-
     auto brickMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
     brickMaterial->loadFromJson("materials/brick.json");
     engineContext.materials["brick"] = std::move(brickMaterial);
+
+    auto asphaltMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
+    asphaltMaterial->loadFromJson("materials/asphalt.json");
+    engineContext.materials["asphalt"] = std::move(asphaltMaterial);
+
+    auto pavementMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
+    pavementMaterial->loadFromJson("materials/pavement.json");
+    engineContext.materials["pavement"] = std::move(pavementMaterial);
+
+    auto crosswalkMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
+    crosswalkMaterial->loadFromJson("materials/crosswalk.json");
+    engineContext.materials["crosswalk"] = std::move(crosswalkMaterial);
 
     // ==========================================
     // MODELS (insert directly into maps)

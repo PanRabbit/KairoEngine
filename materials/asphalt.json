@@ -1,24 +1,24 @@
 {
     "useDiffuseMap" : true,
-    "diffuseMapPath" : "textures/container2.png",
+    "diffuseMapPath" : "textures/asphalt/asphalt_02_diff_2k.jpg",
     "diffuseColor" : [1,0,0],
 
     "useAlphaMap" : false,
     "alphaMapPath" : "",
 
-    "useNormalMap" : false,
-    "normalMapPath" : "",
+    "useNormalMap" : true,
+    "normalMapPath" : "textures/asphalt/asphalt_02_nor_gl_2k.png",
 
     "useChecker" : false,
     "checkerSize" : 1.0,
     "secondaryColor" : [0,0,0],
 
     "useRoughnessMap" : true,
-    "roughnessMapPath" : "textures/container2_rough.png",
+    "roughnessMapPath" : "textures/asphalt/asphalt_02_rough_2k.png",
     "roughness" : 1.0,
 
-    "useMetallicMap" : true,
-    "metallicMapPath" : "textures/container2_metal.png",
+    "useMetallicMap" : false,
+    "metallicMapPath" : "",
     "metallic" : 0.0,
 
     "useAO" : false,
