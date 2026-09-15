@@ -10,10 +10,10 @@
 #include <filesystem>
 #include <iostream>
 
-static bool IsModelFile(const std::string& path)
+static bool IsModelFile(const std::filesystem::path& path)
 {
     static const std::string kValidExtensions[] = { ".obj", ".fbx", ".gltf", ".glb" }; // valid model extensions
-    std::string pathExtension = std::filesystem::path(path).extension().string(); // get the extension of the provided path
+    std::string pathExtension = path.extension().string(); // get the extension of the provided path
     for (const std::string& extension : kValidExtensions) {
         if (pathExtension == extension) {
             return true;

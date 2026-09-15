@@ -37,7 +37,7 @@ struct EngineContext {
     static constexpr int POINT_LIGHT_SELECT_BASE = 100000;
     static constexpr int SPOT_LIGHT_SELECT_BASE = 200000;
     static constexpr int SUN_SELECT_ID = 300000;
-    static constexpr glm::vec3 SUN_GIZMO_ORIGIN = glm::vec3(0.0f, 0.0f, 0.0f);
+    inline static const glm::vec3 SUN_GIZMO_ORIGIN{0.0f, 0.0f, 0.0f};
 
     static int PointLightSelectID(int index) { return POINT_LIGHT_SELECT_BASE + index; }
     static int SpotLightSelectID(int index) { return SPOT_LIGHT_SELECT_BASE + index; }
