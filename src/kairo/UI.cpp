@@ -555,6 +555,9 @@ void RenderUI(EngineContext& engineContext) {
 
         if (ImGui::BeginTabItem("Post Processing"))
         {
+            ImGui::Text("Performance: %.1f FPS", ImGui::GetIO().Framerate);
+            ImGui::Separator();
+
             PostProcessControls(engineContext);
             ImGui::EndTabItem();
         }
@@ -564,6 +567,9 @@ void RenderUI(EngineContext& engineContext) {
         lastSelectedID = engineContext.selectedObjectID;
         if (ImGui::BeginTabItem("Objects", nullptr, focusObjectTab ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
         {
+            ImGui::Text("Performance: %.1f FPS", ImGui::GetIO().Framerate);
+            ImGui::Separator();
+            
             LevelEditorUI(engineContext);
             SelectionInspectorUI(engineContext);
             ImGui::EndTabItem();
