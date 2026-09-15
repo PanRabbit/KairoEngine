@@ -1,0 +1,30 @@
+{
+    "useDiffuseMap" : true,
+    "diffuseMapPath" : "textures/textures/chainlink posts/modular_chainlink_fence_posts_diff_1k.png",
+    "diffuseColor" : [1,0,0],
+
+    "useAlphaMap" : false,
+    "alphaMapPath" : "",
+
+    "useNormalMap" : true,
+    "normalMapPath" : "textures/textures/chainlink posts/modular_chainlink_fence_posts_nor_gl_1k.png",
+
+    "useChecker" : false,
+    "checkerSize" : 1.0,
+    "secondaryColor" : [0,0,0],
+
+    "useRoughnessMap" : true,
+    "roughnessMapPath" : "textures/textures/chainlink posts/modular_chainlink_fence_posts_rough_1k.png",
+    "roughness" : 1.0,
+
+    "useMetallicMap" : true,
+    "metallicMapPath" : "textures/textures/chainlink posts/modular_chainlink_fence_posts_metal_1k.png",
+    "metallic" : 0.0,
+
+    "useAO" : false,
+    "aoMapPath" : "",
+    "ao" : 1.0,
+
+    "coordOffset" : [0,0],
+    "coordScale" : [1,1]
+}

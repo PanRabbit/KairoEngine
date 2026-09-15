@@ -1,0 +1,32 @@
+{
+    "useDiffuseMap" : true,
+    "diffuseMapPath" : "textures/textures/chainlink wire/modular_chainlink_fence_wire_diff_1k.png",
+    "diffuseColor" : [1,0,0],
+
+    "useAlphaMap" : false,
+    "alphaMapPath" : "",
+
+    "useNormalMap" : true,
+    "normalMapPath" : "textures/textures/chainlink wire/modular_chainlink_fence_wire_nor_gl_1k.png",
+
+    "useChecker" : false,
+    "checkerSize" : 1.0,
+    "secondaryColor" : [0,0,0],
+
+    "useRoughnessMap" : true,
+    "roughnessMapPath" : "textures/textures/chainlink wire/modular_chainlink_fence_wire_rough_1k.png",
+    "roughness" : 1.0,
+
+    "useMetallicMap" : true,
+    "metallicMapPath" : "textures/textures/chainlink wire/modular_chainlink_fence_wire_metal_1k.png",
+    "metallic" : 0.0,
+
+    "useAO" : false,
+    "aoMapPath" : "",
+    "ao" : 1.0,
+
+    "transparent" : true,
+
+    "coordOffset" : [0,0],
+    "coordScale" : [4,4]
+}

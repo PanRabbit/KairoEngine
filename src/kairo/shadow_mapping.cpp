@@ -3,8 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-const unsigned int SHADOW_WIDTH = 2048;
-const unsigned int SHADOW_HEIGHT = 2048;
+const unsigned int SHADOW_WIDTH = 4096;
+const unsigned int SHADOW_HEIGHT = 4096;
 
 void CreateSunDepthMapFBO(unsigned int& depthMapFBO, unsigned int& depthMapTexture) {
     glGenFramebuffers(1, &depthMapFBO);
@@ -27,15 +27,40 @@ void CreateSunDepthMapFBO(unsigned int& depthMapFBO, unsigned int& depthMapTextu
 }
 
 void RenderSceneToDepthMap(EngineContext& engineContext) {
-    float near_plane = 1.0f;
-    float far_plane = 32.0f;
+    const float extent = 40.0f;
+    const float nearPlane = 1.0f;
+    const float farPlane = 80.0f;
+    const float lightDistance = 40.0f;
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
-    
-    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-    glm::mat4 lightView = glm::lookAt(engineContext.sunDirection * -10.0f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // important to invert the direction of the light, otherwise the camera is pointing away from the scene
+
+    glm::vec3 sunDir = engineContext.sunDirection;
+    if (glm::dot(sunDir, sunDir) < 1e-8f)
+        sunDir = glm::vec3(0.0f, -1.0f, 0.0f);
+    else
+        sunDir = glm::normalize(sunDir);
+
+    glm::vec3 center = engineContext.camera.Position;
+    glm::vec3 lightPos = center - sunDir * lightDistance;
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    if (glm::abs(glm::dot(sunDir, up)) > 0.99f)
+        up = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    glm::mat4 lightView = glm::lookAt(lightPos, center, up);
+    glm::mat4 lightProjection = glm::ortho(-extent, extent, -extent, extent, nearPlane, farPlane);
+
+    // Snap the ortho window to shadow-map texels so moving the camera doesn't shimmer
+    glm::mat4 lightSpace = lightProjection * lightView;
+    glm::vec4 origin = lightSpace * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    origin *= static_cast<float>(SHADOW_WIDTH) * 0.5f;
+    glm::vec4 rounded = glm::round(origin);
+    glm::vec4 offset = (rounded - origin) * (2.0f / static_cast<float>(SHADOW_WIDTH));
+    offset.z = 0.0f;
+    offset.w = 0.0f;
+    lightProjection[3] += offset;
+
     engineContext.lightSpaceMatrix = lightProjection * lightView;
 
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);

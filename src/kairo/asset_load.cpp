@@ -40,48 +40,29 @@ void AssetLoad(EngineContext& engineContext) {
     // ==========================================
     // MATERIALS (reference shaders by name)
     // ==========================================
-    auto woodMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    woodMaterial->loadFromJson("materials/container.json");
-    engineContext.materials["wood"] = std::move(woodMaterial);
-
-    auto floorMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    floorMaterial->loadFromJson("materials/floor.json");
-    engineContext.materials["floor"] = std::move(floorMaterial);
-
-    auto mikuMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    mikuMaterial->loadFromJson("materials/mikuCube.json");
-    engineContext.materials["miku"] = std::move(mikuMaterial);
-
-    auto grungeMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    grungeMaterial->loadFromJson("materials/grunge.json");
-    engineContext.materials["grunge"] = std::move(grungeMaterial);
-
     auto lightMaterial = std::make_unique<Material>(engineContext.getShaderByName("light"));
     lightMaterial->loadFromJson("materials/light.json");
     engineContext.materials["light"] = std::move(lightMaterial);
 
-    auto brickMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    brickMaterial->loadFromJson("materials/brick.json");
-    engineContext.materials["brick"] = std::move(brickMaterial);
-
-    auto asphaltMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    asphaltMaterial->loadFromJson("materials/asphalt.json");
-    engineContext.materials["asphalt"] = std::move(asphaltMaterial);
-
-    auto pavementMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    pavementMaterial->loadFromJson("materials/pavement.json");
-    engineContext.materials["pavement"] = std::move(pavementMaterial);
-
-    auto crosswalkMaterial = std::make_unique<Material>(engineContext.getShaderByName("phong"));
-    crosswalkMaterial->loadFromJson("materials/crosswalk.json");
-    engineContext.materials["crosswalk"] = std::move(crosswalkMaterial);
-
+    std::error_code ec;
+    const std::filesystem::path materialsRoot("materials");
+    for (const auto& entry : std::filesystem::directory_iterator(materialsRoot, ec)) {
+        // check if file is a json file
+        if (entry.path().extension() != ".json")
+            continue;
+        // check if the material is already loaded
+        const std::string key = entry.path().stem().string();
+        if (engineContext.materials.count(key))
+            continue;
+        auto material = std::make_unique<Material>(engineContext.getShaderByName("phong"));
+        material->loadFromJson(entry.path().generic_string());
+        engineContext.materials[key] = std::move(material);
+    }
     // ==========================================
     // MODELS (insert directly into maps)
     // ==========================================
 
     const std::filesystem::path meshesRoot("meshes");
-    std::error_code ec;
     for (const auto& entry : std::filesystem::recursive_directory_iterator(meshesRoot, ec)) {
         if (!entry.is_regular_file() || !IsModelFile(entry.path()))
             continue;

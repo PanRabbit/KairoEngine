@@ -14,7 +14,7 @@
     "secondaryColor" : [0,0,0],
 
     "useRoughnessMap" : true,
-    "roughnessMapPath" : "textures/asphalt/asphalt_02_rough_2k.png",
+    "roughnessMapPath" : "textures/asphalt/asphalt_02_rough_2k.jpg",
     "roughness" : 1.0,
 
     "useMetallicMap" : false,

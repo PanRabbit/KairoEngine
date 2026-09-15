@@ -150,10 +150,17 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glDepthMask(GL_TRUE);
     
-            // Render all game objects
+            // Opaque meshes first so alpha meshes can blend over them. Alpha meshes
+            // still depth-test but don't write depth, or they occlude whatever is behind.
+            glDepthMask(GL_TRUE);
             for (auto& [name, obj] : engineContext.sceneObjects) {
-                    obj->draw(phongShader, engineContext.selectedObjectID);
+                    obj->draw(phongShader, engineContext.selectedObjectID, false);
             }
+            glDepthMask(GL_FALSE);
+            for (auto& [name, obj] : engineContext.sceneObjects) {
+                    obj->draw(phongShader, engineContext.selectedObjectID, true);
+            }
+            glDepthMask(GL_TRUE);
     
             // Render point lights
             lightShader.use();

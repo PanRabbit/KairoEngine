@@ -480,16 +480,12 @@ static void SelectionInspectorUI(EngineContext& engineContext)
     // sync the object's material slots with the engine context
     SyncObjectMaterialSlots(engineContext, *selected);
     const std::vector<std::string> materialList = ListMaterialNames(engineContext);
-    const size_t slotCount = selected->materialNames.size();
+    const size_t slotCount = selected->materials.size();
     for (size_t i = 0; i < slotCount; ++i) {
         ImGui::PushID(static_cast<int>(i));
-        std::string label = (selected->model && i < selected->model->materialSlotCount())
-            ? selected->model->slotName(i)
-            : "Material";
-        if (label.empty())
-            label = "Material " + std::to_string(i);
+        const std::string& label = selected->model->slotName(i);
         std::string chosenMaterial;
-        if (ComboStringList(label.c_str(), selected->materialNames[i], materialList, chosenMaterial))
+        if (ComboStringList(label.c_str(), selected->materialSlots[label], materialList, chosenMaterial))
             selected->setMaterial(i, engineContext.getMaterialByName(chosenMaterial), chosenMaterial);
         ImGui::PopID();
     }

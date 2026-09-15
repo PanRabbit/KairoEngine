@@ -17,7 +17,7 @@ class Model
           loadModel(path);
        }
        void draw(Material &material);
-       void draw(const std::vector<Material*>& materials);
+       void draw(const std::vector<Material*>& materials, bool blendPass = false);
        void drawShader(Shader& shader);
 
        size_t materialSlotCount() const { return slotNames.empty() ? 1 : slotNames.size(); }
@@ -32,4 +32,5 @@ class Model
        void processNode(aiNode *node, const aiScene *scene);
        Mesh processMesh(aiMesh *mesh);
        void compactMaterialSlots();
+       void ensureUniqueSlotNames();
 };

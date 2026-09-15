@@ -1,0 +1,367 @@
+# Blender 5.2.1 LTS MTL File: 'test.blend'
+# www.blender.org
+
+newmtl asphalt_02
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl bitumen
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/bitumen/textures/bitumen_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/bitumen/textures/bitumen_rough_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/bitumen/textures/bitumen_nor_gl_1k.exr
+
+newmtl brick_crosswalk
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl concrete_road_barrier
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/concrete_road_barrier/textures/concrete_road_barrier_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/concrete_road_barrier/textures/concrete_road_barrier_rough_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/concrete_road_barrier/textures/concrete_road_barrier_nor_gl_1k.exr
+
+newmtl concrete_road_barrier_02
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/concrete_road_barrier_02/textures/concrete_road_barrier_02_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/concrete_road_barrier_02/textures/concrete_road_barrier_02_rough_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/concrete_road_barrier_02/textures/concrete_road_barrier_02_nor_gl_1k.exr
+
+newmtl corrugated_iron_03
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/corrugated_iron_03/textures/corrugated_iron_03_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/corrugated_iron_03/textures/corrugated_iron_03_rough_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/corrugated_iron_03/textures/corrugated_iron_03_nor_gl_1k.exr
+
+newmtl covered_car
+Ka 1.000000 1.000000 1.000000
+Ks 0.300000 0.300000 0.300000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/covered_car/textures/covered_car_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/covered_car/textures/covered_car_rough_1k.exr
+map_refl /home/holo/Documents/3D Assets/PolyHaven/covered_car/textures/covered_car_metal_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/covered_car/textures/covered_car_nor_gl_1k.exr
+
+newmtl cracked_concrete
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/cracked_concrete/textures/cracked_concrete_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/cracked_concrete/textures/cracked_concrete_rough_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/cracked_concrete/textures/cracked_concrete_nor_gl_1k.exr
+
+newmtl hand_truck
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/hand_truck/textures/hand_truck_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/hand_truck/textures/hand_truck_rough_1k.exr
+map_refl /home/holo/Documents/3D Assets/PolyHaven/hand_truck/textures/hand_truck_metal_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/hand_truck/textures/hand_truck_nor_gl_1k.exr
+
+newmtl industrial_wall_lamp
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_rough_1k.exr
+map_Ke /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_emissive_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_nor_gl_1k.exr
+
+newmtl industrial_wall_lamp_glass
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_glass_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_glass_rough_1k.png
+map_d /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_glass_alpha_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/industrial_wall_lamp/textures/industrial_wall_lamp_glass_nor_gl_1k.png
+
+newmtl metal_trash_can
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_rough_1k.exr
+map_refl /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_metal_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_nor_gl_1k.exr
+
+newmtl metal_trash_can_rust
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_rust_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_rust_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_rust_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/metal_trash_can/textures/metal_trash_can_rust_nor_gl_1k.png
+
+newmtl modular_airduct_rectangular_01_parts01
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts01_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts01_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts01_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts01_nor_gl_1k.png
+
+newmtl modular_airduct_rectangular_01_parts02
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts02_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts02_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts02_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_airduct_rectangular_01/textures/modular_airduct_rectangular_01_parts02_nor_gl_1k.png
+
+newmtl modular_chainlink_fence_posts
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_posts_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_posts_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_posts_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_posts_nor_gl_1k.png
+
+newmtl modular_chainlink_fence_wire
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_wire_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_wire_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_wire_metal_1k.png
+map_d /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_wire_alpha_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_chainlink_fence/textures/modular_chainlink_fence_wire_nor_gl_1k.png
+
+newmtl modular_electric_cables
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_rough_1k.exr
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_metal_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_nor_gl_1k.exr
+
+newmtl modular_electric_cables_boxes
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_boxes_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_boxes_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_metal_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_electric_cables/textures/modular_electric_cables_boxes_nor_gl_1k.png
+
+newmtl modular_electricity_poles
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_electricity_poles/textures/modular_electricity_poles_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_electricity_poles/textures/modular_electricity_poles_rough_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_electricity_poles/textures/modular_electricity_poles_nor_gl_1k.exr
+
+newmtl modular_electricity_poles_pieces
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_electricity_poles/textures/modular_electricity_poles_pieces_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_electricity_poles/textures/modular_electricity_poles_pieces_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_electricity_poles/textures/modular_electricity_poles_pieces_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_electricity_poles/textures/modular_electricity_poles_pieces_nor_gl_1k.png
+
+newmtl modular_factory_facade_brick
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_brick_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_brick_rough_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_brick_nor_gl_1k.png
+
+newmtl modular_factory_facade_brick_doors
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_doors_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_doors_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_doors_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_doors_nor_gl_1k.png
+
+newmtl modular_factory_facade_garage
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_garage_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_garage_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_garage_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_garage_nor_gl_1k.png
+
+newmtl modular_factory_facade_trim_01
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_trim_01_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_trim_01_rough_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_trim_01_nor_gl_1k.png
+
+newmtl modular_factory_facade_windows
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_windows_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_windows_rough_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_windows_nor_gl_1k.png
+
+newmtl modular_factory_facade_windows_glass
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_windows_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_windows_rough_1k.png
+map_d /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_windows_alpha_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_factory_facade/textures/modular_factory_facade_windows_nor_gl_1k.png
+
+newmtl modular_pipes_metal.001
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/modular_pipes/textures/modular_pipes_metal_diff_1k.png
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/modular_pipes/textures/modular_pipes_metal_rough_1k.png
+map_refl /home/holo/Documents/3D Assets/PolyHaven/modular_pipes/textures/modular_pipes_metal_metal_1k.png
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/modular_pipes/textures/modular_pipes_metal_nor_gl_1k.png
+
+newmtl pavement_05
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl power_box_01
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/power_box_01/textures/power_box_01_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/power_box_01/textures/power_box_01_rough_1k.exr
+map_refl /home/holo/Documents/3D Assets/PolyHaven/power_box_01/textures/power_box_01_metal_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/power_box_01/textures/power_box_01_nor_gl_1k.exr
+
+newmtl rubble
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/rubble/textures/rubble_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/rubble/textures/rubble_rough_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/rubble/textures/rubble_nor_gl_1k.exr
+
+newmtl utility_box_02
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/holo/Documents/3D Assets/PolyHaven/utility_box_02/textures/utility_box_02_diff_1k.jpg
+map_Ns /home/holo/Documents/3D Assets/PolyHaven/utility_box_02/textures/utility_box_02_rough_1k.exr
+map_refl /home/holo/Documents/3D Assets/PolyHaven/utility_box_02/textures/utility_box_02_metal_1k.exr
+map_Bump -bm 1.000000 /home/holo/Documents/3D Assets/PolyHaven/utility_box_02/textures/utility_box_02_nor_gl_1k.exr

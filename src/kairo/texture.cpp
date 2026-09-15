@@ -20,6 +20,7 @@ Texture::Texture(const std::string& path)
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image_data);
     glGenerateMipmap(GL_TEXTURE_2D);
+
     stbi_image_free(image_data);
 }
 

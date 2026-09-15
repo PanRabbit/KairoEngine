@@ -292,15 +292,15 @@ void main()
     if (material.useAlphaMap) { alphaTex = texture(material.alphaMap, TexCoord * material.coordScale + material.coordOffset).r; }
     else { alphaTex = 1.0; }
 
-    if (alphaTex < 0.01) discard;
-
     // sample the textures/diffuse colours
     if (material.useDiffuseMap) 
     {
         vec4 diffuseMapSample = texture(material.diffuseMap, TexCoord * material.coordScale + material.coordOffset); 
-        diffuseTex = ((1.0 - diffuseMapSample.a) * diffuseTex) + (diffuseMapSample.a * diffuseMapSample.rgb);
+        diffuseTex = diffuseMapSample.rgb;
         alphaTex = min(alphaTex, diffuseMapSample.a);
     }
+
+    if (alphaTex < 0.01) discard;
 
 // sample the textures/roughness/metallic/ao
     vec2 uv = TexCoord * material.coordScale + material.coordOffset;
@@ -330,6 +330,9 @@ void main()
     { 
         vec3 normalMapSample = texture(material.normalMap, TexCoord * material.coordScale + material.coordOffset).rgb; 
         vec3 tangentNormal = normalize(normalMapSample * 2.0 - 1.0);
+        // FlipUVs (model load) reverses V; nor_gl green is authored for unflipped V
+        tangentNormal.y = -tangentNormal.y;
+        if (!gl_FrontFacing) tangentNormal.xy = -tangentNormal.xy;
         norm = normalize(TBN * tangentNormal);
     }
     else 

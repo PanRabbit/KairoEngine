@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_set>
 
 
 void Model::draw(Material &material)
@@ -16,7 +17,7 @@ void Model::draw(Material &material)
         meshes[i].draw(material);
 }
 
-void Model::draw(const std::vector<Material*>& materials)
+void Model::draw(const std::vector<Material*>& materials, bool blendPass)
 {
     for (unsigned int i = 0; i < meshes.size(); i++) {
         const unsigned int slot = meshes[i].materialSlot;
@@ -26,6 +27,10 @@ void Model::draw(const std::vector<Material*>& materials)
         else if (!materials.empty())
             material = materials[0];
         if (!material)
+            continue;
+        auto tag = material->bools.find("transparent");
+        const bool blend = tag != material->bools.end() && tag->second;
+        if (blend != blendPass)
             continue;
         meshes[i].draw(*material);
     }
@@ -48,7 +53,8 @@ const std::string& Model::slotName(size_t slot) const
 void Model::loadModel(std::string path)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace); // flip UVs for correct orientation
+    const aiScene* scene = importer.ReadFile(path,
+        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -58,7 +64,7 @@ void Model::loadModel(std::string path)
     }
 
     slotNames.assign(scene->mNumMaterials, {});
-    // assign material slot names
+    // assign material slot names; generate one if the mesh left it blank
     for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         aiString name;
         if (scene->mMaterials[i]->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
@@ -104,10 +110,14 @@ Mesh Model::processMesh(aiMesh *mesh)
         vector.z = mesh->mVertices[i].z;
         workingVertex.Position = vector;
         // normals
-        vector.x = mesh->mNormals[i].x;
-        vector.y = mesh->mNormals[i].y;
-        vector.z = mesh->mNormals[i].z;
-        workingVertex.Normal = vector;
+        if (mesh->HasNormals()) {
+            vector.x = mesh->mNormals[i].x;
+            vector.y = mesh->mNormals[i].y;
+            vector.z = mesh->mNormals[i].z;
+            workingVertex.Normal = vector;
+        } else {
+            workingVertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        }
         // texture coordinates
         // assimp can support up to 8 different texture coordinates per vertex. im only implementing 1, but come back here for UDIMs later?
         if(mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
@@ -121,17 +131,21 @@ Mesh Model::processMesh(aiMesh *mesh)
         {
             workingVertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
-        // tangents
-        glm::vec3 tangents;
-        glm::vec3 bitangents;
-        tangents.x = mesh->mTangents[i].x;
-        tangents.y = mesh->mTangents[i].y;
-        tangents.z = mesh->mTangents[i].z;
-        bitangents.x = mesh->mBitangents[i].x;
-        bitangents.y = mesh->mBitangents[i].y;
-        bitangents.z = mesh->mBitangents[i].z;
-        float handedness = (dot(cross(workingVertex.Normal, tangents), bitangents) < 0.0f) ? -1.0f : 1.0f; // calculate if the tangent is left or right handed
-        workingVertex.Tangent = glm::vec4(tangents, handedness);
+        // tangents (CalcTangentSpace can leave these null on degenerate UVs)
+        if (mesh->HasTangentsAndBitangents()) {
+            glm::vec3 tangents;
+            glm::vec3 bitangents;
+            tangents.x = mesh->mTangents[i].x;
+            tangents.y = mesh->mTangents[i].y;
+            tangents.z = mesh->mTangents[i].z;
+            bitangents.x = mesh->mBitangents[i].x;
+            bitangents.y = mesh->mBitangents[i].y;
+            bitangents.z = mesh->mBitangents[i].z;
+            float handedness = (dot(cross(workingVertex.Normal, tangents), bitangents) < 0.0f) ? -1.0f : 1.0f;
+            workingVertex.Tangent = glm::vec4(tangents, handedness);
+        } else {
+            workingVertex.Tangent = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+        }
 
 
         // push the vertex to the vertices vector 
@@ -181,4 +195,29 @@ void Model::compactMaterialSlots()
             mesh.materialSlot = 0;
     }
     slotNames = std::move(compacted);
+    ensureUniqueSlotNames();
+}
+
+void Model::ensureUniqueSlotNames()
+{
+    if (slotNames.empty())
+        slotNames.emplace_back("Material 0");
+
+    std::unordered_set<std::string> taken;
+    taken.reserve(slotNames.size());
+    for (size_t i = 0; i < slotNames.size(); ++i) {
+        std::string name = slotNames[i];
+        if (name.empty())
+            name = "Material " + std::to_string(i);
+        if (taken.count(name)) {
+            int suffix = 1;
+            std::string candidate;
+            do {
+                candidate = name + " " + std::to_string(suffix++);
+            } while (taken.count(candidate));
+            name = std::move(candidate);
+        }
+        slotNames[i] = name;
+        taken.insert(name);
+    }
 }

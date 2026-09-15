@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <cctype>
+#include <unordered_map>
 
 // empty private namespace for level definition functions
 namespace {
@@ -52,12 +53,28 @@ namespace {
         return {};
     }
 
-    std::vector<std::string> ReadObjectMaterialNames(const nlohmann::json& objValue) {
+    std::unordered_map<std::string, std::string> ReadObjectMaterialSlots(const nlohmann::json& objValue, const Model* model) {
+        std::unordered_map<std::string, std::string> slots;
+        std::vector<std::string> legacyNames;
+
+        if (objValue.contains("materials") && objValue["materials"].is_object()) {
+            for (auto& [slotName, materialName] : objValue["materials"].items()) {
+                if (materialName.is_string())
+                    slots[slotName] = materialName.get<std::string>();
+            }
+            return slots;
+        }
         if (objValue.contains("materials") && objValue["materials"].is_array())
-            return objValue["materials"].get<std::vector<std::string>>();
-        if (objValue.contains("material") && objValue["material"].is_string())
-            return { objValue["material"].get<std::string>() };
-        return {};
+            legacyNames = objValue["materials"].get<std::vector<std::string>>();
+        else if (objValue.contains("material") && objValue["material"].is_string())
+            legacyNames = { objValue["material"].get<std::string>() };
+
+        if (!model)
+            return slots;
+        const size_t count = std::min(legacyNames.size(), model->materialSlotCount());
+        for (size_t i = 0; i < count; ++i)
+            slots[model->slotName(i)] = legacyNames[i];
+        return slots;
     }
 
     void LoadPostProcess(EngineContext& engineContext, const nlohmann::json& j) {
@@ -164,12 +181,13 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
         if (key.find("GameObjects") != std::string::npos) {
             for (auto& [objKey, objValue] : value.items()) {
                 const std::string modelName = objValue["model"].get<std::string>();
+                Model* model = engineContext.getModelByName(modelName);
                 auto* gameObject = new GameObject(
                     objKey,
-                    engineContext.getModelByName(modelName),
+                    model,
                     {},
                     modelName,
-                    ReadObjectMaterialNames(objValue)
+                    ReadObjectMaterialSlots(objValue, model)
                 );
                 SyncObjectMaterialSlots(engineContext, *gameObject);
                 gameObject->position = glm::vec3(objValue["location"][0].get<float>(), objValue["location"][1].get<float>(), objValue["location"][2].get<float>());
@@ -237,9 +255,15 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
     for (const std::string& objKey : objectNames) {
         GameObject* obj = engineContext.sceneObjects[objKey].get();
         const glm::vec3 rotationDeg = glm::degrees(obj->getEulerXYZ());
+        nlohmann::json materials = nlohmann::json::object();
+        const size_t slotCount = obj->model ? obj->model->materialSlotCount() : 0;
+        for (size_t i = 0; i < slotCount; ++i) {
+            const std::string& slot = obj->model->slotName(i);
+            materials[slot] = obj->materialSlots[slot];
+        }
         objects[objKey] = {
             { "model", obj->modelName },
-            { "materials", obj->materialNames },
+            { "materials", materials },
             { "location", { obj->position.x, obj->position.y, obj->position.z } },
             { "rotation", { rotationDeg.x, rotationDeg.y, rotationDeg.z } },
             { "scale", { obj->scale.x, obj->scale.y, obj->scale.z } }
@@ -372,14 +396,14 @@ void SyncObjectMaterialSlots(EngineContext& engineContext, GameObject& object)
     }
 
     Material* fill = engineContext.getMaterialByName(fillName);
-    const size_t slots = object.model ? object.model->materialSlotCount() : 1;
-    object.syncMaterialSlots(slots, fill, fillName);
-    for (size_t i = 0; i < object.materialNames.size(); ++i) {
-        auto it = engineContext.materials.find(object.materialNames[i]);
+    object.syncMaterialSlots(fill, fillName);
+    for (size_t i = 0; i < object.materials.size(); ++i) {
+        const std::string& assigned = object.materialSlots[object.model->slotName(i)];
+        auto it = engineContext.materials.find(assigned);
         if (it == engineContext.materials.end())
             object.setMaterial(i, fill, fillName);
         else
-            object.setMaterial(i, it->second.get(), object.materialNames[i]);
+            object.setMaterial(i, it->second.get(), assigned);
     }
 }
 
@@ -491,7 +515,7 @@ void DuplicateSelectedObject(EngineContext& engineContext)
         source->model,
         source->materials,
         source->modelName,
-        source->materialNames
+        source->materialSlots
     );
     SyncObjectMaterialSlots(engineContext, *clone);
     clone->setFromMatrix(source->getTransformMatrix());

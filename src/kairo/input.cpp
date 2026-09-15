@@ -6,7 +6,6 @@
 #include <iostream>
 #include <imgui.h>
 #include <ImGuizmo.h>
-
 // Global context pointer for GLFW callbacks (set once at init)
 static EngineContext* g_engineContext = nullptr;
 
@@ -36,9 +35,9 @@ void processInput(GLFWwindow *window, EngineContext& engineContext)
 
     // Camera Speed modifier (Sprint)
     if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        engineContext.camera.MovementSpeed = 5.0f;
+        engineContext.camera.MovementSpeed = 7.5f;
     else
-        engineContext.camera.MovementSpeed = 1.0f;
+        engineContext.camera.MovementSpeed = 2.5f;
 
     // torch
     static bool fJustPressed = false;

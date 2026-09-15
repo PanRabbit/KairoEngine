@@ -1,0 +1,30 @@
+{
+    "useDiffuseMap" : true,
+    "diffuseMapPath" : "textures/textures/electric cables/modular_electric_cables_diff_1k.jpg",
+    "diffuseColor" : [1,0,0],
+
+    "useAlphaMap" : false,
+    "alphaMapPath" : "",
+
+    "useNormalMap" : true,
+    "normalMapPath" : "textures/textures/electric cables/modular_electric_cables_nor_gl_1k.png",
+
+    "useChecker" : false,
+    "checkerSize" : 1.0,
+    "secondaryColor" : [0,0,0],
+
+    "useRoughnessMap" : true,
+    "roughnessMapPath" : "textures/textures/electric cables/modular_electric_cables_rough_1k.png",
+    "roughness" : 1.0,
+
+    "useMetallicMap" : true,
+    "metallicMapPath" : "textures/textures/electric cables/modular_electric_cables_metal_1k.png",
+    "metallic" : 0.0,
+
+    "useAO" : false,
+    "aoMapPath" : "",
+    "ao" : 1.0,
+
+    "coordOffset" : [0,0],
+    "coordScale" : [1,1]
+}

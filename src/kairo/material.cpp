@@ -1,6 +1,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
+#include <cctype>
 #include "kairo/material.h"
 
 
@@ -34,13 +35,18 @@ void Material::loadFromJson(const std::string& path)
         if (key.find("Path") != std::string::npos) 
         {
             std::string uniformName = key.substr(0, key.find("Path"));
-            
-            // create texture
-            Texture* tex = new Texture(value.get<std::string>());
-            
-            // store texture and slot index in a struct
-            textureBindings[uniformName] = { tex, textureSlotCounter };
-            
+            std::string useKey = "use";
+            if (!uniformName.empty()) {
+                useKey += static_cast<char>(std::toupper(static_cast<unsigned char>(uniformName[0])));
+                useKey += uniformName.substr(1);
+            }
+            if (uniformName == "aoMap")
+                useKey = "useAO";
+
+            // use* flags appear first in the JSON, so bools is already filled
+            const bool enabled = !bools.count(useKey) || bools[useKey];
+            const std::string texPath = enabled ? value.get<std::string>() : "";
+            textureBindings[uniformName] = { new Texture(texPath), textureSlotCounter };
             textureSlotCounter++;
         }
         // Handle Arrays (like "diffuseColor" : [1,0,0])
@@ -86,7 +92,11 @@ void Material::apply()
     // push the rest of the values to the shader
     for (auto& [name, val] : floats) { shader->setFloat("material." + name, val); }
     for (auto& [name, val] : ints)   { shader->setInt("material." + name, val); }
-    for (auto& [name, val] : bools)  { shader->setBool("material." + name, val); } 
+    for (auto& [name, val] : bools) {
+        if (name == "transparent")
+            continue;
+        shader->setBool("material." + name, val);
+    } 
     for (auto& [name, val] : vec3s)  { shader->setVec3("material." + name, val); } 
     for (auto& [name, val] : vec2s)  { shader->setVec2("material." + name, val); }
 }

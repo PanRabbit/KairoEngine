@@ -1,0 +1,30 @@
+{
+    "useDiffuseMap" : true,
+    "diffuseMapPath" : "textures/textures/cracked concrete/cracked_concrete_diff_1k.jpg",
+    "diffuseColor" : [1,0,0],
+
+    "useAlphaMap" : false,
+    "alphaMapPath" : "",
+
+    "useNormalMap" : true,
+    "normalMapPath" : "textures/textures/cracked concrete/cracked_concrete_nor_gl_1k.png",
+
+    "useChecker" : false,
+    "checkerSize" : 1.0,
+    "secondaryColor" : [0,0,0],
+
+    "useRoughnessMap" : true,
+    "roughnessMapPath" : "textures/textures/cracked concrete/cracked_concrete_rough_1k.png",
+    "roughness" : 1.0,
+
+    "useMetallicMap" : false,
+    "metallicMapPath" : "",
+    "metallic" : 0.0,
+
+    "useAO" : false,
+    "aoMapPath" : "",
+    "ao" : 1.0,
+
+    "coordOffset" : [0,0],
+    "coordScale" : [1,1]
+}

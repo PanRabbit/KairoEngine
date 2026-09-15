@@ -7,6 +7,7 @@
 #include <kairo/material.h>
 #include <kairo/shader.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class GameObject {
@@ -16,7 +17,7 @@ public:
     int id;
     std::string name;
     std::string modelName;
-    std::vector<std::string> materialNames;
+    std::unordered_map<std::string, std::string> materialSlots;
     Model* model;
     std::vector<Material*> materials;
     
@@ -26,30 +27,30 @@ public:
     glm::vec3 scale{1.0f};
 
     GameObject(const std::string& name, Model* model, std::vector<Material*> materials,
-               const std::string& modelName = "", std::vector<std::string> materialNames = {}):
-        id(nextID++), name(name), modelName(modelName), materialNames(std::move(materialNames)),
+               const std::string& modelName = "",
+               std::unordered_map<std::string, std::string> materialSlots = {}):
+        id(nextID++), name(name), modelName(modelName), materialSlots(std::move(materialSlots)),
         model(model), materials(std::move(materials)) {}
 
     void setMaterial(size_t slot, Material* mat, const std::string& materialName) {
-        if (slot >= materials.size()) {
+        if (slot >= materials.size())
             materials.resize(slot + 1, nullptr);
-            materialNames.resize(slot + 1);
-        }
         materials[slot] = mat;
-        materialNames[slot] = materialName;
+        materialSlots[model->slotName(slot)] = materialName;
     }
-    // sync the object's material slots with the engine context
-    void syncMaterialSlots(size_t slotCount, Material* fill, const std::string& fillName) {
+
+    // keep indexed materials aligned with the model's named slots
+    void syncMaterialSlots(Material* fill, const std::string& fillName) {
+        size_t slotCount = model ? model->materialSlotCount() : 1;
         if (slotCount == 0)
             slotCount = 1;
-        const size_t previous = materialNames.size();
-        materialNames.resize(slotCount);
-        materials.resize(slotCount, nullptr);
+        materials.assign(slotCount, fill);
+        if (!model)
+            return;
         for (size_t i = 0; i < slotCount; ++i) {
-            if (i >= previous || materialNames[i].empty())
-                materialNames[i] = fillName;
-            if (!materials[i])
-                materials[i] = fill;
+            const std::string& key = model->slotName(i);
+            if (materialSlots[key].empty())
+                materialSlots[key] = fillName;
         }
     }
 
@@ -113,11 +114,11 @@ public:
     }
 
     // rendering pass
-    void draw(Shader& shader, int selectedID) const {
+    void draw(Shader& shader, int selectedID, bool blendPass = false) const {
         shader.use();
         shader.setMat4("model", getTransformMatrix());
         shader.setBool("isSelected", id == selectedID);
-        model->draw(materials);
+        model->draw(materials, blendPass);
     }
 
     void drawShader(Shader& shader) const {
