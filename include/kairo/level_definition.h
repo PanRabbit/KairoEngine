@@ -16,7 +16,7 @@ std::map<std::string, std::vector<std::string>> ListModelsByFolder(const EngineC
 std::vector<std::string> ListMaterialNames(const EngineContext& engineContext);
 
 void SyncObjectMaterialSlots(EngineContext& engineContext, GameObject& object);
-void AddObjectToLevel(EngineContext& engineContext, const std::string& modelName);
+void AddObjectToLevel(EngineContext& engineContext, const std::string& modelPath);
 void AddPointLightToLevel(EngineContext& engineContext);
 void AddSpotLightToLevel(EngineContext& engineContext);
 void DuplicateSelectedObject(EngineContext& engineContext);

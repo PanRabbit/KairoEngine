@@ -38,7 +38,7 @@
                 "rubble": "rubble",
                 "utility_box_02": "utility_box"
             },
-            "model": "test",
+            "modelPath": "meshes/test.obj",
             "rotation": [
                 180.0,
                 -89.98021697998047,

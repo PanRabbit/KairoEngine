@@ -317,13 +317,14 @@ static void LevelEditorUI(EngineContext& engineContext)
     for (const auto& [folder, names] : ListModelsByFolder(engineContext)) {
         if (!ImGui::TreeNodeEx(folder.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
             continue;
-        for (const std::string& modelName : names) {
-            ImGui::PushID(modelName.c_str());
+        for (const std::string& modelPath : names) {
+            const std::string display = std::filesystem::path(modelPath).stem().string();
+            ImGui::PushID(modelPath.c_str());
             ImGui::AlignTextToFramePadding();
-            ImGui::TextUnformatted(modelName.c_str());
+            ImGui::TextUnformatted(display.c_str());
             ImGui::SameLine();
             if (ImGui::SmallButton("+"))
-                AddObjectToLevel(engineContext, modelName);
+                AddObjectToLevel(engineContext, modelPath);
             ImGui::PopID();
         }
         ImGui::TreePop();
@@ -475,7 +476,7 @@ static void SelectionInspectorUI(EngineContext& engineContext)
     }
 
     ImGui::Text("Object: %s", selected->name.c_str());
-    ImGui::Text("Model: %s", selected->modelName.c_str());
+    ImGui::Text("Model: %s", selected->modelPath.c_str());
 
     // sync the object's material slots with the engine context
     SyncObjectMaterialSlots(engineContext, *selected);

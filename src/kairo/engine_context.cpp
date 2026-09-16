@@ -1,4 +1,5 @@
 #include "kairo/engine_context.h"
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 
@@ -18,12 +19,36 @@ Material* EngineContext::getMaterialByName(const std::string& name) {
     return assetPointer->second.get();
 }
 
-Model* EngineContext::getModelByName(const std::string& name) {
-    auto assetPointer = models.find(name);
-    if (assetPointer == models.end()) {
-        throw std::runtime_error("Model not found: " + name);
+Model* EngineContext::LoadModel(const std::string& path) {
+    if (path.empty()) {
+        std::cout << "ERROR: Model path is empty" << std::endl;
+        return nullptr;
     }
-    return assetPointer->second.get();
+
+    auto loaded = models.find(path);
+    if (loaded != models.end())
+        return loaded->second.get();
+
+    std::error_code ec;
+    if (!std::filesystem::exists(path, ec)) {
+        std::cout << "ERROR: Model not found: " << path << std::endl;
+        return nullptr;
+    }
+
+    auto model = std::make_unique<Model>(path);
+    Model* pointer = model.get();
+    models[path] = std::move(model);
+    return pointer;
+}
+
+void EngineContext::unloadUnusedModels(const std::unordered_set<std::string>& keepPaths) {
+    for (auto it = models.begin(); it != models.end(); ) {
+        if (keepPaths.count(it->first) || it->first == GIZMO_SPHERE_PATH) {
+            ++it;
+            continue;
+        }
+        it = models.erase(it);
+    }
 }
 
 GameObject* EngineContext::getGameObjectByID(int id) {

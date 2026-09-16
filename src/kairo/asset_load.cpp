@@ -8,11 +8,10 @@
 #include <kairo/input.h>
 #include <kairo/UI.h>
 #include <filesystem>
-#include <iostream>
 
 static bool IsModelFile(const std::filesystem::path& path)
 {
-    static const std::string kValidExtensions[] = { ".obj", ".fbx", ".gltf", ".glb" }; // valid model extensions
+    static const std::string kValidExtensions[] = { ".obj"}; // valid model extensions
     std::string pathExtension = path.extension().string(); // get the extension of the provided path
     for (const std::string& extension : kValidExtensions) {
         if (pathExtension == extension) {
@@ -59,24 +58,20 @@ void AssetLoad(EngineContext& engineContext) {
         engineContext.materials[key] = std::move(material);
     }
     // ==========================================
-    // MODELS (insert directly into maps)
+    // MODEL CATALOG (paths only; meshes load on demand)
     // ==========================================
 
     const std::filesystem::path meshesRoot("meshes");
     for (const auto& entry : std::filesystem::recursive_directory_iterator(meshesRoot, ec)) {
         if (!entry.is_regular_file() || !IsModelFile(entry.path()))
             continue;
+        const std::string path = entry.path().generic_string();
         const auto rel = std::filesystem::relative(entry.path(), meshesRoot);
-        const std::string key = rel.stem().string();          // "cube"
-        const std::string folder = rel.parent_path().generic_string(); // "" or "prims"
-        if (engineContext.models.count(key)) {
-            std::cerr << "Duplicate model name '" << key
-                      << "' skipped: " << entry.path() << '\n';
+        const std::string folder = rel.parent_path().generic_string();
+        if (engineContext.availableModels.count(path))
             continue;
-        }
-        engineContext.models[key] = std::make_unique<Model>(entry.path().generic_string());
-        engineContext.modelFolders[key] = folder;
+        engineContext.availableModels[path] = folder;
     }
 
-
+    engineContext.LoadModel(EngineContext::GIZMO_SPHERE_PATH);
 }

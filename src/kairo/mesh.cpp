@@ -5,11 +5,62 @@
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
 {
-    this->vertices = vertices;
-    this->indices = indices;
+    this->vertices = std::move(vertices);
+    this->indices = std::move(indices);
 
     setupMesh();
-};
+}
+
+Mesh::Mesh(Mesh&& other) noexcept
+    : vertices(std::move(other.vertices))
+    , indices(std::move(other.indices))
+    , materialSlot(other.materialSlot)
+    , VAO(other.VAO)
+    , VBO(other.VBO)
+    , EBO(other.EBO)
+{
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept
+{
+    if (this == &other)
+        return *this;
+    destroy();
+    vertices = std::move(other.vertices);
+    indices = std::move(other.indices);
+    materialSlot = other.materialSlot;
+    VAO = other.VAO;
+    VBO = other.VBO;
+    EBO = other.EBO;
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+    return *this;
+}
+
+Mesh::~Mesh()
+{
+    destroy();
+}
+
+void Mesh::destroy()
+{
+    if (VAO) {
+        glDeleteVertexArrays(1, &VAO);
+        VAO = 0;
+    }
+    if (VBO) {
+        glDeleteBuffers(1, &VBO);
+        VBO = 0;
+    }
+    if (EBO) {
+        glDeleteBuffers(1, &EBO);
+        EBO = 0;
+    }
+}
 
 void Mesh::setupMesh()
 {
@@ -37,7 +88,7 @@ void Mesh::setupMesh()
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
     glBindVertexArray(0);
-};
+}
 
 void Mesh::draw(Material &material)
 {

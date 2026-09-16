@@ -9,7 +9,7 @@
             "materials": {
                 "DefaultMaterial": "container"
             },
-            "model": "cube",
+            "modelPath": "meshes/prims/cube.obj",
             "rotation": [
                 0.0,
                 -28.0,
@@ -30,7 +30,7 @@
             "materials": {
                 "DefaultMaterial": "container"
             },
-            "model": "cube",
+            "modelPath": "meshes/prims/cube.obj",
             "rotation": [
                 -0.0,
                 37.0,
@@ -51,7 +51,7 @@
             "materials": {
                 "DefaultMaterial": "container"
             },
-            "model": "cube",
+            "modelPath": "meshes/prims/cube.obj",
             "rotation": [
                 -0.0,
                 59.9999885559082,
@@ -72,7 +72,7 @@
             "materials": {
                 "DefaultMaterial": "container"
             },
-            "model": "cube",
+            "modelPath": "meshes/prims/cube.obj",
             "rotation": [
                 0.0,
                 -16.0,
@@ -93,7 +93,7 @@
             "materials": {
                 "DefaultMaterial": "container"
             },
-            "model": "cube",
+            "modelPath": "meshes/prims/cube.obj",
             "rotation": [
                 0.0,
                 -54.000003814697266,
@@ -114,7 +114,7 @@
             "materials": {
                 "DefaultMaterial": "container"
             },
-            "model": "cube",
+            "modelPath": "meshes/prims/cube.obj",
             "rotation": [
                 0.0,
                 -54.000003814697266,
@@ -135,7 +135,7 @@
             "materials": {
                 "DefaultMaterial": "container"
             },
-            "model": "cube",
+            "modelPath": "meshes/prims/cube.obj",
             "rotation": [
                 0.0,
                 -30.000011444091797,
@@ -156,7 +156,7 @@
             "materials": {
                 "DefaultMaterial": "floor"
             },
-            "model": "plane",
+            "modelPath": "meshes/prims/plane.obj",
             "rotation": [
                 -0.0,
                 0.0,
@@ -177,7 +177,7 @@
             "materials": {
                 "DefaultMaterial": "grunge"
             },
-            "model": "suzanne",
+            "modelPath": "meshes/suzanne.obj",
             "rotation": [
                 180.0,
                 -5.008955668017734e-06,
@@ -198,7 +198,7 @@
             "materials": {
                 "DefaultMaterial": "grunge"
             },
-            "model": "suzanneFlat",
+            "modelPath": "meshes/suzanneFlat.obj",
             "rotation": [
                 180.0,
                 -5.008955668017734e-06,
@@ -219,7 +219,7 @@
             "materials": {
                 "DefaultMaterial": "factory_brick"
             },
-            "model": "plane",
+            "modelPath": "meshes/prims/plane.obj",
             "rotation": [
                 -90.00000762939453,
                 -4.268868451617891e-06,
@@ -240,7 +240,7 @@
             "materials": {
                 "DefaultMaterial": "factory_brick"
             },
-            "model": "plane",
+            "modelPath": "meshes/prims/plane.obj",
             "rotation": [
                 -90.00000762939453,
                 -4.268868451617891e-06,
@@ -261,7 +261,7 @@
             "materials": {
                 "DefaultMaterial": "factory_brick"
             },
-            "model": "plane",
+            "modelPath": "meshes/prims/plane.obj",
             "rotation": [
                 -90.00000762939453,
                 -4.268868451617891e-06,
@@ -282,7 +282,7 @@
             "materials": {
                 "DefaultMaterial": "factory_brick"
             },
-            "model": "plane",
+            "modelPath": "meshes/prims/plane.obj",
             "rotation": [
                 -90.00000762939453,
                 -4.268868451617891e-06,
@@ -303,7 +303,7 @@
             "materials": {
                 "DefaultMaterial": "factory_brick"
             },
-            "model": "plane",
+            "modelPath": "meshes/prims/plane.obj",
             "rotation": [
                 -90.00000762939453,
                 -4.268868451617891e-06,
@@ -324,7 +324,7 @@
             "materials": {
                 "DefaultMaterial": "factory_brick"
             },
-            "model": "plane",
+            "modelPath": "meshes/prims/plane.obj",
             "rotation": [
                 -90.00000762939453,
                 -4.268868451617891e-06,

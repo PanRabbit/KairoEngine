@@ -59,12 +59,13 @@ public:
         updateCameraVectors();
     }
 
-    // returns the view matrix calculated using Euler Angles and the LookAt Matrix
+    // figures out the view matrix based on the camera's position and front vector
     glm::mat4 GetViewMatrix()
     {
         return glm::lookAt(Position, Position + Front, Up);
     }
 
+    // figures out the view matrix based on the camera's front vector, but always centered at 0,0,0
     glm::mat4 GetCenterViewMatrix()
     {
         return glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), Front, Up);
