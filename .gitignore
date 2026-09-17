@@ -3,3 +3,6 @@ build/
 out/
 imgui.ini
 textures/pebble/
+plugin.blend1
+plugin.blend2
+plugin.blend3
