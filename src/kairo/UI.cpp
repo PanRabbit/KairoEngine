@@ -114,6 +114,11 @@ static void PostProcessControls(EngineContext& engineContext)
     ImGui::DragFloat("Resolution", &engineContext.pixelateResolution, 1.0f, 8.0f, 1080.0f);
     ImGui::EndDisabled();
 
+    ImGui::SeparatorText("GreyScale");
+    ImGui::Checkbox("Enable Greyscale", &engineContext.enableGreyScale);
+    ImGui::BeginDisabled(!engineContext.enableGreyScale);
+    ImGui::EndDisabled();
+
     ImGui::EndDisabled();
 }
 

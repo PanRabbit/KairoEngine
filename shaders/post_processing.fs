@@ -26,6 +26,8 @@ uniform float pixelateResolution;
 uniform bool enableBloom;
 uniform float bloomIntensity;
 
+uniform bool enableGreyScale;
+
 vec2[9] getOffsets(float offsetDistance)
 {
     return vec2[9](
@@ -119,6 +121,20 @@ vec2 pixelate(float resolution)
     return NewTexCoords;
 }
 
+vec3 greyScale(vec3 color)
+{
+    float final = color.r; // + color.g + color.b;
+
+    if (final > 0.9) final = 0.9;
+    else if (final > 0.35) final = 0.6;
+    else if (final > 0.1) final = 0.1;
+    else final = 0.0;
+
+
+
+    return vec3(final);
+}
+
 void main()
 {
     vec2 uv = TexCoords;
@@ -137,6 +153,8 @@ void main()
         color += edgeDetection(uv);
     if (enableBloom)
         color += texture(bloomBlur, TexCoords).rgb * bloomIntensity;
+    if (enableGreyScale)
+        color = greyScale(color);
 
     color *= exposure;
     FragColor = vec4(color, 1.0);

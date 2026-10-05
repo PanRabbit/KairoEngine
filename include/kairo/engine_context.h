@@ -139,6 +139,8 @@ struct EngineContext {
     bool enablePixelate = false;
     float pixelateResolution = 256.0f;
 
+    bool enableGreyScale = false;
+
     // bloom states
     bool enableBloom = true;
     unsigned int bloomExtractFBO;

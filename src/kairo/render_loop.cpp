@@ -270,6 +270,7 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                 postProcessingShader.setFloat("pixelateResolution", engineContext.pixelateResolution);
                 postProcessingShader.setBool("enableBloom", engineContext.enableBloom);
                 postProcessingShader.setFloat("bloomIntensity", engineContext.bloomIntensity);
+                postProcessingShader.setBool("enableGreyScale", engineContext.enableGreyScale);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
                 glBindVertexArray(0);    
             }
