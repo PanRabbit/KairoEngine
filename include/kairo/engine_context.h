@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 
 
@@ -38,6 +39,7 @@ struct EngineContext {
     static constexpr int SPOT_LIGHT_SELECT_BASE = 200000;
     static constexpr int SUN_SELECT_ID = 300000;
     inline static const glm::vec3 SUN_GIZMO_ORIGIN{0.0f, 0.0f, 0.0f};
+    inline static const std::string GIZMO_SPHERE_PATH{"meshes/prims/sphere.obj"};
 
     static int PointLightSelectID(int index) { return POINT_LIGHT_SELECT_BASE + index; }
     static int SpotLightSelectID(int index) { return SPOT_LIGHT_SELECT_BASE + index; }
@@ -63,11 +65,13 @@ struct EngineContext {
     std::unordered_map<std::string, std::unique_ptr<Material>> materials;
     std::unordered_map<std::string, std::unique_ptr<Model>> models;
     std::unordered_map<std::string, std::unique_ptr<GameObject>> sceneObjects;
-    std::unordered_map<std::string, std::string> modelFolders;
+    // path -> folder relative to meshes/, e.g. "meshes/prims/cube.obj" -> "prims"
+    std::unordered_map<std::string, std::string> availableModels;
     // getters to access assets by name
     Shader* getShaderByName(const std::string& name);
     Material* getMaterialByName(const std::string& name);
-    Model* getModelByName(const std::string& name);
+    Model* LoadModel(const std::string& path);
+    void unloadUnusedModels(const std::unordered_set<std::string>& keepPaths);
     GameObject* getGameObjectByID(int id);
     
     // skybox texture and VAO/VBO

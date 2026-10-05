@@ -154,6 +154,8 @@ int main()
     // Clean up allocated resources
     ShutdownUI();
     engineContext.selectionFB.cleanup();
+    engineContext.sceneObjects.clear();
+    engineContext.models.clear();
 
     glfwTerminate();
     return 0;

@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cctype>
 #include <unordered_map>
+#include <unordered_set>
 
 // empty private namespace for level definition functions
 namespace {
@@ -116,6 +117,30 @@ namespace {
         };
     }
 
+    std::string ModelStem(const std::string& path) {
+        return std::filesystem::path(path).stem().string();
+    }
+
+    std::string ReadObjectModelPath(const nlohmann::json& objValue) {
+        if (objValue.contains("modelPath") && objValue["modelPath"].is_string())
+            return objValue["modelPath"].get<std::string>();
+        return {};
+    }
+
+    std::unordered_set<std::string> CollectRequiredModelPaths(const nlohmann::json& j) {
+        std::unordered_set<std::string> required;
+        for (auto& [key, value] : j.items()) {
+            if (key.find("GameObjects") == std::string::npos || !value.is_object())
+                continue;
+            for (auto& [objKey, objValue] : value.items()) {
+                const std::string path = ReadObjectModelPath(objValue);
+                if (!path.empty())
+                    required.insert(path);
+            }
+        }
+        return required;
+    }
+
     std::string SanitizeLevelStem(std::string name) {
         auto slash = name.find_last_of("/\\");
         if (slash != std::string::npos)
@@ -168,6 +193,8 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
     engineContext.spotLightRadii.clear();
     engineContext.selectedObjectID = 0;
 
+    engineContext.unloadUnusedModels(CollectRequiredModelPaths(j));
+
     // Set params for flashlight (Slot 0 is always the flashlight; world spots are appended after it.)
     engineContext.spotLightPositions.emplace_back(0.0f);
     engineContext.spotLightDirections.emplace_back(0.0f, 0.0f, -1.0f);
@@ -180,13 +207,17 @@ void LoadLevelFromJson(EngineContext& engineContext, const std::string& path)
     for (auto& [key, value] : j.items()) {
         if (key.find("GameObjects") != std::string::npos) {
             for (auto& [objKey, objValue] : value.items()) {
-                const std::string modelName = objValue["model"].get<std::string>();
-                Model* model = engineContext.getModelByName(modelName);
+                const std::string modelPath = ReadObjectModelPath(objValue);
+                Model* model = engineContext.LoadModel(modelPath);
+                if (!model) {
+                    std::cout << "ERROR: Skipping object '" << objKey << "' — missing model: " << modelPath << "\n";
+                    continue;
+                }
                 auto* gameObject = new GameObject(
                     objKey,
                     model,
                     {},
-                    modelName,
+                    modelPath,
                     ReadObjectMaterialSlots(objValue, model)
                 );
                 SyncObjectMaterialSlots(engineContext, *gameObject);
@@ -262,7 +293,7 @@ void SaveLevelToJson(EngineContext& engineContext, const std::string& path)
             materials[slot] = obj->materialSlots[slot];
         }
         objects[objKey] = {
-            { "model", obj->modelName },
+            { "modelPath", obj->modelPath },
             { "materials", materials },
             { "location", { obj->position.x, obj->position.y, obj->position.z } },
             { "rotation", { rotationDeg.x, rotationDeg.y, rotationDeg.z } },
@@ -368,12 +399,9 @@ std::vector<std::string> ListSkyboxNames()
 std::map<std::string, std::vector<std::string>> ListModelsByFolder(const EngineContext& engineContext)
 {
     std::map<std::string, std::vector<std::string>> grouped;
-    for (const auto& [name, _] : engineContext.models) {
-        auto it = engineContext.modelFolders.find(name);
-        const std::string folder = (it != engineContext.modelFolders.end() && !it->second.empty())
-            ? it->second
-            : "(root)";
-        grouped[folder].push_back(name);
+    for (const auto& [path, folder] : engineContext.availableModels) {
+        const std::string group = folder.empty() ? "(root)" : folder;
+        grouped[group].push_back(path);
     }
     for (auto& [_, names] : grouped)
         std::sort(names.begin(), names.end());
@@ -407,16 +435,20 @@ void SyncObjectMaterialSlots(EngineContext& engineContext, GameObject& object)
     }
 }
 
-void AddObjectToLevel(EngineContext& engineContext, const std::string& modelName)
+void AddObjectToLevel(EngineContext& engineContext, const std::string& modelPath)
 {
-    Model* model = engineContext.getModelByName(modelName);
+    Model* model = engineContext.LoadModel(modelPath);
+    if (!model) {
+        std::cout << "ERROR: Could not load model: " << modelPath << "\n";
+        return;
+    }
     if (DefaultMaterialName(engineContext).empty()) {
         std::cout << "ERROR: No material available to assign to new object.\n";
         return;
     }
 
-    const std::string objectName = MakeUniqueObjectName(engineContext, modelName);
-    auto object = std::make_unique<GameObject>(objectName, model, std::vector<Material*>{}, modelName);
+    const std::string objectName = MakeUniqueObjectName(engineContext, ModelStem(modelPath));
+    auto object = std::make_unique<GameObject>(objectName, model, std::vector<Material*>{}, modelPath);
     SyncObjectMaterialSlots(engineContext, *object);
     object->position = SpawnInFrontOfCamera(engineContext);
     engineContext.selectedObjectID = object->id;
@@ -514,7 +546,7 @@ void DuplicateSelectedObject(EngineContext& engineContext)
         objectName,
         source->model,
         source->materials,
-        source->modelName,
+        source->modelPath,
         source->materialSlots
     );
     SyncObjectMaterialSlots(engineContext, *clone);

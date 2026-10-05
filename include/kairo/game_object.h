@@ -16,7 +16,7 @@ public:
 
     int id;
     std::string name;
-    std::string modelName;
+    std::string modelPath;
     std::unordered_map<std::string, std::string> materialSlots;
     Model* model;
     std::vector<Material*> materials;
@@ -27,9 +27,9 @@ public:
     glm::vec3 scale{1.0f};
 
     GameObject(const std::string& name, Model* model, std::vector<Material*> materials,
-               const std::string& modelName = "",
+               const std::string& modelPath = "",
                std::unordered_map<std::string, std::string> materialSlots = {}):
-        id(nextID++), name(name), modelName(modelName), materialSlots(std::move(materialSlots)),
+        id(nextID++), name(name), modelPath(modelPath), materialSlots(std::move(materialSlots)),
         model(model), materials(std::move(materials)) {}
 
     void setMaterial(size_t slot, Material* mat, const std::string& materialName) {

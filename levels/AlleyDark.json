@@ -1,0 +1,90 @@
+{
+    "GameObjects": {
+        "test": {
+            "location": [
+                11.389328956604004,
+                0.02957112155854702,
+                11.015304565429688
+            ],
+            "materials": {
+                "asphalt_02": "asphalt",
+                "bitumen": "bitumen",
+                "concrete_road_barrier": "road_barrier_1",
+                "concrete_road_barrier_02": "road_barrier_2",
+                "corrugated_iron_03": "corrugated_iron",
+                "covered_car": "covered_car",
+                "cracked_concrete": "cracked_concrete",
+                "hand_truck": "hand_truck",
+                "industrial_wall_lamp": "wall_lamp",
+                "industrial_wall_lamp_glass": "wall_lamp_glass",
+                "metal_trash_can": "metal_bin",
+                "metal_trash_can_rust": "metal_bin_rust",
+                "modular_airduct_rectangular_01_parts01": "airduct_1",
+                "modular_airduct_rectangular_01_parts02": "airduct_2",
+                "modular_chainlink_fence_posts": "airduct_2",
+                "modular_chainlink_fence_wire": "chainlink_wire",
+                "modular_electric_cables": "electric_cables",
+                "modular_electric_cables_boxes": "electric_cable_boxes",
+                "modular_electricity_poles": "electricity_poles",
+                "modular_electricity_poles_pieces": "electricity_pole_pieces",
+                "modular_factory_facade_brick": "factory_brick",
+                "modular_factory_facade_brick_doors": "factory_doors",
+                "modular_factory_facade_garage": "factory_garage",
+                "modular_factory_facade_trim_01": "factory_trim",
+                "modular_factory_facade_windows": "factory_windows",
+                "modular_factory_facade_windows_glass": "factory_windows",
+                "modular_pipes_metal.001": "metal_pipes",
+                "power_box_01": "power_box",
+                "rubble": "rubble",
+                "utility_box_02": "utility_box"
+            },
+            "modelPath": "meshes/test.obj",
+            "rotation": [
+                -180.0,
+                -89.98021697998047,
+                -180.0
+            ],
+            "scale": [
+                0.9999993443489075,
+                1.0,
+                0.9999993443489075
+            ]
+        }
+    },
+    "PointLights": {},
+    "PostProcess": {
+        "bloomBlurRadius": 1.309999942779541,
+        "bloomIntensity": 1.850000023841858,
+        "bloomThreshold": 0.8799999952316284,
+        "blurStrength": 1.0,
+        "edgeDetectionStrength": 1.0,
+        "enableBloom": true,
+        "enableBlur": false,
+        "enableEdgeDetection": false,
+        "enablePixelate": false,
+        "enableSharpen": true,
+        "enabled": true,
+        "exposure": 1.690000057220459,
+        "pixelateResolution": 256.0,
+        "sharpness": 0.05000000074505806
+    },
+    "SkyBox": {
+        "name": "night"
+    },
+    "SpotLights": {},
+    "SunColor": [
+        0.006271631922572851,
+        0.006271631922572851,
+        0.014705896377563477
+    ],
+    "SunDirection": [
+        0.3227403461933136,
+        -0.8069999814033508,
+        -0.44196802377700806
+    ],
+    "TorchColor": [
+        1.0,
+        0.949999988079071,
+        0.800000011920929
+    ]
+}

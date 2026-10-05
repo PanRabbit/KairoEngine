@@ -20,6 +20,11 @@ class Mesh {
         unsigned int materialSlot = 0;
 
         Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
+        Mesh(const Mesh&) = delete;
+        Mesh& operator=(const Mesh&) = delete;
+        Mesh(Mesh&& other) noexcept;
+        Mesh& operator=(Mesh&& other) noexcept;
+        ~Mesh();
         void draw(Material &material);
         void drawShader(Shader& shader);
     private:
@@ -27,4 +32,5 @@ class Mesh {
         unsigned int VAO, VBO, EBO;
 
         void setupMesh();
+        void destroy();
 };

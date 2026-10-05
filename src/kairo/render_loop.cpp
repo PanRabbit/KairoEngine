@@ -176,7 +176,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                     lightModel = glm::translate(lightModel, engineContext.pointLightPositions[i]); 
                     lightModel = glm::scale(lightModel, glm::vec3(0.2f)); 
                     lightShader.setMat4("model", lightModel);
-                    engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+                    if (Model* sphere = engineContext.LoadModel(EngineContext::GIZMO_SPHERE_PATH))
+                        sphere->draw(*engineContext.getMaterialByName("light"));
                 }
 
                 for (int i = 1; i < spotLightCount; i++)
@@ -187,7 +188,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                     lightModel = glm::translate(lightModel, engineContext.spotLightPositions[i]);
                     lightModel = glm::scale(lightModel, glm::vec3(0.2f));
                     lightShader.setMat4("model", lightModel);
-                    engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+                    if (Model* sphere = engineContext.LoadModel(EngineContext::GIZMO_SPHERE_PATH))
+                        sphere->draw(*engineContext.getMaterialByName("light"));
                 }
 
                 {
@@ -195,7 +197,8 @@ void RenderLoop(GLFWwindow* window, EngineContext& engineContext) {
                     glm::mat4 sunModel = glm::translate(glm::mat4(1.0f), engineContext.sunHandlePosition());
                     sunModel = glm::scale(sunModel, glm::vec3(0.35f));
                     lightShader.setMat4("model", sunModel);
-                    engineContext.getModelByName("sphere")->draw(*engineContext.getMaterialByName("light"));
+                    if (Model* sphere = engineContext.LoadModel(EngineContext::GIZMO_SPHERE_PATH))
+                        sphere->draw(*engineContext.getMaterialByName("light"));
                 }
             }
 
